@@ -2,6 +2,7 @@ package iotctl
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -20,9 +21,20 @@ func (app *Iotctl) Initialize(BaseOrg string) {
 
 	app.Router = nil
 
+	app.setupLog()
+
 	log.Debug("Setting up routes")
 
 	n := negroni.Classic()
 	n.UseHandler(app.Router)
 	http.ListenAndServe("localhost:8080", n)
+}
+
+func (app *Iotctl) setupLog() {
+	if app.Debug {
+		log.SetLevel(log.DebugLevel)
+	}
+
+	// Output stdout instead of the default stderr.
+	log.SetOutput(os.Stdout)
 }

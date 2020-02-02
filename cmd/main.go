@@ -4,11 +4,26 @@ import (
 	"log"
 	"os"
 
+	"github.com/aretas77/iot-controller/web/iotctl"
 	"github.com/urfave/cli"
 )
 
+var (
+	// GitCommit is the last git commit passed with `ldflags`
+	GitCommit string
+
+	// Date is build date passed with `ldflags`
+	Date string
+
+	// Host should be passed with `ldflags`
+	Host string
+
+	// BaseURL is the url for the app
+	BaseURL string
+)
+
 func main() {
-	//BaseURL = "localhost:8080"
+	BaseURL = "localhost:8080"
 	app := cli.NewApp()
 	app.Name = "iot-controller"
 
@@ -29,5 +44,7 @@ func main() {
 }
 
 func start(c *cli.Context) error {
+	app := iotctl.Iotctl{}
+	app.Initialize(BaseURL)
 	return nil
 }
