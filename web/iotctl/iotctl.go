@@ -3,6 +3,7 @@ package iotctl
 import (
 	"net/http"
 	"os"
+	"regexp"
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -10,31 +11,49 @@ import (
 )
 
 type Iotctl struct {
-	Debug   bool
-	BaseOrg string
-	Router  *mux.Router
+	router  *mux.Router
+	options *Options
 }
 
-func (app *Iotctl) Initialize(BaseOrg string) {
-	app.Debug = true
-	app.BaseOrg = BaseOrg
+type Options struct {
+	ListenAddress string
+	RoutePrefix   string
+	CORSOrigin    *regexp.Regexp
+	Debug         DebugInfo
+}
 
-	app.Router = nil
+type DebugInfo struct {
+	Level        log.Level
+	ReportCaller bool // false by default
+}
 
-	app.setupLog()
+// Initialize should initialize all required struct's for
+// iotctl.
+func (app *Iotctl) Initialize(opts Options) {
+	// Setup Iotctl struct
+	app.router = nil
+	app.options = &opts
+
+	// Setup inner Options struct's
+	opts.Debug.setupDebug()
 
 	log.Debug("Setting up routes")
-
 	n := negroni.Classic()
-	n.UseHandler(app.Router)
-	http.ListenAndServe("localhost:8080", n)
+	n.UseHandler(app.router)
+	http.ListenAndServe(opts.ListenAddress, n)
 }
 
-func (app *Iotctl) setupLog() {
-	if app.Debug {
-		log.SetLevel(log.DebugLevel)
-	}
+// setupDebug should setup the debug information
+func (dbg *DebugInfo) setupDebug() {
+	dbg.setupLog()
+}
+
+func (dbg *DebugInfo) setupLog() {
+	log.SetLevel(dbg.Level)
 
 	// Output stdout instead of the default stderr.
 	log.SetOutput(os.Stdout)
+
+	// Add calling method as field.
+	log.SetReportCaller(dbg.ReportCaller)
 }

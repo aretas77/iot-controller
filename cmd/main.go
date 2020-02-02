@@ -1,10 +1,10 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/aretas77/iot-controller/web/iotctl"
+	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
 
@@ -45,6 +45,15 @@ func main() {
 
 func start(c *cli.Context) error {
 	app := iotctl.Iotctl{}
-	app.Initialize(BaseURL)
+	opts := iotctl.Options{}
+
+	opts.ListenAddress = BaseURL
+	opts.Debug = iotctl.DebugInfo{
+		Level:        log.DebugLevel,
+		ReportCaller: false,
+	}
+
+	app.Initialize(opts)
+
 	return nil
 }
