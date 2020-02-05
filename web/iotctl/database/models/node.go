@@ -1,6 +1,9 @@
 package models
 
-import "errors"
+import (
+	"errors"
+	"time"
+)
 
 var (
 	// ErrNodeNilPass ...
@@ -10,11 +13,14 @@ var (
 )
 
 type Node struct {
-	ID           string `json:"_key" db:"_key"`
-	Location     string `json:"location" db:"location"`
-	ReadInterval int    `json:"interval" db:"interval"`
-	IpAddress4   string `json:"ipv4" db:"ipv4"`
-	IpAddress6   string `json:"ipv6" db:"ipv6"`
+	ID           string    `json:"_key" db:"_key"`
+	Location     string    `json:"location" db:"location"`
+	ReadInterval int       `json:"read_interval" db:"read_interval"`
+	SendInterval int       `json:"send_interval" db:"send_interval"`
+	IpAddress4   string    `json:"ipv4" db:"ipv4"`
+	IpAddress6   string    `json:"ipv6" db:"ipv6"`
+	LastUpdated  time.Time `json:"last_update" db:"last_update"`
+	Neighbours   []Node    `json:"neighbours" db:"neighbours"`
 }
 
 type NodeService interface {
