@@ -5,16 +5,22 @@ import (
 	"os"
 	"regexp"
 
+	"github.com/aretas77/iot-controller/web/iotctl/controllers"
+	"github.com/aretas77/iot-controller/web/iotctl/routers"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/negroni"
 )
 
+// Iotctl for main IoT controller settings and config. Handles 
+// various HTTP endpoints.
 type Iotctl struct {
-	router  *mux.Router
-	options *Options
+	router     *mux.Router
+	options    *Options
+	controller *controllers.ApiController
 }
 
+// Options for the IoT controller.
 type Options struct {
 	ListenAddress string
 	RoutePrefix   string
@@ -22,6 +28,7 @@ type Options struct {
 	Debug         DebugInfo
 }
 
+// DebugInfo for debugging related information.
 type DebugInfo struct {
 	Level        log.Level
 	ReportCaller bool // false by default
@@ -30,14 +37,13 @@ type DebugInfo struct {
 // Initialize should initialize all required struct's for
 // iotctl.
 func (app *Iotctl) Initialize(opts Options) {
-	// Setup Iotctl struct
-	app.router = nil
-	app.options = &opts
-
 	// Setup inner Options struct's
 	opts.Debug.setupDebug()
 
-	log.Debug("Setting up routes")
+	// Setup Iotctl struct
+	app.options = &opts
+	app.router = routers.Routes()
+
 	n := negroni.Classic()
 	n.UseHandler(app.router)
 	http.ListenAndServe(opts.ListenAddress, n)
