@@ -24,6 +24,7 @@ type Database struct {
 	MySql *mysql.MySql
 }
 
+// Init should initialize all used databases.
 func (d *Database) Init() {
 	d.MySql = &mysql.MySql{}
 	d.MySql.Connect()

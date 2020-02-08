@@ -6,18 +6,20 @@ import (
 	"regexp"
 
 	"github.com/aretas77/iot-controller/web/iotctl/controllers"
+	db "github.com/aretas77/iot-controller/web/iotctl/database"
 	"github.com/aretas77/iot-controller/web/iotctl/routers"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/negroni"
 )
 
-// Iotctl for main IoT controller settings and config. Handles 
+// Iotctl for main IoT controller settings and config. Handles
 // various HTTP endpoints.
 type Iotctl struct {
 	router     *mux.Router
 	options    *Options
 	controller *controllers.ApiController
+	database   *db.Database
 }
 
 // Options for the IoT controller.
@@ -43,6 +45,10 @@ func (app *Iotctl) Initialize(opts Options) {
 	// Setup Iotctl struct
 	app.options = &opts
 	app.router = routers.Routes()
+
+	// Setup database
+	app.database = &db.Database{}
+	app.database.Init()
 
 	n := negroni.Classic()
 	n.UseHandler(app.router)
