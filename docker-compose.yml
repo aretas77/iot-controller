@@ -1,0 +1,29 @@
+version: "3.7"
+services:
+
+    db:
+        image: mariadb:latest
+        container_name: maria
+        environment:
+            - MYSQL_ROOT_PASSWORD=test
+            - MYSQL_DATABASE=iotctl
+        ports:
+            - "3306:3306"
+        volumes:
+            - ./database:/var/lib/mysql
+        tty: true
+
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        container_name: phpmyadmin
+        environment:
+            - PMA_ARBITRARY=1
+            - PMA_HOST=DB
+        restart: always
+        ports:
+            - "8080:89"
+        volumes:
+            - /sessions
+        links:
+            - db
+
