@@ -9,7 +9,7 @@ import (
 	db "github.com/aretas77/iot-controller/web/iotctl/database"
 	"github.com/aretas77/iot-controller/web/iotctl/routers"
 	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/urfave/negroni"
 )
 
@@ -32,7 +32,7 @@ type Options struct {
 
 // DebugInfo for debugging related information.
 type DebugInfo struct {
-	Level        log.Level
+	Level        logrus.Level
 	ReportCaller bool // false by default
 }
 
@@ -44,15 +44,26 @@ func (app *Iotctl) Initialize(opts Options) {
 
 	// Setup Iotctl struct
 	app.options = &opts
-	app.router = routers.Routes()
 
 	// Setup database
 	app.database = &db.Database{}
 	app.database.Init()
 
+	// Setup controllers
+	app.controller = &controllers.ApiController{}
+	app.controller.InitControllers(app.database)
+
+	// Setup routers
+	app.router = routers.Routes(app.controller)
+
 	n := negroni.Classic()
 	n.UseHandler(app.router)
-	http.ListenAndServe(opts.ListenAddress, n)
+
+	logrus.Debug("Listening to.. " + opts.ListenAddress)
+	err := http.ListenAndServe(opts.ListenAddress, n)
+	if err != nil {
+		panic(err.Error())
+	}
 }
 
 // setupDebug should setup the debug information
@@ -61,11 +72,11 @@ func (dbg *DebugInfo) setupDebug() {
 }
 
 func (dbg *DebugInfo) setupLog() {
-	log.SetLevel(dbg.Level)
+	logrus.SetLevel(dbg.Level)
 
 	// Output stdout instead of the default stderr.
-	log.SetOutput(os.Stdout)
+	logrus.SetOutput(os.Stdout)
 
 	// Add calling method as field.
-	log.SetReportCaller(dbg.ReportCaller)
+	logrus.SetReportCaller(dbg.ReportCaller)
 }
