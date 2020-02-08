@@ -28,9 +28,10 @@ func (n *NodeController) setupHeader(w *http.ResponseWriter) {
 
 }
 
-func (n *NodeController) GetNode(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
+func (n *NodeController) GetNode(w http.ResponseWriter, r *http.Request,
+	next http.HandlerFunc) {
 
+	vars := mux.Vars(r)
 	fmt.Println(vars)
 
 	w.WriteHeader(http.StatusOK)

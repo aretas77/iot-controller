@@ -10,7 +10,10 @@ type ApiController struct {
 	NodeCtl *NodeController
 }
 
+// InitControllers should prepare and initialize all usable controllers with
+// required options.
 func (api *ApiController) InitControllers(database *db.Database) error {
+	logrus.Debug("Setting up Controllers")
 
 	// Initialize Node controller
 	api.NodeCtl = &NodeController{
