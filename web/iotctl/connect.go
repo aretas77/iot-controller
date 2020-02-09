@@ -14,6 +14,7 @@ func (app *Iotctl) onConnectPlain(client MQTT.Client) {
 	}
 }
 
+// ConnectPlain should connect and subscribe topics using plain connection.
 func (app *Iotctl) ConnectPlain() error {
 	app.Plain.Options = &MQTT.ClientOptions{}
 	app.Plain.Options.AddBroker("tcp://" + "172.18.0.3" + ":1883")
@@ -34,6 +35,7 @@ func (app *Iotctl) ConnectPlain() error {
 	return nil
 }
 
+// ConnectSecure should connect and subscribe topics using secure connection.
 func (app *Iotctl) ConnectSecure() error {
 
 	return nil
