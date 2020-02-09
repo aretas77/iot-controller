@@ -8,6 +8,7 @@ import (
 	"github.com/aretas77/iot-controller/web/iotctl/controllers"
 	db "github.com/aretas77/iot-controller/web/iotctl/database"
 	"github.com/aretas77/iot-controller/web/iotctl/routers"
+	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/negroni"
@@ -20,6 +21,15 @@ type Iotctl struct {
 	options    *Options
 	controller *controllers.ApiController
 	database   *db.Database
+	broker     string
+
+	// MQTT connections.
+	Plain  MQTTConnection
+	Secure MQTTConnection
+
+	// MQTT topics.
+	PlainTopics  []TopicHandler
+	SecureTopics []TopicHandler
 }
 
 // Options for the IoT controller.
@@ -28,6 +38,17 @@ type Options struct {
 	RoutePrefix   string
 	CORSOrigin    *regexp.Regexp
 	Debug         DebugInfo
+}
+
+// MQTTConnection will represent a single MQTT connection with its options.
+type MQTTConnection struct {
+	Options *MQTT.ClientOptions
+	Client  MQTT.Client
+}
+
+type TopicHandler struct {
+	Topic   string
+	Handler func(c MQTT.Client, msg MQTT.Message)
 }
 
 // DebugInfo for debugging related information.
