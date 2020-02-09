@@ -77,6 +77,12 @@ func (app *Iotctl) Initialize(opts Options) {
 	// Setup routers
 	app.router = routers.Routes(app.controller)
 
+	// Setup MQTT
+	if err := app.ConnectMQTT(); err != nil {
+		logrus.Fatal("Failed to initialize MQTT")
+		return
+	}
+
 	n := negroni.Classic()
 	n.UseHandler(app.router)
 
