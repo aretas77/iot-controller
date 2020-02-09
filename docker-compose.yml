@@ -1,18 +1,20 @@
 version: "3.7"
 services:
-
-    db:
+    # MySQL database for the app.
+    mariadb:
         image: mariadb:latest
         container_name: maria
         environment:
-            - MYSQL_ROOT_PASSWORD=test
-            - MYSQL_DATABASE=iotctl
+            - MYSQL_ROOT_PASSWORD=test - MYSQL_DATABASE=iotctl
         ports:
             - "3306:3306"
         volumes:
             - ./database:/var/lib/mysql
         tty: true
+        networks:
+            - default
 
+    # For convenient MySQL database management.
     phpmyadmin:
         image: phpmyadmin/phpmyadmin
         container_name: phpmyadmin
@@ -25,5 +27,29 @@ services:
         volumes:
             - /sessions
         links:
-            - db
+            - mariadb
+        depends_on:
+            - mariadb
+        networks:
+            - default
 
+    # Mosquitto MQTT Broker
+    mqtt:
+        image: eclipse-mosquitto
+        hostname: mosquitto
+        container_name: mosquitto
+        expose:
+            - "1883"
+            - "9001"
+        ports:
+            - "1883:1883"
+            - "9001:9001"
+        volumes:
+            - ./configs/mosquitto.conf:/mosquitto/config/mosquitto.conf
+        networks:
+            - default
+networks:
+    default:
+        ipam:
+            config:
+                - subnet: 172.18.1.0/24
