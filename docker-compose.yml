@@ -5,7 +5,8 @@ services:
         image: mariadb:latest
         container_name: maria
         environment:
-            - MYSQL_ROOT_PASSWORD=test - MYSQL_DATABASE=iotctl
+            - MYSQL_ROOT_PASSWORD=test
+            - MYSQL_DATABASE=iotctl
         ports:
             - "3306:3306"
         volumes:
@@ -27,8 +28,6 @@ services:
         volumes:
             - /sessions
         links:
-            - mariadb
-        depends_on:
             - mariadb
         networks:
             - default
@@ -52,4 +51,4 @@ networks:
     default:
         ipam:
             config:
-                - subnet: 172.18.1.0/24
+                - subnet: 172.18.0.0/24
