@@ -30,6 +30,14 @@ type Iotctl struct {
 	// MQTT topics.
 	PlainTopics  []TopicHandler
 	SecureTopics []TopicHandler
+
+	// MQTT secret for authentication.
+	mqttSecret string
+
+	// When a Node sends a greeting to our controller, we don't reply
+	// immediatly - we store it in a queue and send them with a delay.
+	greetingQueue    *greetingEngine
+	greetingQueueCap int
 }
 
 // Options for the IoT controller.
