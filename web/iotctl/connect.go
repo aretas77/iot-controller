@@ -7,6 +7,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// onConnectPlain should be triggered when a plain connection is made.
+// Should subscribe to plain MQTT topics.
 func (app *Iotctl) onConnectPlain(client MQTT.Client) {
 	logrus.Info("Connected to plain MQTT")
 	if err := app.subscribePlainTopics(); err != nil {
@@ -23,7 +25,7 @@ func (app *Iotctl) ConnectPlain() error {
 	app.Plain.Options.SetPingTimeout(60)
 	app.Plain.Options.SetAutoReconnect(true)
 	app.Plain.Options.SetOnConnectHandler(app.onConnectPlain)
-	app.Plain.Options.SetConnectionLostHandler(nil)
+	app.Plain.Options.SetConnectionLostHandler(app.onDisconnectPlain)
 
 	app.Plain.Client = MQTT.NewClient(app.Plain.Options)
 	token := app.Plain.Client.Connect()
@@ -35,9 +37,12 @@ func (app *Iotctl) ConnectPlain() error {
 	return nil
 }
 
+func (app *Iotctl) onDisconnectPlain(client MQTT.Client, err error) {
+	logrus.Info("plain disconnected")
+}
+
 // ConnectSecure should connect and subscribe topics using secure connection.
 func (app *Iotctl) ConnectSecure() error {
-
 	return nil
 }
 
