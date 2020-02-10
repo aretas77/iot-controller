@@ -71,15 +71,17 @@ func (app *Iotctl) Initialize(opts Options) {
 	// Setup inner Options struct's
 	opts.Debug.setupDebug()
 
-	// Setup Iotctl struct
-	app.options = &opts
+	app = &Iotctl{
+		options:    &opts,
+		database:   &db.Database{},
+		controller: &controllers.ApiController{},
+		router:     nil,
+	}
 
 	// Setup database
-	app.database = &db.Database{}
 	app.database.Init()
 
 	// Setup controllers
-	app.controller = &controllers.ApiController{}
 	app.controller.InitControllers(app.database)
 
 	// Setup routers
