@@ -28,6 +28,20 @@ func (app *Iotctl) subscribePlainTopics() error {
 	return nil
 }
 
+func (app *Iotctl) subscribeSecureTopics() error {
+	app.SecureTopics = []TopicHandler{
+		{"node/greeting", nil},
+		{"node/stats", nil},
+		{"node/model/update", nil},
+		{"node/model/", nil},
+		{"system/node/add", nil},
+		{"system/node/delete", nil},
+		{"system/node/update", nil},
+		{"system/node/move", nil},
+	}
+	return nil
+}
+
 // unsubscribePlainTopics will unsubscribe topics that are used for plain
 // connection.
 func (app *Iotctl) unsubscribePlainTopics() {
