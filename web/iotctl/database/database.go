@@ -30,7 +30,6 @@ func (d *Database) Init() {
 	d.MySql.Connect()
 }
 
-func (d *Database) GetMySQL() *mysql.MySql {
-	log.Debug("got ")
+func (d *Database) GetMySql() *mysql.MySql {
 	return d.MySql
 }
