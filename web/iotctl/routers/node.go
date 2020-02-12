@@ -17,6 +17,12 @@ func SetNodeRoutes(router *mux.Router, ctl *controllers.ApiController) *mux.Rout
 		)).Methods("GET")
 
 	router.Handle(
+		"/nodes/{id}",
+		negroni.New(
+			nil,
+		)).Methods("GET")
+
+	router.Handle(
 		"/nodes",
 		negroni.New(
 			nil,
