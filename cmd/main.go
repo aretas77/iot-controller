@@ -23,7 +23,7 @@ var (
 )
 
 func main() {
-	BaseURL = "localhost:8080"
+	BaseURL = "localhost:8081"
 	app := cli.NewApp()
 	app.Name = "iot-controller"
 
