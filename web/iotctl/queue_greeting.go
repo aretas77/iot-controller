@@ -50,6 +50,23 @@ func (app *Iotctl) greetingQueueAdd(net, nodeId string, greeting bool) {
 // greetingQueueLoop will be ran as a seperate goroutine and will
 // process the greeting queue - greetings will be passed into the queue
 // and sent to the device.
-func (app *Iotctl) greetingQueueLoop() {
+func (app *Iotctl) greetingQueueLoop(die <-chan struct{}) {
+	logrus.Debug("starting greetingQueueLoop")
+	app.wg.Add(1)
 
+	for {
+		select {
+		case greeting := <-app.greetingQueue.queue:
+			// public a greeting to the device
+			// go app.PublishGreeting()
+
+			app.greetingQueue.mutex.Lock()
+			app.greetingQueue.queueItems[greeting.Node] = false
+			logrus.Debugf("greeting queue published for %s", greeting.Node)
+			app.greetingQueue.mutex.Unlock()
+		case <-die:
+			app.wg.Done()
+			return
+		}
+	}
 }

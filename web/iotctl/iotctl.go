@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"sync"
 
 	"github.com/aretas77/iot-controller/web/iotctl/controllers"
 	db "github.com/aretas77/iot-controller/web/iotctl/database"
@@ -22,6 +23,9 @@ type Iotctl struct {
 	controller *controllers.ApiController
 	database   *db.Database
 	broker     string
+
+	die chan struct{}
+	wg  sync.WaitGroup
 
 	// MQTT connections.
 	Plain  MQTTConnection
@@ -92,6 +96,12 @@ func (app *Iotctl) Initialize(opts Options) {
 		logrus.Fatal("Failed to initialize MQTT")
 		return
 	}
+
+	// Initialize greeting queue with a given queue size.
+	app.GreetingQueueInit(100)
+
+	// Start a goroutine for handling the Greetings sent from a device.
+	go app.greetingQueueLoop(app.die)
 
 	n := negroni.Classic()
 	n.UseHandler(app.router)
