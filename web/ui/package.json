@@ -9,12 +9,16 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "axios": "^0.19.2",
     "bootstrap": "^4.4.1",
+    "bootstrap-material-design": "^4.1.2",
     "bootstrap-vue": "^2.4.1",
     "core-js": "^3.6.4",
     "jquery": "^3.4.1",
     "vue": "^2.6.11",
-    "vue-router": "^3.1.5"
+    "vue-axios": "^2.1.5",
+    "vue-router": "^3.1.5",
+    "vuex": "^3.1.2"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.2.0",
@@ -26,8 +30,9 @@
     "@vue/test-utils": "1.0.0-beta.31",
     "babel-eslint": "^10.0.3",
     "chai": "^4.1.2",
-    "eslint": "^6.7.2",
+    "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
+    "eslint-loader": "^3.0.3",
     "eslint-plugin-import": "^2.20.1",
     "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-promise": "^4.2.1",
@@ -44,8 +49,7 @@
     },
     "extends": [
       "plugin:vue/essential",
-      "@vue/standard",
-	  "prettier"
+      "@vue/standard"
     ],
     "parserOptions": {
       "parser": "babel-eslint"
@@ -62,6 +66,11 @@
         }
       }
     ]
+  },
+  "editorConfig": {
+    "indent": 2,
+    "insert_final_newline": true,
+    "indent_style": "tab"
   },
   "browserslist": [
     "> 1%",
