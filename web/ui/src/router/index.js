@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
-import NodesManager from '@/components/NodesManager'
 
 Vue.use(VueRouter)
 
@@ -21,10 +20,8 @@ const routes = [
   },
   {
     path: '/nodes-manager',
-    name: 'NodesManager',
-    component: NodesManager,
-    meta: {
-    }
+    name: 'home-nodes',
+    component: () => import('@/views/HomeNodes')
   }
 ]
 
