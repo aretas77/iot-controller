@@ -50,11 +50,12 @@ export default {
     onSubmit (email, password) {
       this.$store
         .dispatch(LOGIN, { email, password })
-        .then(() => this.$router.push({ name: 'home' }))
+        .then(() => this.$router.push({ name: 'Home' }))
     }
   },
   computed: {
     ...mapState({
+      errors: state => state.auth.errors
     })
   }
 }
