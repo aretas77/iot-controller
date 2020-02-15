@@ -1,0 +1,7 @@
+export const NODE_ADD = 'addNode'
+export const NODE_REMOVE = 'removeNode'
+export const NODE_UPDATE = 'updateNode'
+export const NODE_EDIT = 'editNode'
+export const CHECK_AUTH = 'checkAuth'
+export const LOGIN = 'login'
+export const LOGOUT = 'logout'
