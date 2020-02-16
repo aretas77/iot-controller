@@ -23,6 +23,7 @@ type Iotctl struct {
 	controller *controllers.ApiController
 	database   *db.Database
 	broker     string
+	useGorm    bool
 
 	die chan struct{}
 	wg  sync.WaitGroup
@@ -80,10 +81,11 @@ func (app *Iotctl) Initialize(opts Options) {
 		database:   &db.Database{},
 		controller: &controllers.ApiController{},
 		router:     nil,
+		useGorm:    true,
 	}
 
 	// Setup database
-	app.database.Init()
+	app.database.Init(app.useGorm)
 
 	// Setup controllers
 	app.controller.InitControllers(app.database)
