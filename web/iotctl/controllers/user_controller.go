@@ -6,20 +6,39 @@ import (
 	"net/http"
 
 	db "github.com/aretas77/iot-controller/web/iotctl/database"
+	models "github.com/aretas77/iot-controller/web/iotctl/database/models"
+	mysql "github.com/aretas77/iot-controller/web/iotctl/database/mysql"
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 )
 
 type UserController struct {
 	TableName string
 	Database  *db.Database
+
+	// Users will be saved at MySQL database so just keep a pointer into
+	// MySql struct for easier access.
+	sql *mysql.MySql
 }
 
 func (u *UserController) Init() error {
+	if u.Database == nil {
+		logrus.Error("UserController: Database is nil!")
+	}
+
+	if u.Database.GetMySql() == nil {
+		logrus.Error("UserController: failed to get MySQL instance")
+	} else {
+		u.sql = u.Database.GetMySql()
+	}
+
+	u.migrateUserGorm()
 
 	return nil
 }
 
 func (u *UserController) migrateUserGorm() error {
+	u.sql.GormDb.AutoMigrate(&models.User{})
 
 	return nil
 }
