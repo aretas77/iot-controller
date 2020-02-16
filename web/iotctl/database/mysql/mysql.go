@@ -29,21 +29,21 @@ type MySql struct {
 	// Otherwise, with frequent Opens and Closes we could experience poor reuse,
 	// sharing of connections, etc. More info:
 	// - http://go-database-sql.org/accessing.html
-	db     *sql.DB
-	gormDb *gorm.DB
+	Db     *sql.DB
+	GormDb *gorm.DB
 }
 
 func (m *MySql) ConnectGorm() (err error) {
 	logrus.Debug("Setting up MySQL database using GORM")
 
-	m.gormDb, err = gorm.Open("mysql", m.Server)
+	m.GormDb, err = gorm.Open("mysql", m.Server)
 	if err != nil {
 		logrus.Error(ErrOpenFailed)
 		panic(err.Error())
 	}
 
 	// Get the generic database object sql.DB to use its functions
-	m.db = m.gormDb.DB()
+	m.Db = m.GormDb.DB()
 
 	logrus.Infof("Connected to MySQL at %s with GORM", m.Server)
 	return
@@ -56,14 +56,13 @@ func (m *MySql) Connect() (err error) {
 	// This only returns a handle for a database. The database/sql package
 	// manages connections in the background and doesn't open them until
 	// we need it.
-	m.db, err = sql.Open("mysql", m.Server)
+	m.Db, err = sql.Open("mysql", m.Server)
 	if err != nil {
 		logrus.Error("Failed to open mysql database")
 		panic(err.Error())
 	}
 
-	// Check
-	err = m.db.Ping()
+	err = m.Db.Ping()
 	if err != nil {
 		panic(err.Error())
 	}
@@ -73,7 +72,7 @@ func (m *MySql) Connect() (err error) {
 }
 
 func (m *MySql) Query(query string, args ...interface{}) error {
-	rows, err := m.db.Query(query)
+	rows, err := m.Db.Query(query)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -94,7 +93,7 @@ func (m *MySql) Query(query string, args ...interface{}) error {
 }
 
 func (m *MySql) Close() error {
-	err := m.db.Close()
+	err := m.Db.Close()
 	if err != nil {
 		logrus.Fatal("Failed to close a database")
 		logrus.Fatal(err)
