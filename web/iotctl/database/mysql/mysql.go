@@ -42,16 +42,10 @@ func (m *MySql) ConnectGorm() (err error) {
 		panic(err.Error())
 	}
 
-	err = m.db.Ping()
-	if err != nil {
-		logrus.Error(ErrPingFailed)
-		panic(err.Error())
-	}
-
 	// Get the generic database object sql.DB to use its functions
 	m.db = m.gormDb.DB()
 
-	logrus.Debug("Connected to MySQL at 172.18.0.1:3306 with GORM")
+	logrus.Infof("Connected to MySQL at %s with GORM", m.Server)
 	return
 }
 
