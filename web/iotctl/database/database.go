@@ -30,13 +30,18 @@ type Database struct {
 
 // Init should initialize all used databases.
 func (d *Database) Init(useGorm bool) {
-	d.MySql = &mysql.MySql{}
-	d.url = "root:test@tcp(172.18.0.2:3306)/iotctl"
+
+	// TODO: pass this through config file when initializing resources.
+	d.MySql = &mysql.MySql{
+		Username: "root",
+		Password: "test",
+		Server:   "root:test@tcp(172.18.0.2:3306)/iotctl",
+	}
 
 	if useGorm {
-		d.MySql.ConnectGorm(d.url)
+		d.MySql.ConnectGorm()
 	} else {
-		d.MySql.Connect(d.url)
+		d.MySql.Connect()
 	}
 }
 

@@ -21,9 +21,9 @@ var (
 // to one MySql database. Also, it should implement a `DatabaseService`
 // interface from database.go
 type MySql struct {
-	server   string
-	username string
-	password string
+	Server   string
+	Username string
+	Password string
 
 	// We keep database connections open through all lifetime of our application.
 	// Otherwise, with frequent Opens and Closes we could experience poor reuse,
@@ -33,10 +33,10 @@ type MySql struct {
 	gormDb *gorm.DB
 }
 
-func (m *MySql) ConnectGorm(url string) (err error) {
+func (m *MySql) ConnectGorm() (err error) {
 	logrus.Debug("Setting up MySQL database using GORM")
 
-	m.gormDb, err = gorm.Open("mysql", url)
+	m.gormDb, err = gorm.Open("mysql", m.Server)
 	if err != nil {
 		logrus.Error(ErrOpenFailed)
 		panic(err.Error())
@@ -55,14 +55,14 @@ func (m *MySql) ConnectGorm(url string) (err error) {
 	return
 }
 
-func (m *MySql) Connect(url string) (err error) {
+func (m *MySql) Connect() (err error) {
 	logrus.Debug("Setting up MySQL database")
 
 	// Open a connection to MySQL database located at a specific IP.
 	// This only returns a handle for a database. The database/sql package
 	// manages connections in the background and doesn't open them until
 	// we need it.
-	m.db, err = sql.Open("mysql", url)
+	m.db, err = sql.Open("mysql", m.Server)
 	if err != nil {
 		logrus.Error("Failed to open mysql database")
 		panic(err.Error())
