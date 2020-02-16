@@ -1,19 +1,32 @@
 package models
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/jinzhu/gorm"
+)
 
 var (
 	// ErrUserNilPass ...
 	ErrUserNilPass = errors.New("(nil) passed instead of (User)")
 	// ErrUserNotFound ...
-	ErrNodeNotFound = errors.New("(User) not found")
+	ErrUserNotFound = errors.New("(User) not found")
+)
+
+type Roles string
+
+const (
+	Admin          = "admin"
+	NetworkManager = "manager"
+	NetworkUser    = "user"
 )
 
 type User struct {
-	ID       string `json:"_key" db:"_key"`
-	Username string `json:"username" db:"username"`
-	Password string `json:"password" db:"password"`
-	Email    string `json:"email" db:"email"`
+	gorm.Model        // Inject `ID`, `CreatedAt`, `UpdatedAt` and `DeletedAt`
+	Username   string `json:"username" db:"username" sql:"not null"`
+	Password   string `json:"password" db:"password" sql:"not null"`
+	Email      string `json:"email" db:"email"`
+	Role       Roles  `json:"role" sql:"type:ENUM('admin', 'manager', 'user')" gorm:"default:'user'"`
 }
 
 type UserService interface {
