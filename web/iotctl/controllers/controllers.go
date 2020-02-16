@@ -8,6 +8,7 @@ import (
 type ApiController struct {
 	Version string
 	NodeCtl *NodeController
+	UserCtl *UserController
 }
 
 // InitControllers should prepare and initialize all usable controllers with
@@ -24,6 +25,18 @@ func (api *ApiController) InitControllers(database *db.Database) error {
 	err := api.NodeCtl.Init()
 	if err != nil {
 		logrus.Error("Failed to initialize Node Controller")
+		return err
+	}
+
+	// Initialize User controller
+	api.UserCtl = &UserController{
+		TableName: "users",
+		Database:  database,
+	}
+
+	err = api.UserCtl.Init()
+	if err != nil {
+		logrus.Error("Failed to initialize User Controller")
 		return err
 	}
 
