@@ -11,18 +11,26 @@ import (
 )
 
 var (
-	// ErrOpenFailed ...
+	// ErrOpenFailed is an error when Open method has failed.
 	ErrOpenFailed = errors.New("Failed to open mysql database")
-	// ErrPingFailed ...
+	// ErrPingFailed is an error when a Ping to the database has failed.
 	ErrPingFailed = errors.New("Database has failed to respond")
 )
 
+// MySql struct should contain all information regarding a given connection
+// to one MySql database. Also, it should implement a `DatabaseService`
+// interface from database.go
 type MySql struct {
 	server   string
 	username string
 	password string
-	db       *sql.DB
-	gormDb   *gorm.DB
+
+	// We keep database connections open through all lifetime of our application.
+	// Otherwise, with frequent Opens and Closes we could experience poor reuse,
+	// sharing of connections, etc. More info:
+	// - http://go-database-sql.org/accessing.html
+	db     *sql.DB
+	gormDb *gorm.DB
 }
 
 func (m *MySql) ConnectGorm(url string) (err error) {
@@ -60,6 +68,7 @@ func (m *MySql) Connect(url string) (err error) {
 		panic(err.Error())
 	}
 
+	// Check
 	err = m.db.Ping()
 	if err != nil {
 		panic(err.Error())
