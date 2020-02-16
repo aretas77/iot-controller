@@ -13,14 +13,12 @@ var (
 )
 
 type Node struct {
-	ID           string    `json:"_key" db:"_key"`
+	ID           int       `json:"_key" db:"_key"`
 	Location     string    `json:"location" db:"location"`
-	ReadInterval int       `json:"read_interval" db:"read_interval"`
 	SendInterval int       `json:"send_interval" db:"send_interval"`
 	IpAddress4   string    `json:"ipv4" db:"ipv4"`
 	IpAddress6   string    `json:"ipv6" db:"ipv6"`
 	LastUpdated  time.Time `json:"last_update" db:"last_update"`
-	Neighbours   []Node    `json:"neighbours" db:"neighbours"`
 }
 
 type NodeService interface {
@@ -30,7 +28,7 @@ type NodeService interface {
 	Init() error
 
 	// Create should create a Node device in the specified Database.
-	Create(nodeID string, n *Node) (*Node, error)
+	Create(n *Node) (*Node, error)
 
 	// Get should return a Node by given ID.
 	Get(nodeID string) (*Node, error)
