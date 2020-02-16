@@ -9,6 +9,7 @@ require (
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/jinzhu/gorm v1.9.12
 	github.com/sirupsen/logrus v1.4.2
+	github.com/stretchr/testify v1.4.0
 	github.com/urfave/cli v1.22.2
 	github.com/urfave/negroni v1.0.0
 	golang.org/x/net v0.0.0-20200202094626-16171245cfb2 // indirect
