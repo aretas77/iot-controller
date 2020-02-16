@@ -2,6 +2,7 @@ package database
 
 import (
 	mysql "github.com/aretas77/iot-controller/web/iotctl/database/mysql"
+	"github.com/sirupsen/logrus"
 )
 
 // DatabaseService should be an abstract interface for various databases.
@@ -45,6 +46,12 @@ func (d *Database) Init(useGorm bool) {
 	}
 }
 
+// GetMySql should return an initialized MySql object.
+// TODO: make a single method which can return a DB by a given key.
 func (d *Database) GetMySql() *mysql.MySql {
 	return d.MySql
+}
+
+func (d *Database) GetTest() {
+	logrus.Debug("Called GetTest")
 }
