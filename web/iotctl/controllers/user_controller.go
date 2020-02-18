@@ -38,7 +38,20 @@ func (u *UserController) Init() error {
 }
 
 func (u *UserController) migrateUserGorm() error {
-	u.sql.GormDb.AutoMigrate(&models.User{})
+	u.sql.GormDb.DropTableIfExists(&models.User{})
+	u.sql.GormDb.CreateTable(&models.User{})
+
+	// Tables are created - create an admin.
+	user := models.User{
+		Username: "Superadmin",
+		Password: "test",
+		Email:    "superadmin@gmail.com",
+		Role:     "admin",
+	}
+
+	if u.sql.GormDb.NewRecord(user) {
+		u.sql.GormDb.Create(&user)
+	}
 
 	return nil
 }
