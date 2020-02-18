@@ -3,6 +3,8 @@ package models
 import (
 	"errors"
 	"time"
+
+	"github.com/jinzhu/gorm"
 )
 
 var (
@@ -10,6 +12,10 @@ var (
 	ErrNodeNilPass = errors.New("(nil) passed instead of (Node)")
 	// ErrNodeNotFound ...
 	ErrNodeNotFound = errors.New("(Device) not found")
+	// ErrNodeSettingsNilPass ...
+	ErrNodeSettingsNilPass = errors.New("(nil) passed instead of (NodeSettings)")
+	// ErrNodeSettingsNotFound ...
+	ErrNodeSettingsNotFound = errors.New("NodeSettings) not found")
 )
 
 type Status string
@@ -20,18 +26,28 @@ const (
 	Unregistered = "unregistered"
 )
 
+// Node describes information about a specific Node device.
 type Node struct {
-	ID           int       `json:"_key" db:"_key"`
-	Name         string    `json:"name" db:"name"`
-	Mac          string    `json:"mac" db:"mac"`
-	Serial       string    `json:"serial" db:"serial"`
-	Location     string    `json:"location" db:"location"`
-	SendInterval int       `json:"send_interval" db:"send_interval"`
-	IpAddress4   string    `json:"ipv4" db:"ipv4"`
-	IpAddress6   string    `json:"ipv6" db:"ipv6"`
-	LastUpdated  time.Time `json:"last_update" db:"last_update"`
-	LastSentAck  time.Time `json:"last_sent_ack" db:"last_sent_ack"`
-	Status       Status    `json:"status" sql:"type:ENUM('acknowledged', 'registered', 'unregistered')" gorm:"default:'acknowledged'"`
+	gorm.Model
+	Name        string    `json:"name" db:"name"`
+	Mac         string    `json:"mac" db:"mac"`
+	Location    string    `json:"location" db:"location"`
+	IpAddress4  string    `json:"ipv4" db:"ipv4"`
+	IpAddress6  string    `json:"ipv6" db:"ipv6"`
+	LastUpdated time.Time `json:"last_update" db:"last_update"`
+	LastSentAck time.Time `json:"last_sent_ack" db:"last_sent_ack"`
+	Status      Status    `json:"status" sql:"type:ENUM('acknowledged', 'registered', 'unregistered')" gorm:"default:'acknowledged'"`
+}
+
+// NodeSettings describes the settings that are used by the Node device.
+type NodeSettings struct {
+	gorm.Model
+	ReadInterval int `json:"read_interval" db:"read_interval"`
+	SendInterval int `json:"send_interval" db:"send_interval"`
+
+	// a `Belongs To` relationship
+	Node      Node `json:"node" db:"node" gorm:"foreignkey:NodeRefer"`
+	NodeRefer uint
 }
 
 type NodeService interface {
