@@ -6,15 +6,40 @@ import (
 	"net/http"
 
 	db "github.com/aretas77/iot-controller/web/iotctl/database"
+	models "github.com/aretas77/iot-controller/web/iotctl/database/models"
+	mysql "github.com/aretas77/iot-controller/web/iotctl/database/mysql"
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 )
 
 type NodeController struct {
 	TableName string
 	Database  *db.Database
+
+	// Nodes will be saved at MySQL database so just keep a pointer into
+	// MySql struct for easier access.
+	sql *mysql.MySql
 }
 
 func (n *NodeController) Init() error {
+	if n.Database == nil {
+		logrus.Error("NodeController: Database is nil!")
+	}
+
+	if n.Database.GetMySql() == nil {
+		logrus.Error("NodeController: failed to get MySQL instance")
+	} else {
+		n.sql = n.Database.GetMySql()
+	}
+
+	n.migrateNodeGorm()
+
+	return nil
+}
+
+func (n *NodeController) migrateNodeGorm() error {
+	n.sql.GormDb.DropTableIfExists(&models.Node{}, &models.NodeSettings{})
+	n.sql.GormDb.CreateTable(&models.Node{}, &models.NodeSettings{})
 	return nil
 }
 
@@ -53,9 +78,17 @@ func (n *NodeController) GetNodes(w http.ResponseWriter, r *http.Request,
 	json.NewEncoder(w).Encode(nil)
 }
 
+func (n *NodeController) AddNode(w http.ResponseWriter, r *http.Request,
+	next http.HandlerFunc) {
+
+	// Add node to unregistered nodes
+}
+
 // RegisterNode should add the Node to the specified network.
 func (n *NodeController) RegisterNode(w http.ResponseWriter, r *http.Request,
 	next http.HandlerFunc) {
+
+	// User inputs a MAC address of a device
 
 }
 
