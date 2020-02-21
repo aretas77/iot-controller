@@ -2,6 +2,8 @@ package models
 
 import (
 	"errors"
+
+	"github.com/jinzhu/gorm"
 )
 
 var (
@@ -12,7 +14,7 @@ var (
 )
 
 type Network struct {
-	ID    int    `json:"id" db:"id"`
+	gorm.Model
 	Name  string `json:"name" db:"name"`
 	Users User   `json:"users" db:"users"`
 	Nodes Node   `json:"nodes" db:"nodes"`
