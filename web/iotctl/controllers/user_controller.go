@@ -79,3 +79,14 @@ func (u *UserController) GetUserById(w http.ResponseWriter, r *http.Request,
 		w.WriteHeader(http.StatusNotFound)
 	}
 }
+
+func (u *UserController) GetUsers(w http.ResponseWriter, r *http.Request,
+	next http.HandlerFunc) {
+	u.setupHeader(&w)
+
+	users := []models.User{}
+	u.sql.GormDb.Find(&users)
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(users)
+}
