@@ -12,6 +12,7 @@ func Routes(ctl *controllers.ApiController) *mux.Router {
 
 	// Setup routes
 	router = SetNodeRoutes(router, ctl)
+	router = SetUserRoutes(router, ctl)
 
 	return router
 }
