@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	db "github.com/aretas77/iot-controller/web/iotctl/database"
@@ -65,15 +64,18 @@ func (u *UserController) setupHeader(w *http.ResponseWriter) {
 		"Accept, Content-Type, Content-Length, Accept-Encoding, Authorization, Access-Control-Allow-Origin")
 }
 
-func (u *UserController) GetUser(w http.ResponseWriter, r *http.Request,
+func (u *UserController) GetUserById(w http.ResponseWriter, r *http.Request,
 	next http.HandlerFunc) {
-
-	vars := mux.Vars(r)
-
-	fmt.Println(vars)
-
 	u.setupHeader(&w)
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(nil)
+	vars := mux.Vars(r)
+	user := models.User{}
+	u.sql.GormDb.First(&user, vars["id"])
+
+	if user.Username != "" {
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(user)
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+	}
 }
