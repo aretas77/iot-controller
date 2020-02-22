@@ -34,9 +34,13 @@ type Node struct {
 	Location    string    `json:"location" db:"location"`
 	IpAddress4  string    `json:"ipv4" db:"ipv4"`
 	IpAddress6  string    `json:"ipv6" db:"ipv6"`
-	LastUpdated time.Time `json:"last_update" db:"last_update"`
 	LastSentAck time.Time `json:"last_sent_ack" db:"last_sent_ack"`
 	Status      Status    `json:"status" sql:"type:ENUM('acknowledged', 'registered', 'unregistered')" gorm:"default:'acknowledged'"`
+}
+
+type UnregisteredNode struct {
+	gorm.Model
+	Mac string `json:"mac" db:"mac"`
 }
 
 // NodeSettings describes the settings that are used by the Node device.
