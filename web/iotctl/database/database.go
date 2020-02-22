@@ -36,7 +36,7 @@ func (d *Database) Init(useGorm bool) {
 	d.MySql = &mysql.MySql{
 		Username: "root",
 		Password: "test",
-		Server:   "root:test@tcp(172.18.0.2:3306)/iotctl",
+		Server:   "root:test@tcp(172.18.0.2:3306)/iotctl?parseTime=true",
 	}
 
 	if useGorm {
