@@ -39,6 +39,7 @@ func (n *NodeController) Init() error {
 
 func (n *NodeController) migrateNodeGorm() error {
 	n.sql.GormDb.DropTableIfExists(&models.Node{}, &models.NodeSettings{})
+	n.sql.GormDb.Model(&models.NodeSettings{}).AddForeignKey("node_refer", "nodes(id)", "RESTRICT", "RESTRICT")
 	n.sql.GormDb.CreateTable(&models.Node{}, &models.NodeSettings{})
 	return nil
 }
