@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	db "github.com/aretas77/iot-controller/web/iotctl/database"
@@ -38,9 +37,17 @@ func (n *NodeController) Init() error {
 }
 
 func (n *NodeController) migrateNodeGorm() error {
-	n.sql.GormDb.DropTableIfExists(&models.Node{}, &models.NodeSettings{})
+	// Setup database for table creation
+	n.sql.GormDb.DropTableIfExists(&models.Node{}, &models.NodeSettings{},
+		&models.UnregisteredNode{})
+
+	// Create tables
+	n.sql.GormDb.CreateTable(&models.Node{}, &models.NodeSettings{},
+		&models.UnregisteredNode{})
+
+	// Add any required restrictions and foreign keys
 	n.sql.GormDb.Model(&models.NodeSettings{}).AddForeignKey("node_refer", "nodes(id)", "RESTRICT", "RESTRICT")
-	n.sql.GormDb.CreateTable(&models.Node{}, &models.NodeSettings{})
+
 	return nil
 }
 
@@ -56,40 +63,64 @@ func (n *NodeController) setupHeader(w *http.ResponseWriter) {
 // GetNode should return a Node by its ID.
 func (n *NodeController) GetNode(w http.ResponseWriter, r *http.Request,
 	next http.HandlerFunc) {
+	n.setupHeader(&w)
 
 	vars := mux.Vars(r)
+	node := models.Node{}
+	n.sql.GormDb.First(&node, vars["id"])
 
-	query := "SELECT * FROM nodes"
-
-	n.Database.GetMySql().Query(query)
-
-	fmt.Println(vars)
-
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(nil)
+	if node.Mac != "" {
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(node)
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+	}
 }
 
+// GetNodes should return all registered Nodes.
 func (n *NodeController) GetNodes(w http.ResponseWriter, r *http.Request,
 	next http.HandlerFunc) {
+	n.setupHeader(&w)
 
-	query := "SELECT * FROM nodes"
-	n.Database.GetMySql().Query(query)
+	nodes := []models.Node{}
+	n.sql.GormDb.Find(&nodes)
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(nil)
+	json.NewEncoder(w).Encode(nodes)
 }
 
 func (n *NodeController) AddNode(w http.ResponseWriter, r *http.Request,
 	next http.HandlerFunc) {
 
 	// Add node to unregistered nodes
+	n.setupHeader(&w)
+	decoder := json.NewDecoder(r.Body)
+
+	logrus.Debugf("got request")
+	var tmpNode models.Node
+	if err := decoder.Decode(&tmpNode); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		// Check if a Node with current MAC address exists.
+		n.sql.GormDb.FirstOrCreate(&tmpNode, models.Node{Mac: tmpNode.Mac})
+		w.WriteHeader(http.StatusCreated)
+	}
 }
 
 // RegisterNode should add the Node to the specified network.
 func (n *NodeController) RegisterNode(w http.ResponseWriter, r *http.Request,
 	next http.HandlerFunc) {
 
-	// User inputs a MAC address of a device
+	n.setupHeader(&w)
+	decoder := json.NewDecoder(r.Body)
+
+	var tmpNode models.UnregisteredNode
+	if err := decoder.Decode(&tmpNode); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		// Check if a given MAC address exists in Nodes.
+	}
+	// User inputs a MAC address of a device - pass UnregisteredNode object.
 
 }
 
