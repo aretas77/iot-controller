@@ -35,10 +35,14 @@ type Node struct {
 	IpAddress4  string    `json:"ipv4" db:"ipv4"`
 	IpAddress6  string    `json:"ipv6" db:"ipv6"`
 	LastSentAck time.Time `json:"last_sent_ack" db:"last_sent_ack"`
-	Status      Status    `json:"status" sql:"type:ENUM('acknowledged', 'registered', 'unregistered')" gorm:"default:'acknowledged'"`
+	Status      Status    `json:"status" sql:"type:ENUM('acknowledged', 'registered')" gorm:"default:'acknowledged'"`
 
-	// a `Has One` relationship
+	// a `Has One` relationship. Node 1 <-> 1 NodeSettings
 	SettingsID uint `json:"settings"`
+
+	// a `Belongs To` relationship. Node 0..* <-> 1 Network
+	Network      Network `gorm:"foreignkey:NetworkRefer"`
+	NetworkRefer uint    `json:"network_refer"`
 }
 
 type UnregisteredNode struct {
