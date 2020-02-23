@@ -29,7 +29,7 @@ func SetNodeRoutes(router *mux.Router, ctl *controllers.ApiController) *mux.Rout
 	router.Handle(
 		"/nodes",
 		negroni.New(
-			nil,
+			negroni.HandlerFunc(ctl.NodeCtl.AddNode),
 		)).Methods("POST")
 
 	return router
