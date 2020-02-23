@@ -2,8 +2,6 @@ package models
 
 import (
 	"errors"
-
-	"github.com/jinzhu/gorm"
 )
 
 var (
@@ -13,8 +11,13 @@ var (
 	ErrNetworkNotFound = errors.New("(Network) not found")
 )
 
+// Network will be a bridge struct between a User and Nodes in the current
+// Network.
+//  - `Network` can have zero or more nodes. tl;dr Has Many `Nodes`.
+//  - `Network` can belong to only one user. tl;dr Belongs To `User`.
+//  - `Network` can be accessed by many users. Not implemented yet.
 type Network struct {
-	gorm.Model
+	ID        uint   `gorm:"primary_key"`
 	Name      string `json:"name"`
 	UserRefer uint   `json:"user_refer"`
 }
