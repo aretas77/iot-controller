@@ -41,8 +41,18 @@ func (d *Database) Init(useGorm bool) {
 
 	if useGorm {
 		d.MySql.ConnectGorm()
+		d.MySql.InitializeMigrationGorm()
 	} else {
 		d.MySql.Connect()
+	}
+}
+
+// Close should close initialized databases.
+func (d *Database) Close(useGorm bool) {
+	if useGorm {
+		d.MySql.CloseGorm()
+	} else {
+		d.MySql.Close()
 	}
 }
 

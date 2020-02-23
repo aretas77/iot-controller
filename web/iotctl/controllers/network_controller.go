@@ -33,12 +33,6 @@ func (n *NetworkController) Init() error {
 }
 
 func (n *NetworkController) migrateNetworkGorm() error {
-	// Create tables
-	n.sql.GormDb.CreateTable(&models.Network{})
-
-	n.sql.GormDb.Model(&models.Network{}).AddForeignKey("user_refer", "users(id)",
-		"RESTRICT", "RESTRICT")
-
 	globalNetwork := models.Network{
 		Name:      "global",
 		UserRefer: 1,

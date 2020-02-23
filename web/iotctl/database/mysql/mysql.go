@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 
+	models "github.com/aretas77/iot-controller/web/iotctl/database/models"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
@@ -42,13 +43,17 @@ func (m *MySql) ConnectGorm() (err error) {
 		panic(err.Error())
 	}
 
+	m.GormDb.LogMode(true)
+
 	// Get the generic database object sql.DB to use its functions
 	m.Db = m.GormDb.DB()
 
-	logrus.Infof("Connected to MySQL at %s with GORM", m.Server)
+	logrus.Infof("Connected to MySQL at %s", m.Server)
 	return
 }
 
+// Connect should connect to a MySQL database using database/sql driver
+// and gets the handle to the database.
 func (m *MySql) Connect() (err error) {
 	logrus.Debug("Setting up MySQL database")
 
@@ -58,17 +63,33 @@ func (m *MySql) Connect() (err error) {
 	// we need it.
 	m.Db, err = sql.Open("mysql", m.Server)
 	if err != nil {
-		logrus.Error("Failed to open mysql database")
+		logrus.Error(ErrOpenFailed)
 		panic(err.Error())
 	}
 
 	err = m.Db.Ping()
 	if err != nil {
+		logrus.Error(ErrPingFailed)
 		panic(err.Error())
 	}
 
-	logrus.Debug("Connected to MySQL at 172.18.0.1:3306")
+	logrus.Infof("Connected to MySQL at %s", m.Server)
 	return
+}
+
+// InitializeMigrationGorm will create a database structure so it would be
+// possible to manipulate data with it.
+func (m *MySql) InitializeMigrationGorm() {
+	m.GormDb.DropTableIfExists(&models.Network{}, &models.User{},
+		&models.Node{}, &models.NodeSettings{}, &models.UnregisteredNode{})
+
+	m.GormDb.CreateTable(&models.User{}, &models.Node{}, &models.NodeSettings{},
+		&models.UnregisteredNode{}, &models.Network{})
+
+	m.GormDb.Model(&models.Node{}).AddForeignKey("settings_id",
+		"node_settings(id)", "RESTRICT", "RESTRICT")
+	m.GormDb.Model(&models.Network{}).AddForeignKey("user_refer", "users(id)",
+		"RESTRICT", "RESTRICT")
 }
 
 func (m *MySql) Query(query string, args ...interface{}) error {
@@ -89,6 +110,15 @@ func (m *MySql) Query(query string, args ...interface{}) error {
 		log.Printf("id %d name is %s\n", id, name)
 	}
 
+	return nil
+}
+
+func (m *MySql) CloseGorm() error {
+	err := m.GormDb.Close()
+	if err != nil {
+		logrus.Fatal("Failed to close a database")
+		logrus.Fatal(err)
+	}
 	return nil
 }
 

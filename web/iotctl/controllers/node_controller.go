@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	db "github.com/aretas77/iot-controller/web/iotctl/database"
 	models "github.com/aretas77/iot-controller/web/iotctl/database/models"
@@ -37,19 +38,30 @@ func (n *NodeController) Init() error {
 }
 
 func (n *NodeController) migrateNodeGorm() error {
-	// Setup database for table creation.
-	//  - First, we need to drop NodeSettings as it has ForeignKey constraints
-	//	that refer to the Node.
-	n.sql.GormDb.DropTableIfExists(&models.NodeSettings{}, &models.Node{},
-		&models.UnregisteredNode{})
+	// Create a Node with additional settings
+	settings := &models.NodeSettings{
+		ReadInterval: 10,
+		SendInterval: 10,
+	}
 
-	// Create tables
-	n.sql.GormDb.CreateTable(&models.Node{}, &models.NodeSettings{},
-		&models.UnregisteredNode{})
+	if n.sql.GormDb.NewRecord(settings) {
+		n.sql.GormDb.Create(&settings)
+	}
 
-	// Add any required restrictions and foreign keys
-	n.sql.GormDb.Model(&models.NodeSettings{}).AddForeignKey("node_refer", "nodes(id)",
-		"RESTRICT", "RESTRICT")
+	node := &models.Node{
+		Name:        "TestNode",
+		Mac:         "AA:BB:CC:DD:EE",
+		Location:    "Kaunas",
+		IpAddress4:  "172.8.0.20",
+		IpAddress6:  "NA",
+		LastSentAck: time.Now(),
+		Status:      "acknowledged",
+		SettingsID:  settings.ID,
+	}
+
+	if n.sql.GormDb.NewRecord(node) {
+		n.sql.GormDb.Create(&node)
+	}
 
 	return nil
 }
