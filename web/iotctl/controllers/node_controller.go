@@ -37,8 +37,10 @@ func (n *NodeController) Init() error {
 }
 
 func (n *NodeController) migrateNodeGorm() error {
-	// Setup database for table creation
-	n.sql.GormDb.DropTableIfExists(&models.Node{}, &models.NodeSettings{},
+	// Setup database for table creation.
+	//  - First, we need to drop NodeSettings as it has ForeignKey constraints
+	//	that refer to the Node.
+	n.sql.GormDb.DropTableIfExists(&models.NodeSettings{}, &models.Node{},
 		&models.UnregisteredNode{})
 
 	// Create tables
@@ -46,7 +48,8 @@ func (n *NodeController) migrateNodeGorm() error {
 		&models.UnregisteredNode{})
 
 	// Add any required restrictions and foreign keys
-	n.sql.GormDb.Model(&models.NodeSettings{}).AddForeignKey("node_refer", "nodes(id)", "RESTRICT", "RESTRICT")
+	n.sql.GormDb.Model(&models.NodeSettings{}).AddForeignKey("node_refer", "nodes(id)",
+		"RESTRICT", "RESTRICT")
 
 	return nil
 }
