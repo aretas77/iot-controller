@@ -6,9 +6,10 @@ import (
 )
 
 type ApiController struct {
-	Version string
-	NodeCtl *NodeController
-	UserCtl *UserController
+	Version    string
+	NodeCtl    *NodeController
+	UserCtl    *UserController
+	NetworkCtl *NetworkController
 }
 
 // InitControllers should prepare and initialize all usable controllers with
@@ -16,10 +17,22 @@ type ApiController struct {
 func (api *ApiController) InitControllers(database *db.Database) error {
 	logrus.Debug("Setting up Controllers")
 
-	// Initialize Node controller
-	api.NodeCtl = &NodeController{
-		TableName: "node",
-		Database:  database,
+	api = &ApiController{
+		// Initialize Node controller
+		NodeCtl: &NodeController{
+			TableName: "nodes",
+			Database:  database,
+		},
+		// Initialize User controller
+		UserCtl: &UserController{
+			TableName: "users",
+			Database:  database,
+		},
+		// Initialize Network controller
+		NetworkCtl: &NetworkController{
+			TableName: "networks",
+			Database:  database,
+		},
 	}
 
 	err := api.NodeCtl.Init()
@@ -28,15 +41,15 @@ func (api *ApiController) InitControllers(database *db.Database) error {
 		return err
 	}
 
-	// Initialize User controller
-	api.UserCtl = &UserController{
-		TableName: "users",
-		Database:  database,
-	}
-
 	err = api.UserCtl.Init()
 	if err != nil {
 		logrus.Error("Failed to initialize User Controller")
+		return err
+	}
+
+	err = api.NetworkCtl.Init()
+	if err != nil {
+		logrus.Error("Failed to initialize Network Controller")
 		return err
 	}
 

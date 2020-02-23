@@ -37,7 +37,7 @@ func (u *UserController) Init() error {
 }
 
 func (u *UserController) migrateUserGorm() error {
-	u.sql.GormDb.DropTableIfExists(&models.User{})
+	u.sql.GormDb.DropTableIfExists(&models.Network{}, &models.User{})
 	u.sql.GormDb.CreateTable(&models.User{})
 
 	// Tables are created - create an admin.
