@@ -113,6 +113,9 @@ func (app *Iotctl) Initialize(opts Options) {
 	if err != nil {
 		panic(err.Error())
 	}
+
+	// Deal with cleaning up
+	app.database.Close(app.useGorm)
 }
 
 // setupDebug should setup the debug information
