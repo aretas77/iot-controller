@@ -37,6 +37,8 @@ func (u *UserController) Init() error {
 }
 
 func (u *UserController) migrateUserGorm() error {
+	// TODO: export table dropping somewhere else to counteract foreign key
+	// errors. Or just delete whole table before proceeding.
 	u.sql.GormDb.DropTableIfExists(&models.Network{}, &models.User{})
 	u.sql.GormDb.CreateTable(&models.User{})
 
