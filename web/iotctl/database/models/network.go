@@ -15,9 +15,8 @@ var (
 
 type Network struct {
 	gorm.Model
-	Name  string `json:"name" db:"name"`
-	Users User   `json:"users" db:"users"`
-	Nodes Node   `json:"nodes" db:"nodes"`
+	Name      string `json:"name"`
+	UserRefer uint   `json:"user_refer"`
 }
 
 type NetworkService interface {
