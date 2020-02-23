@@ -36,6 +36,9 @@ type Node struct {
 	IpAddress6  string    `json:"ipv6" db:"ipv6"`
 	LastSentAck time.Time `json:"last_sent_ack" db:"last_sent_ack"`
 	Status      Status    `json:"status" sql:"type:ENUM('acknowledged', 'registered', 'unregistered')" gorm:"default:'acknowledged'"`
+
+	// a `Has One` relationship
+	SettingsID uint `json:"settings"`
 }
 
 type UnregisteredNode struct {
@@ -48,10 +51,6 @@ type NodeSettings struct {
 	gorm.Model
 	ReadInterval int `json:"read_interval" db:"read_interval"`
 	SendInterval int `json:"send_interval" db:"send_interval"`
-
-	// a `Belongs To` relationship
-	Node      Node `json:"node" db:"node" gorm:"foreignkey:NodeRefer"`
-	NodeRefer uint
 }
 
 type NodeService interface {
