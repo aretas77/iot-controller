@@ -13,7 +13,8 @@ services:
             - ./database:/var/lib/mysql
         tty: true
         networks:
-            - default
+            default:
+                ipv4_address: 172.18.0.2
 
     # For convenient MySQL database management.
     phpmyadmin:
@@ -30,7 +31,8 @@ services:
         links:
             - mariadb
         networks:
-            - default
+            default:
+                ipv4_address: 172.18.0.4
 
     # Mosquitto MQTT Broker
     mqtt:
@@ -46,7 +48,8 @@ services:
         volumes:
             - ./configs/mosquitto.conf:/mosquitto/config/mosquitto.conf
         networks:
-            - default
+            default:
+                ipv4_address: 172.18.0.3
 networks:
     default:
         ipam:
