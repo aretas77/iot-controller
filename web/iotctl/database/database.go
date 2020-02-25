@@ -49,6 +49,7 @@ func (d *Database) Init(useGorm bool) {
 
 // Close should close initialized databases.
 func (d *Database) Close(useGorm bool) {
+	logrus.Debugf("Closing Database connection. useGorm = %t", useGorm)
 	if useGorm {
 		d.MySql.CloseGorm()
 	} else {
