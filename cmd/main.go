@@ -33,6 +33,14 @@ func main() {
 	BaseURL = "localhost:8081"
 	app := cli.NewApp()
 	app.Name = "iot-controller"
+	app.Version = fmt.Sprintf("build %s (%s) rev %s", Date, GitCommit, Host)
+	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			Name:  "database",
+			Value: "mysql",
+			Usage: "Which database to use [test, mysql]",
+		},
+	}
 
 	app.Commands = []cli.Command{
 		{
