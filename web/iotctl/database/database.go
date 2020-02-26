@@ -25,21 +25,14 @@ type DatabaseService interface {
 
 // Database struct should keep the pointers to the realized interfaces.
 type Database struct {
-	MySql *mysql.MySql
-	url   string
+	MySql   *mysql.MySql
+	UseGorm bool
 }
 
 // Init should initialize all used databases.
-func (d *Database) Init(useGorm bool) error {
+func (d *Database) Init() error {
 
-	// TODO: pass this through config file when initializing resources.
-	d.MySql = &mysql.MySql{
-		Username: "root",
-		Password: "test",
-		Server:   "root:test@tcp(172.18.0.2:3306)/iotctl?parseTime=true",
-	}
-
-	if useGorm {
+	if d.UseGorm {
 		d.MySql.ConnectGorm()
 		d.MySql.InitializeMigrationGorm()
 	} else {

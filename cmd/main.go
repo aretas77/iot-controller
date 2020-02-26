@@ -1,10 +1,17 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/aretas77/iot-controller/web/iotctl"
-	log "github.com/sirupsen/logrus"
+	"github.com/aretas77/iot-controller/web/iotctl/controllers"
+	db "github.com/aretas77/iot-controller/web/iotctl/database"
+	mysql "github.com/aretas77/iot-controller/web/iotctl/database/mysql"
+	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
 
@@ -43,17 +50,56 @@ func main() {
 	}
 }
 
-func start(c *cli.Context) error {
-	app := iotctl.Iotctl{}
-	opts := iotctl.Options{}
-
-	opts.ListenAddress = BaseURL
-	opts.Debug = iotctl.DebugInfo{
-		Level:        log.DebugLevel,
-		ReportCaller: false,
+func start(c *cli.Context) (err error) {
+	MySqlDb := &db.Database{
+		UseGorm: true,
+		MySql: &mysql.MySql{
+			Username: "root",
+			Password: "test",
+			Server:   "root:test@tcp(172.18.0.2:3306)/iotctl?parseTime=true",
+		},
 	}
 
-	app.Initialize(opts)
+	if err = MySqlDb.Init(); err != nil {
+		return err
+	}
 
+	app := iotctl.Iotctl{
+		ListenAddress: BaseURL,
+		Database:      MySqlDb,
+		Controller: &controllers.ApiController{
+			NodeCtl: &controllers.NodeController{
+				TableName: "nodes",
+				Database:  MySqlDb,
+			},
+			UserCtl: &controllers.UserController{
+				TableName: "users",
+				Database:  MySqlDb,
+			},
+			NetworkCtl: &controllers.NetworkController{
+				TableName: "networks",
+				Database:  MySqlDb,
+			},
+		},
+		Debug: &iotctl.DebugInfo{
+			Level:        logrus.DebugLevel,
+			ReportCaller: false,
+		},
+	}
+
+	// listen for SIGTERM or SIGSTOP signals.
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM, syscall.SIGSTOP,
+		syscall.SIGKILL)
+
+	if err := app.Init(); err != nil {
+		return err
+	}
+
+	if err := app.Start(); err != nil {
+		return err
+	}
+
+	<-stop
 	return nil
 }

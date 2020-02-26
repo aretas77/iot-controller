@@ -5,7 +5,6 @@ import (
 	"errors"
 	"log"
 
-	models "github.com/aretas77/iot-controller/web/iotctl/database/models"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"

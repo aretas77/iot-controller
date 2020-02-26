@@ -21,7 +21,6 @@ func (app *Iotctl) httpSetup() error {
 		Handler: n,
 	}
 
-	app.Controller.NodeCtl.Hello()
 	go func() {
 		app.wg.Add(1)
 		if err := app.httpServer.ListenAndServe(); err != nil {

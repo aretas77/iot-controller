@@ -45,11 +45,6 @@ func (app *Iotctl) initQueues() error {
 
 func (app *Iotctl) initServices() error {
 
-	if err := app.Database.Init(app.UseGorm); err != nil {
-		logrus.Error("Failed to Initialize Database")
-		return err
-	}
-
 	if err := app.Controller.Init(app.Database); err != nil {
 		logrus.Error("Failed to Initialize Controllers")
 		return err
