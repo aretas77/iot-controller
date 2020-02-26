@@ -8,11 +8,9 @@ import (
 
 	"github.com/aretas77/iot-controller/web/iotctl/controllers"
 	db "github.com/aretas77/iot-controller/web/iotctl/database"
-	"github.com/aretas77/iot-controller/web/iotctl/routers"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/negroni"
 )
 
 // Iotctl for main IoT controller settings and config. Handles
@@ -38,6 +36,9 @@ type Iotctl struct {
 
 	// MQTT secret for authentication.
 	mqttSecret string
+
+	// HTTP interface
+	httpServer *http.Server
 
 	// When a Node sends a greeting to our controller, we don't reply
 	// immediatly - we store it in a queue and send them with a delay.
@@ -86,12 +87,11 @@ func (app *Iotctl) Initialize(opts Options) {
 
 	// Setup database
 	app.database.Init(app.useGorm)
+	// Deal with cleaning up
+	defer app.database.Close(app.useGorm)
 
 	// Setup controllers
 	app.controller.InitControllers(app.database)
-
-	// Setup routers
-	app.router = routers.Routes(app.controller)
 
 	// Setup MQTT
 	if err := app.ConnectMQTT(); err != nil {
@@ -105,17 +105,12 @@ func (app *Iotctl) Initialize(opts Options) {
 	// Start a goroutine for handling the Greetings sent from a device.
 	go app.greetingQueueLoop(app.die)
 
-	n := negroni.Classic()
-	n.UseHandler(app.router)
-
-	logrus.Debug("Listening to.. " + opts.ListenAddress)
-	err := http.ListenAndServe(opts.ListenAddress, n)
-	if err != nil {
-		panic(err.Error())
+	// setup http
+	if err := app.httpSetup(); err != nil {
+		logrus.Fatal("Failed to initialize HTTP server")
+		return
 	}
 
-	// Deal with cleaning up
-	app.database.Close(app.useGorm)
 }
 
 // setupDebug should setup the debug information
