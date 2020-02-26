@@ -30,7 +30,7 @@ type Database struct {
 }
 
 // Init should initialize all used databases.
-func (d *Database) Init(useGorm bool) {
+func (d *Database) Init(useGorm bool) error {
 
 	// TODO: pass this through config file when initializing resources.
 	d.MySql = &mysql.MySql{
@@ -45,6 +45,8 @@ func (d *Database) Init(useGorm bool) {
 	} else {
 		d.MySql.Connect()
 	}
+
+	return nil
 }
 
 // Close should close initialized databases.
@@ -61,8 +63,4 @@ func (d *Database) Close(useGorm bool) {
 // TODO: make a single method which can return a DB by a given key.
 func (d *Database) GetMySql() *mysql.MySql {
 	return d.MySql
-}
-
-func (d *Database) GetTest() {
-	logrus.Debug("Called GetTest")
 }

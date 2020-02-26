@@ -11,3 +11,12 @@ import (
 func (app *Iotctl) OnMessagePswRequest(client MQTT.Client, msg MQTT.Message) {
 	logrus.Infof("plain message got on: %s", msg.Topic())
 }
+
+func (app *Iotctl) onMessageGreeting(client MQTT.Client, msg MQTT.Message) {
+	logrus.Infof("plain got message on: %s", msg.Topic())
+
+	// check if a valid network ID is provided
+
+	// if valid, add into the unregistered Node db
+
+}

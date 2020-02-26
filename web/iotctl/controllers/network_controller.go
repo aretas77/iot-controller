@@ -29,6 +29,7 @@ func (n *NetworkController) Init() error {
 
 	n.migrateNetworkGorm()
 
+	logrus.Debug("Initialized NetworkController")
 	return nil
 }
 

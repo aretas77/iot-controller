@@ -34,6 +34,7 @@ func (n *NodeController) Init() error {
 
 	n.migrateNodeGorm()
 
+	logrus.Debug("Initialized NodeController")
 	return nil
 }
 
@@ -101,7 +102,7 @@ func (n *NodeController) GetNodes(w http.ResponseWriter, r *http.Request,
 	n.sql.GormDb.Find(&nodes)
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(nodes)
+	json.NewEncoder(w).Encode(nil)
 }
 
 func (n *NodeController) AddNode(w http.ResponseWriter, r *http.Request,

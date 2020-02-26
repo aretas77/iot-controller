@@ -1,8 +1,14 @@
 package controllers
 
 import (
+	"errors"
+
 	db "github.com/aretas77/iot-controller/web/iotctl/database"
 	"github.com/sirupsen/logrus"
+)
+
+var (
+	ErrDatabaseNil = errors.New("ApiController Database is nil")
 )
 
 type ApiController struct {
@@ -12,28 +18,18 @@ type ApiController struct {
 	NetworkCtl *NetworkController
 }
 
-// InitControllers should prepare and initialize all usable controllers with
+// Init should prepare and initialize all usable controllers with
 // required options.
-func (api *ApiController) InitControllers(database *db.Database) error {
+func (api *ApiController) Init(database *db.Database) error {
 	logrus.Debug("Setting up Controllers")
 
-	api = &ApiController{
-		// Initialize Node controller
-		NodeCtl: &NodeController{
-			TableName: "nodes",
-			Database:  database,
-		},
-		// Initialize User controller
-		UserCtl: &UserController{
-			TableName: "users",
-			Database:  database,
-		},
-		// Initialize Network controller
-		NetworkCtl: &NetworkController{
-			TableName: "networks",
-			Database:  database,
-		},
+	if database == nil {
+		return ErrDatabaseNil
 	}
+
+	api.NodeCtl.Database = database
+	api.UserCtl.Database = database
+	api.NetworkCtl.Database = database
 
 	err := api.NodeCtl.Init()
 	if err != nil {

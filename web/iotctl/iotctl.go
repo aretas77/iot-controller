@@ -2,8 +2,6 @@ package iotctl
 
 import (
 	"net/http"
-	"os"
-	"regexp"
 	"sync"
 
 	"github.com/aretas77/iot-controller/web/iotctl/controllers"
@@ -16,15 +14,15 @@ import (
 // Iotctl for main IoT controller settings and config. Handles
 // various HTTP endpoints.
 type Iotctl struct {
-	router     *mux.Router
-	options    *Options
-	controller *controllers.ApiController
-	database   *db.Database
-	broker     string
-	useGorm    bool
+	Router     *mux.Router
+	Controller *controllers.ApiController
+	Database   *db.Database
+	UseGorm    bool
 
 	die chan struct{}
 	wg  sync.WaitGroup
+
+	broker string
 
 	// MQTT connections.
 	Plain  MQTTConnection
@@ -44,14 +42,11 @@ type Iotctl struct {
 	// immediatly - we store it in a queue and send them with a delay.
 	greetingQueue    *greetingEngine
 	greetingQueueCap int
-}
 
-// Options for the IoT controller.
-type Options struct {
 	ListenAddress string
 	RoutePrefix   string
-	CORSOrigin    *regexp.Regexp
-	Debug         DebugInfo
+
+	Debug *DebugInfo
 }
 
 // MQTTConnection will represent a single MQTT connection with its options.
@@ -71,59 +66,22 @@ type DebugInfo struct {
 	ReportCaller bool // false by default
 }
 
-// Initialize should initialize all required struct's for
-// iotctl.
-func (app *Iotctl) Initialize(opts Options) {
-	// Setup inner Options struct's
-	opts.Debug.setupDebug()
-
-	app = &Iotctl{
-		options:    &opts,
-		database:   &db.Database{},
-		controller: &controllers.ApiController{},
-		router:     nil,
-		useGorm:    true,
-	}
-
-	// Setup database
-	app.database.Init(app.useGorm)
-	// Deal with cleaning up
-	defer app.database.Close(app.useGorm)
-
-	// Setup controllers
-	app.controller.InitControllers(app.database)
-
-	// Setup MQTT
-	if err := app.ConnectMQTT(); err != nil {
-		logrus.Fatal("Failed to initialize MQTT")
-		return
-	}
-
-	// Initialize greeting queue with a given queue size.
-	app.GreetingQueueInit(100)
-
-	// Start a goroutine for handling the Greetings sent from a device.
-	go app.greetingQueueLoop(app.die)
+func (app *Iotctl) Start() error {
 
 	// setup http
 	if err := app.httpSetup(); err != nil {
 		logrus.Fatal("Failed to initialize HTTP server")
-		return
+		return nil
 	}
 
-}
+	// Setup MQTT
+	if err := app.ConnectMQTT(); err != nil {
+		logrus.Fatal("Failed to initialize MQTT")
+		return nil
+	}
 
-// setupDebug should setup the debug information
-func (dbg *DebugInfo) setupDebug() {
-	dbg.setupLog()
-}
+	// Start a goroutine for handling the Greetings sent from a device.
+	go app.greetingQueueLoop(app.die)
 
-func (dbg *DebugInfo) setupLog() {
-	logrus.SetLevel(dbg.Level)
-
-	// Output stdout instead of the default stderr.
-	logrus.SetOutput(os.Stdout)
-
-	// Add calling method as field.
-	logrus.SetReportCaller(dbg.ReportCaller)
+	return nil
 }

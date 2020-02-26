@@ -33,6 +33,7 @@ func (u *UserController) Init() error {
 
 	u.migrateUserGorm()
 
+	logrus.Debug("Initialized UserController")
 	return nil
 }
 
@@ -84,9 +85,12 @@ func (u *UserController) GetUsers(w http.ResponseWriter, r *http.Request,
 	next http.HandlerFunc) {
 	u.setupHeader(&w)
 
-	users := []models.User{}
-	u.sql.GormDb.Find(&users)
+	//users := []models.User{}
+	//u.sql.GormDb.Find(&users)
+	if u == nil {
+		logrus.Error("GormDB is nil")
+	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(users)
+	json.NewEncoder(w).Encode(nil)
 }

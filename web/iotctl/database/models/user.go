@@ -13,20 +13,19 @@ var (
 	ErrUserNotFound = errors.New("(User) not found")
 )
 
-type Roles string
-
 const (
 	Admin          = "admin"
 	NetworkManager = "manager"
 	NetworkUser    = "user"
 )
 
+// User ...
 type User struct {
 	gorm.Model           // Inject `ID`, `CreatedAt`, `UpdatedAt` and `DeletedAt`
 	Username   string    `json:"username" gorm:"username" sql:"not null"`
 	Password   string    `json:"password" sql:"not null"`
 	Email      string    `json:"email"`
-	Role       Roles     `json:"role" sql:"type:ENUM('admin', 'manager', 'user')" gorm:"default:'user'"`
+	Role       string    `json:"role" sql:"type:ENUM('admin', 'manager', 'user')" gorm:"default:'user'"`
 	Networks   []Network `json:"networks" gorm:"foreignkey:UserRefer"`
 }
 
