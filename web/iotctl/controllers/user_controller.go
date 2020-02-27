@@ -85,12 +85,18 @@ func (u *UserController) GetUsers(w http.ResponseWriter, r *http.Request,
 	next http.HandlerFunc) {
 	u.setupHeader(&w)
 
-	//users := []models.User{}
-	//u.sql.GormDb.Find(&users)
-	if u == nil {
-		logrus.Error("GormDB is nil")
+	users := []models.User{}
+	u.sql.GormDb.Find(&users)
+
+	// Get Networks for each user.
+	for i, user := range users {
+		networks := []models.Network{}
+		u.sql.GormDb.Where("user_refer = ?", user.ID).Find(&networks)
+
+		// We can't do user.Networks = networks as user is a local copy.
+		users[i].Networks = networks
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(nil)
+	json.NewEncoder(w).Encode(users)
 }
