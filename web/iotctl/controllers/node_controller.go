@@ -101,8 +101,19 @@ func (n *NodeController) GetNodes(w http.ResponseWriter, r *http.Request,
 	nodes := []models.Node{}
 	n.sql.GormDb.Find(&nodes)
 
+	for i, node := range nodes {
+		settings := models.NodeSettings{}
+		n.sql.GormDb.Where("id = ?", node.SettingsID).First(&settings)
+
+		network := models.Network{}
+		n.sql.GormDb.Where("id = ?", node.NetworkRefer).First(&network)
+
+		nodes[i].Settings = settings
+		nodes[i].Network = network
+	}
+
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(nil)
+	json.NewEncoder(w).Encode(nodes)
 }
 
 func (n *NodeController) AddNode(w http.ResponseWriter, r *http.Request,
