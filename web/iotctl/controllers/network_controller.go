@@ -7,6 +7,7 @@ import (
 	db "github.com/aretas77/iot-controller/web/iotctl/database"
 	models "github.com/aretas77/iot-controller/web/iotctl/database/models"
 	mysql "github.com/aretas77/iot-controller/web/iotctl/database/mysql"
+	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
 
@@ -81,4 +82,33 @@ func (n *NetworkController) CreateNetwork(w http.ResponseWriter, r *http.Request
 		n.sql.GormDb.Create(&network)
 		w.WriteHeader(http.StatusCreated)
 	}
+}
+
+func (n *NetworkController) GetNetwork(w http.ResponseWriter, r *http.Request,
+	next http.HandlerFunc) {
+	n.setupHeader(&w)
+
+	vars := mux.Vars(r)
+	network := models.Network{}
+	nodes := []models.Node{}
+
+	if err := n.sql.GormDb.First(&network, vars["id"]).Error; err != nil {
+		logrus.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Load Settings of Node device.
+	err := n.sql.GormDb.Where("network_refer = ?", network.ID).Preload("Settings").Find(&nodes).Error
+	if err != nil {
+		logrus.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Assign found nodes
+	network.Nodes = nodes
+
+	json.NewEncoder(w).Encode(network)
+	w.WriteHeader(http.StatusOK)
 }

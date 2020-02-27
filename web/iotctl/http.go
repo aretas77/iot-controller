@@ -51,6 +51,12 @@ func (app *Iotctl) setupNetwork() {
 		negroni.New(
 			negroni.HandlerFunc(app.Controller.NetworkCtl.CreateNetwork),
 		)).Methods("POST")
+
+	app.Router.Handle(
+		"/networks/{id}",
+		negroni.New(
+			negroni.HandlerFunc(app.Controller.NetworkCtl.GetNetwork),
+		)).Methods("GET")
 }
 
 func (app *Iotctl) setupNode() {
