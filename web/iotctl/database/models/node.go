@@ -11,7 +11,7 @@ var (
 	// ErrNodeNilPass ...
 	ErrNodeNilPass = errors.New("(nil) passed instead of (Node)")
 	// ErrNodeNotFound ...
-	ErrNodeNotFound = errors.New("(Device) not found")
+	ErrNodeNotFound = errors.New("(Node) not found")
 	// ErrNodeSettingsNilPass ...
 	ErrNodeSettingsNilPass = errors.New("(nil) passed instead of (NodeSettings)")
 	// ErrNodeSettingsNotFound ...
@@ -23,7 +23,6 @@ type Status string
 const (
 	Acknowledged = "acknowledged"
 	Registered   = "registered"
-	Unregistered = "unregistered"
 )
 
 // Node describes information about a specific Node device.
@@ -38,11 +37,12 @@ type Node struct {
 	Status      Status    `json:"status" sql:"type:ENUM('acknowledged', 'registered')" gorm:"default:'acknowledged'"`
 
 	// a `Has One` relationship. Node 1 <-> 1 NodeSettings
-	SettingsID uint `json:"settings"`
+	SettingsID uint         `json:"-"`
+	Settings   NodeSettings `json:"settings"`
 
 	// a `Belongs To` relationship. Node 0..* <-> 1 Network
+	NetworkRefer uint    `json:"-"`
 	Network      Network `gorm:"foreignkey:NetworkRefer"`
-	NetworkRefer uint    `json:"network_refer"`
 }
 
 type UnregisteredNode struct {
@@ -52,9 +52,9 @@ type UnregisteredNode struct {
 
 // NodeSettings describes the settings that are used by the Node device.
 type NodeSettings struct {
-	gorm.Model
-	ReadInterval int `json:"read_interval" db:"read_interval"`
-	SendInterval int `json:"send_interval" db:"send_interval"`
+	ID           uint `gorm:"primary_key"`
+	ReadInterval int  `json:"read_interval" db:"read_interval"`
+	SendInterval int  `json:"send_interval" db:"send_interval"`
 }
 
 type NodeService interface {
