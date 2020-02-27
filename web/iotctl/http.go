@@ -45,21 +45,18 @@ func (app *Iotctl) setupRoutes() {
 
 func (app *Iotctl) setupNode() {
 
-	logrus.Debugf("Attaching negroni handler on GET %s", "/nodes")
 	app.Router.Handle(
 		"/nodes",
 		negroni.New(
 			negroni.HandlerFunc(app.Controller.NodeCtl.GetNodes),
 		)).Methods("GET")
 
-	logrus.Debugf("Attaching negroni handler on GET %s", "/nodes/{id}")
 	app.Router.Handle(
 		"/nodes/{id}",
 		negroni.New(
 			negroni.HandlerFunc(app.Controller.NodeCtl.GetNode),
 		)).Methods("GET")
 
-	logrus.Debugf("Attaching negroni handler on POST %s", "/nodes")
 	app.Router.Handle(
 		"/nodes",
 		negroni.New(
@@ -68,21 +65,18 @@ func (app *Iotctl) setupNode() {
 }
 
 func (app *Iotctl) setupUser() {
-	logrus.Debugf("Attaching negroni handler on GET %s", "/users")
 	app.Router.Handle(
 		"/users",
 		negroni.New(
 			negroni.HandlerFunc(app.Controller.UserCtl.GetUsers),
 		)).Methods("GET")
 
-	logrus.Debugf("Attaching negroni handler on GET %s", "/users/{id}")
 	app.Router.Handle(
 		"/users/{id}",
 		negroni.New(
 			negroni.HandlerFunc(app.Controller.UserCtl.GetUserById),
 		)).Methods("GET")
 
-	logrus.Debugf("Attaching negroni handler on POST %s", "/users")
 	app.Router.Handle(
 		"/users",
 		negroni.New(
