@@ -15,7 +15,7 @@ func (m *MySql) ConnectGorm() (err error) {
 		panic(err.Error())
 	}
 
-	//m.GormDb.LogMode(true)
+	m.GormDb.LogMode(true)
 
 	// Get the generic database object sql.DB to use its functions
 	m.Db = m.GormDb.DB()
@@ -27,6 +27,10 @@ func (m *MySql) ConnectGorm() (err error) {
 // InitializeMigrationGorm will create a database structure so it would be
 // possible to manipulate data with it.
 func (m *MySql) InitializeMigrationGorm() {
+	m.GormDb.Model(&models.Node{}).RemoveForeignKey("settings_id", "node_settings(id)")
+	m.GormDb.Model(&models.Node{}).RemoveForeignKey("network_refer", "networks(id)")
+	m.GormDb.Model(&models.Network{}).RemoveForeignKey("user_refer", "users(id)")
+
 	m.GormDb.DropTableIfExists(&models.Network{}, &models.User{},
 		&models.Node{}, &models.NodeSettings{}, &models.UnregisteredNode{})
 
@@ -35,6 +39,8 @@ func (m *MySql) InitializeMigrationGorm() {
 
 	m.GormDb.Model(&models.Node{}).AddForeignKey("settings_id",
 		"node_settings(id)", "RESTRICT", "RESTRICT")
-	m.GormDb.Model(&models.Network{}).AddForeignKey("user_refer", "users(id)",
-		"RESTRICT", "RESTRICT")
+	m.GormDb.Model(&models.Node{}).AddForeignKey("network_refer",
+		"networks(id)", "RESTRICT", "RESTRICT")
+	m.GormDb.Model(&models.Network{}).AddForeignKey("user_refer",
+		"users(id)", "RESTRICT", "RESTRICT")
 }
