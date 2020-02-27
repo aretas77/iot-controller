@@ -28,33 +28,37 @@ const (
 // Node describes information about a specific Node device.
 type Node struct {
 	gorm.Model
-	Name        string    `json:"name" db:"name"`
-	Mac         string    `json:"mac" db:"mac"`
-	Location    string    `json:"location" db:"location"`
-	IpAddress4  string    `json:"ipv4" db:"ipv4"`
-	IpAddress6  string    `json:"ipv6" db:"ipv6"`
-	LastSentAck time.Time `json:"last_sent_ack" db:"last_sent_ack"`
+	Name        string    `json:"name"`
+	Mac         string    `json:"mac"`
+	Location    string    `json:"location"`
+	IpAddress4  string    `json:"ipv4"`
+	IpAddress6  string    `json:"ipv6"`
+	LastSentAck time.Time `json:"last_sent_ack"`
 	Status      Status    `json:"status" sql:"type:ENUM('acknowledged', 'registered')" gorm:"default:'acknowledged'"`
 
-	// a `Has One` relationship. Node 1 <-> 1 NodeSettings
+	// a `Has One` relationship. Node 1 <-> 1 NodeSettings.
+	// Node `Has One` Settings.
 	SettingsID uint         `json:"-"`
-	Settings   NodeSettings `json:"settings"`
+	Settings   NodeSettings `json:"settings,omitempty"`
 
-	// a `Belongs To` relationship. Node 0..* <-> 1 Network
-	NetworkRefer uint    `json:"-"`
-	Network      Network `gorm:"foreignkey:NetworkRefer"`
+	// Belongs to only one Network and its ID is kept in `NetworkRefer`.
+	NetworkRefer uint     `json:"-"`
+	Network      *Network `json:"network,omitempty"`
 }
 
+// UnregisteredNode is used to register node - User supplies MAC address of
+// the Node and thus Node is Registered.
 type UnregisteredNode struct {
 	gorm.Model
-	Mac string `json:"mac" db:"mac"`
+	Mac       string `json:"mac"`
+	NetworkID uint   `json:"network"`
 }
 
 // NodeSettings describes the settings that are used by the Node device.
 type NodeSettings struct {
 	ID           uint `gorm:"primary_key"`
-	ReadInterval int  `json:"read_interval" db:"read_interval"`
-	SendInterval int  `json:"send_interval" db:"send_interval"`
+	ReadInterval int  `json:"read_interval"`
+	SendInterval int  `json:"send_interval"`
 }
 
 type NodeService interface {
