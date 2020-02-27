@@ -31,13 +31,7 @@ func (api *ApiController) Init(database *db.Database) error {
 	api.UserCtl.Database = database
 	api.NetworkCtl.Database = database
 
-	err := api.NodeCtl.Init()
-	if err != nil {
-		logrus.Error("Failed to initialize Node Controller")
-		return err
-	}
-
-	err = api.UserCtl.Init()
+	err := api.UserCtl.Init()
 	if err != nil {
 		logrus.Error("Failed to initialize User Controller")
 		return err
@@ -46,6 +40,12 @@ func (api *ApiController) Init(database *db.Database) error {
 	err = api.NetworkCtl.Init()
 	if err != nil {
 		logrus.Error("Failed to initialize Network Controller")
+		return err
+	}
+
+	err = api.NodeCtl.Init()
+	if err != nil {
+		logrus.Error("Failed to initialize Node Controller")
 		return err
 	}
 
