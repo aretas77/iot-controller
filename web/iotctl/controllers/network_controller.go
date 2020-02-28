@@ -84,6 +84,9 @@ func (n *NetworkController) CreateNetwork(w http.ResponseWriter, r *http.Request
 	}
 }
 
+// GetNetwork will return a single Network specified by ID. The returned Network
+// should consist of its Nodes and their NodeSettings.
+// Endpoint: GET /networks/{id}
 func (n *NetworkController) GetNetwork(w http.ResponseWriter, r *http.Request,
 	next http.HandlerFunc) {
 	n.setupHeader(&w)
@@ -92,6 +95,7 @@ func (n *NetworkController) GetNetwork(w http.ResponseWriter, r *http.Request,
 	network := models.Network{}
 	nodes := []models.Node{}
 
+	// SELECT * FROM `networks`  WHERE (`networks`.`id` = '1') ORDER BY `networks`.`id` ASC LIMIT 1
 	if err := n.sql.GormDb.First(&network, vars["id"]).Error; err != nil {
 		logrus.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -99,6 +103,7 @@ func (n *NetworkController) GetNetwork(w http.ResponseWriter, r *http.Request,
 	}
 
 	// Load Settings of Node device.
+	// SELECT * FROM `node_settings`  WHERE (`node_id` IN (1,2))
 	err := n.sql.GormDb.Where("network_refer = ?", network.ID).Preload("Settings").Find(&nodes).Error
 	if err != nil {
 		logrus.Error(err)
@@ -109,6 +114,6 @@ func (n *NetworkController) GetNetwork(w http.ResponseWriter, r *http.Request,
 	// Assign found nodes
 	network.Nodes = nodes
 
-	json.NewEncoder(w).Encode(network)
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(network)
 }
