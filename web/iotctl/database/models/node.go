@@ -29,7 +29,7 @@ const (
 type Node struct {
 	gorm.Model
 	Name        string    `json:"name"`
-	Mac         string    `json:"mac"`
+	Mac         string    `json:"mac" gorm:"unique;not null"`
 	Location    string    `json:"location"`
 	IpAddress4  string    `json:"ipv4"`
 	IpAddress6  string    `json:"ipv6"`
@@ -48,10 +48,23 @@ type Node struct {
 
 // UnregisteredNode is used to register node - User supplies MAC address of
 // the Node and thus Node is Registered.
+//
+// UnregisteredNode is used when a User adds a Node with AddNode request.
+// However, this Node is still not connected anywhere - it needs to be mapped
+// with a Node device which is added by MQTT broker.
+//
+// Once a Node is registered - UnregisteredNode should be removed.
 type UnregisteredNode struct {
 	gorm.Model
-	Mac       string `json:"mac"`
-	NetworkID uint   `json:"network"`
+	Mac string `json:"mac" gorm:"not null"`
+
+	// a `Has One` relationship. UnregisteredNode 0..* <-> 1 Network.
+	// UnregisteredNode `Has One` Network.
+	NetworkRefer uint     `json:"network_refer" gorm:"not null"`
+	Network      *Network `json:"network,omitempty"`
+
+	NodeRefer uint `json:"-"`
+	Node      Node `json:"node,omitempty"`
 }
 
 // NodeSettings describes the settings that are used by the Node device.
