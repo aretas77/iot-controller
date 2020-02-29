@@ -79,8 +79,7 @@ func (u *UserController) GetUserById(w http.ResponseWriter, r *http.Request,
 }
 
 // GetUsers should return all system users.
-// Method:		GET
-// Endpoint:	/users
+// Endpoint:	GET /users
 func (u *UserController) GetUsers(w http.ResponseWriter, r *http.Request,
 	next http.HandlerFunc) {
 	u.setupHeader(&w)
