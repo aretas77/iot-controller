@@ -29,6 +29,7 @@ func (m *MySql) ConnectGorm() (err error) {
 func (m *MySql) InitializeMigrationGorm() {
 	m.GormDb.Model(&models.Node{}).RemoveForeignKey("settings_id", "node_settings(id)")
 	m.GormDb.Model(&models.Node{}).RemoveForeignKey("network_refer", "networks(id)")
+	m.GormDb.Model(&models.UnregisteredNode{}).RemoveForeignKey("network_refer", "networks(id)")
 	m.GormDb.Model(&models.Network{}).RemoveForeignKey("user_refer", "users(id)")
 
 	m.GormDb.DropTableIfExists(&models.Network{}, &models.User{},
@@ -43,4 +44,9 @@ func (m *MySql) InitializeMigrationGorm() {
 		"networks(id)", "RESTRICT", "RESTRICT")
 	m.GormDb.Model(&models.Network{}).AddForeignKey("user_refer",
 		"users(id)", "RESTRICT", "RESTRICT")
+	m.GormDb.Model(&models.UnregisteredNode{}).AddForeignKey("network_refer",
+		"networks(id)", "RESTRICT", "RESTRICT")
+	//m.GormDb.Model(&models.UnregisteredNode{}).AddForeignKey("mac",
+	//"nodes(mac)", "RESTRICT", "RESTRICT")
+
 }
