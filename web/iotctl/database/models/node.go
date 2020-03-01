@@ -63,8 +63,8 @@ type UnregisteredNode struct {
 	NetworkRefer uint     `json:"network_refer" gorm:"not null"`
 	Network      *Network `json:"network,omitempty"`
 
-	NodeRefer uint `json:"-"`
-	Node      Node `json:"node,omitempty"`
+	NodeRefer uint  `json:"-"`
+	Node      *Node `json:"node,omitempty"`
 }
 
 // NodeSettings describes the settings that are used by the Node device.
