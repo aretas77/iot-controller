@@ -8,6 +8,7 @@ import (
 	models "github.com/aretas77/iot-controller/web/iotctl/database/models"
 	mysql "github.com/aretas77/iot-controller/web/iotctl/database/mysql"
 	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 )
 
@@ -94,6 +95,7 @@ func (n *NetworkController) GetNetwork(w http.ResponseWriter, r *http.Request,
 	vars := mux.Vars(r)
 	network := models.Network{}
 	nodes := []models.Node{}
+	unregisteredNodes := []models.UnregisteredNode{}
 
 	// SELECT * FROM `networks`  WHERE (`networks`.`id` = '1') ORDER BY `networks`.`id` ASC LIMIT 1
 	if err := n.sql.GormDb.First(&network, vars["id"]).Error; err != nil {
@@ -105,7 +107,14 @@ func (n *NetworkController) GetNetwork(w http.ResponseWriter, r *http.Request,
 	// Load Settings of Node device.
 	// SELECT * FROM `node_settings`  WHERE (`node_id` IN (1,2))
 	err := n.sql.GormDb.Where("network_refer = ?", network.ID).Preload("Settings").Find(&nodes).Error
-	if err != nil {
+	if err != nil && !gorm.IsRecordNotFoundError(err) {
+		logrus.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = n.sql.GormDb.Where("network_refer = ?", network.ID).Find(&unregisteredNodes).Error
+	if err != nil && !gorm.IsRecordNotFoundError(err) {
 		logrus.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -113,6 +122,7 @@ func (n *NetworkController) GetNetwork(w http.ResponseWriter, r *http.Request,
 
 	// Assign found nodes
 	network.Nodes = nodes
+	network.UnregisteredNodes = unregisteredNodes
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(network)
