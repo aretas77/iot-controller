@@ -131,6 +131,7 @@ func (n *NodeController) GetNodes(w http.ResponseWriter, r *http.Request,
 	nodes := []models.Node{}
 	n.sql.GormDb.Find(&nodes)
 
+	// Gather NodeSettings and Network for all Nodes.
 	for i, node := range nodes {
 		settings := models.NodeSettings{}
 		n.sql.GormDb.Where("id = ?", node.SettingsID).First(&settings)
@@ -146,13 +147,13 @@ func (n *NodeController) GetNodes(w http.ResponseWriter, r *http.Request,
 	json.NewEncoder(w).Encode(nodes)
 }
 
-// AddNode will parse `UnregisteredNode` from the request and check it against
+// RegisterNode will parse `UnregisteredNode` from the request and check it against
 // database to see if such a Node already exists and if it exists - it will
 // register the `Node` and won't create an entry for `UnregisteredNode`.
 //
 // Otherwise, the `UnregisteredNode` will be added to the database and will point
 // to the `Network` it was created and won't point to any of the `Node`s.
-func (n *NodeController) AddNode(w http.ResponseWriter, r *http.Request,
+func (n *NodeController) RegisterNode(w http.ResponseWriter, r *http.Request,
 	next http.HandlerFunc) {
 
 	n.setupHeader(&w)
@@ -187,7 +188,7 @@ func (n *NodeController) AddNode(w http.ResponseWriter, r *http.Request,
 
 		// Node exists and is ready for registration - change Node status and
 		// required fields.
-		if node.Status == models.Acknowledged {
+		if node.Status == models.Acknowledged && node.NetworkRefer == tmpNode.NetworkRefer {
 			logrus.Infof("A Node(ID = %d) is %s and is ready for registration",
 				node.ID, node.Status)
 			logrus.Infof("Update Node(ID = %d) status to %s", node.ID,
@@ -200,6 +201,8 @@ func (n *NodeController) AddNode(w http.ResponseWriter, r *http.Request,
 				return
 			}
 
+			// Nodes status was updated successfully:
+			// 'acknowledged' -> 'registered'.
 			w.WriteHeader(http.StatusOK)
 			return
 		}
@@ -219,23 +222,6 @@ func (n *NodeController) AddNode(w http.ResponseWriter, r *http.Request,
 	// `UnregisteredNode` then a new `UnregisteredNode` entry is created in
 	// a database and thus StatusCreated is returned.
 	w.WriteHeader(http.StatusCreated)
-}
-
-// RegisterNode should add the Node to the specified network.
-func (n *NodeController) RegisterNode(w http.ResponseWriter, r *http.Request,
-	next http.HandlerFunc) {
-
-	n.setupHeader(&w)
-	decoder := json.NewDecoder(r.Body)
-
-	var tmpNode models.UnregisteredNode
-	if err := decoder.Decode(&tmpNode); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-	} else {
-		// Check if a given MAC address exists in Nodes.
-	}
-	// User inputs a MAC address of a device - pass UnregisteredNode object.
-
 }
 
 // UnRegisterNode should remove the Node from our network.
