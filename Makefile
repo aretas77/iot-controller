@@ -1,4 +1,4 @@
-.PHONY: all clean build build-ui
+.PHONY: all clean purge build build-ui build-device
 
 export PWD ?= $(shell pwd)
 export BUILD_DIR ?= $(PWD)/build
@@ -12,8 +12,14 @@ LDFLAGS ?= -ldflags "-installsuffix 'static' -w -s -X main.GitCommit=$(GIT_COMMI
 
 all: clean build build-ui
 
+purge:
+	rm -rf $(BUILD_DIR)/*
+
 clean:
-	rm -rf $(BUILD_DIR)
+	make -C $(PWD)/cmd/device clean
 
 build:
 	@go build $(LDFLAGS) -gcflags "all=-trimpath=${GOPATH}" -o ./build/main cmd/main.go
+
+build-device:
+	make -C $(PWD)/cmd/device build
