@@ -1,24 +1,37 @@
 package main
 
 import (
+	"fmt"
+	"io/ioutil"
 	"os"
 	"sort"
+	"time"
 
+	"github.com/aretas77/iot-controller/device"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
+	"gopkg.in/yaml.v2"
 )
 
 func main() {
+	var data_file string
 
 	app := cli.NewApp()
 	app.Name = "Device Simulator"
 	app.Usage = "Simulating Devices"
 	app.Description = "Simulates devices which are specified in a configuration file."
+	app.EnableBashCompletion = true
+	app.Compiled = time.Now()
+	app.Authors = []*cli.Author{
+		&cli.Author{
+			Name:  "Aretas Paulauskas",
+			Email: "aretas.pau@gmail.com",
+		},
+	}
 	app.Flags = []cli.Flag{
 		&cli.StringFlag{
 			Name:        "network, n",
 			Usage:       "Specify a network where devices belong to",
-			Value:       "",
 			DefaultText: "global",
 		},
 		&cli.StringFlag{
@@ -27,9 +40,10 @@ func main() {
 			Value: "localhost",
 		},
 		&cli.StringFlag{
-			Name:  "data",
-			Usage: "Sensor data for devices",
-			Value: "",
+			Name:        "file, f",
+			Usage:       "Sensor data file for devices",
+			Value:       "configs/device.yaml",
+			Destination: &data_file,
 		},
 		&cli.BoolFlag{
 			Name:  "debug, d",
@@ -45,11 +59,7 @@ func main() {
 				&cli.IntFlag{},
 			},
 			Action: func(c *cli.Context) error {
-				// Read a config file
-
-				// Read data file
-
-				return nil
+				return start(c, data_file)
 			},
 		},
 	}
@@ -64,4 +74,22 @@ func main() {
 	if err != nil {
 		logrus.Fatal(err)
 	}
+}
+
+func start(c *cli.Context, filename string) error {
+
+	config := device.Config{}
+
+	yamlConfig, err := ioutil.ReadFile(filename)
+	if err != nil {
+		logrus.Fatalf("Failed to open file: %s", err)
+	}
+
+	// Parsing configuration file
+	if err := yaml.Unmarshal(yamlConfig, &config); err != nil {
+		logrus.Fatal("Failed to parse yaml config")
+	}
+
+	fmt.Printf("result: %v\n", config)
+	return nil
 }
