@@ -1,20 +1,5 @@
 package hal
 
-const (
-	// Radio chip is on. The chip can receive, transmit or listen.
-	ActiveMode = "active"
-
-	// The CPU is operational and the clock is configurable. WiFi/Bluetooth
-	// are disabled.
-	ModemSleepMode = "modemSleep"
-
-	// The CPU is paused. Any wake-up event will wake the device.
-	LightSleepMode = "lightSleep"
-
-	//
-	DeepSleepMode = "deepSleep"
-)
-
 // PowerConsumption structure defines what can consume power and will
 // specify how much.
 // All values are in mA (mili-Amperes).
@@ -33,6 +18,9 @@ type PowerConsumption struct {
 // attached to a device.
 type HAL interface {
 
+	// Initialize will setup and initialize the simulated device.
+	Initialize() error
+
 	// GetDeviceName will return the name of the device.
 	GetDeviceName() string
 
@@ -48,7 +36,7 @@ type HAL interface {
 	SetPowerMode(mode string) error
 
 	// GetPowerMode will return the devices operating mode.
-	GetPowerMode() (string, error)
+	GetPowerMode() string
 
 	// GetBatteryPercentage will return the battery left percentage.
 	GetBatteryPercentage() float32
