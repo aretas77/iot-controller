@@ -1,0 +1,17 @@
+broker: 
+    server: "172.18.0.3"
+    port: "1883"
+    type: "tcp://"
+devices:
+    device1:
+        name: TempReader1
+        sensors:
+            - bmp180
+        interface: esp32
+        network: "global"
+    device2:
+        name: TempReader2
+        sensors:
+            - bmp180
+        interface: esp32
+        network: "global"
