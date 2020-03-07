@@ -2,15 +2,19 @@ broker:
     server: "172.18.0.3"
     port: "1883"
     type: "tcp://"
+    username: "test"
+    password: "test"
 devices:
     device1:
         name: TempReader1
+        mac: "AA:BB:CC:DD:EE:01"
         sensors:
             - bmp180
         interface: esp32
         network: "global"
     device2:
         name: TempReader2
+        mac: "AA:BB:CC:DD:EE:02"
         sensors:
             - bmp180
         interface: esp32

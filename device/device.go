@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	Acknowledged = "acknowledged"
-	Registered   = "registered"
-	New          = "new"
+	NodeDeviceAcknowledged = "acknowledged"
+	NodeDeviceRegistered   = "registered"
+	NodeDeviceNew          = "new"
 )
 
 // Device states
@@ -40,6 +40,7 @@ type NodeDevice struct {
 	Location   string
 	IpAddress4 string
 	Status     string
+	Network    string
 
 	LastSentGreeting time.Time
 	ReadInterval     time.Duration

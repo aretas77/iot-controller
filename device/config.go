@@ -4,15 +4,18 @@ package device
 // be built.
 type DeviceInfo struct {
 	Name    string
+	MAC     string
 	Sensors []string
 	Network string
 }
 
 type Config struct {
 	Broker struct {
-		Server string
-		Port   string
-		Type   string
+		Server   string
+		Port     string
+		Type     string
+		Username string
+		Password string
 	}
 
 	Devices map[string]DeviceInfo `yaml:devices,omitempty`
