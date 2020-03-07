@@ -4,6 +4,7 @@ import (
 	"errors"
 	"sync"
 
+	"github.com/aretas77/iot-controller/device/hal"
 	"github.com/aretas77/iot-controller/types/mqtt"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/sirupsen/logrus"
@@ -14,6 +15,7 @@ type DeviceController struct {
 	Options     *MQTT.ClientOptions
 	Client      MQTT.Client
 	NoTLSBroker string
+	ListHAL     []string
 
 	// MQTT connections.
 	Plain  mqtt.MQTTConnection
@@ -70,6 +72,9 @@ func (d *DeviceController) Init(host string) error {
 	d.broadcast = make(map[string]chan Message)
 	d.wg = sync.WaitGroup{}
 
+	// Initialize HALs
+	d.ListHAL = append(d.ListHAL, "esp32")
+
 	d.Plain.Options = &MQTT.ClientOptions{}
 	d.Plain.Options.SetProtocolVersion(3)
 	d.Plain.Options.SetClientID("device-simulator")
@@ -109,13 +114,28 @@ func (d *DeviceController) Start(stop chan bool, devs []DeviceInfo) error {
 			IpAddress4: "",
 			Status:     NodeDeviceNew,
 
-			// Lets give each NodeDevice a reference to the main WorkGroup.
+			// Lets give each NodeDevice a reference to the main WorkGroup and
+			// an exit channel.
 			Wg:   &d.wg,
 			Stop: exit,
 
 			// Values derived from the model and adjustable by S-MQTT.
 			ReadInterval: 0,
 			SendInterval: 0,
+		}
+
+		// Need to set the Hardware Abstraction Layer interface for the device.
+		// TODO: make this better, somehow.
+		switch dev.Interface {
+		case "esp32":
+			logrus.Infof("setting interface (%s) for device (%s)",
+				dev.Interface, dev.Name)
+			tempDevice.Hal = &hal.ESP32{}
+			break
+		default:
+			logrus.Infof("interface not found (%s) for device (%s)",
+				dev.Interface, dev.Name)
+			break
 		}
 
 		// One new device going ONLINE!

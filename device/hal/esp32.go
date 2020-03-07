@@ -22,7 +22,6 @@ var (
 )
 
 type ESP32 struct {
-	Name      string // Name of the device using this interface
 	Interface string // Name of this struct
 
 	// TODO: make PowerConsumption dependent on Mode.
@@ -31,9 +30,8 @@ type ESP32 struct {
 	Battery int
 }
 
-func (e *ESP32) Initialize(name string) error {
+func (e *ESP32) Initialize() error {
 	e = &ESP32{
-		Name: name,
 		Power: &PowerConsumption{
 			// All values in mA, taken from ESP32 datasheet.
 			// https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf, page 42.
@@ -54,7 +52,7 @@ func (e *ESP32) Initialize(name string) error {
 }
 
 func (e *ESP32) GetDeviceName() string {
-	return e.Name
+	return ""
 }
 
 func (e *ESP32) GetInterface() string {
@@ -87,6 +85,5 @@ func (e *ESP32) GetPowerMode() string {
 }
 
 func (e *ESP32) GetBatteryPercentage() float32 {
-
 	return 0
 }
