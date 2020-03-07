@@ -10,12 +10,12 @@ devices:
         mac: "AA:BB:CC:DD:EE:01"
         sensors:
             - bmp180
-        interface: esp32
+        interface: "esp32"
         network: "global"
     device2:
         name: TempReader2
         mac: "AA:BB:CC:DD:EE:02"
         sensors:
             - bmp180
-        interface: esp32
+        interface: "esp32"
         network: "global"
