@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/aretas77/iot-controller/types/mqtt"
 	"github.com/aretas77/iot-controller/web/iotctl/controllers"
 	db "github.com/aretas77/iot-controller/web/iotctl/database"
-	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
@@ -25,12 +25,12 @@ type Iotctl struct {
 	broker string
 
 	// MQTT connections.
-	Plain  MQTTConnection
-	Secure MQTTConnection
+	Plain  mqtt.MQTTConnection
+	Secure mqtt.MQTTConnection
 
 	// MQTT topics.
-	PlainTopics  []TopicHandler
-	SecureTopics []TopicHandler
+	PlainTopics  []mqtt.TopicHandler
+	SecureTopics []mqtt.TopicHandler
 
 	// MQTT secret for authentication.
 	mqttSecret string
@@ -47,17 +47,6 @@ type Iotctl struct {
 	RoutePrefix   string
 
 	Debug *DebugInfo
-}
-
-// MQTTConnection will represent a single MQTT connection with its options.
-type MQTTConnection struct {
-	Options *MQTT.ClientOptions
-	Client  MQTT.Client
-}
-
-type TopicHandler struct {
-	Topic   string
-	Handler func(c MQTT.Client, msg MQTT.Message)
 }
 
 // DebugInfo for debugging related information.
@@ -82,6 +71,8 @@ func (app *Iotctl) Start() error {
 
 	// Start a goroutine for handling the Greetings sent from a device.
 	go app.greetingQueueLoop(app.die)
+
+	// TODO: Start a goroutine for monitoring Node's and UnregisteredNode's.
 
 	return nil
 }

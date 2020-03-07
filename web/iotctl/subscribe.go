@@ -3,13 +3,14 @@ package iotctl
 import (
 	"errors"
 
+	"github.com/aretas77/iot-controller/types/mqtt"
 	"github.com/sirupsen/logrus"
 )
 
 // subscribePlainTopics will subscribe to known topics using plain
 // connection.
 func (app *Iotctl) subscribePlainTopics() error {
-	app.PlainTopics = []TopicHandler{
+	app.PlainTopics = []mqtt.TopicHandler{
 		{"init/psw/request", app.OnMessagePswRequest},
 	}
 
@@ -29,7 +30,7 @@ func (app *Iotctl) subscribePlainTopics() error {
 }
 
 func (app *Iotctl) subscribeSecureTopics() error {
-	app.SecureTopics = []TopicHandler{
+	app.SecureTopics = []mqtt.TopicHandler{
 		{"node/greeting", nil},
 		{"node/stats", nil},
 		{"node/model/update", nil},

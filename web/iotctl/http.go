@@ -39,6 +39,8 @@ func (app *Iotctl) setupRoutes() {
 	logrus.Debug("Setting up Routes")
 	app.Router = mux.NewRouter()
 
+	// Currently everything is as admin.
+
 	app.setupNode()
 	app.setupUser()
 	app.setupNetwork()
@@ -76,7 +78,7 @@ func (app *Iotctl) setupNode() {
 	app.Router.Handle(
 		"/nodes",
 		negroni.New(
-			negroni.HandlerFunc(app.Controller.NodeCtl.AddNode),
+			negroni.HandlerFunc(app.Controller.NodeCtl.RegisterNode),
 		)).Methods("POST")
 }
 
