@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"sort"
@@ -90,6 +89,25 @@ func start(c *cli.Context, filename string) error {
 		logrus.Fatal("Failed to parse yaml config")
 	}
 
-	fmt.Printf("result: %v\n", config)
+	// Need to map devices from map to list - we don't need a map.
+	devices := []device.DeviceInfo{}
+	for _, dev := range config.Devices {
+		devices = append(devices, device.DeviceInfo{
+			Name:    dev.Name,
+			Sensors: dev.Sensors,
+			Network: dev.Network,
+		})
+		logrus.Infof("Adding a device: %v", dev)
+	}
+
+	controller := &device.DeviceController{}
+	if err := controller.Init("tcp://172.18.0.3:1883"); err != nil {
+		return err
+	}
+
+	if err = controller.Start(nil, devices); err != nil {
+		return err
+	}
+
 	return nil
 }
