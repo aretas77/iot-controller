@@ -91,17 +91,27 @@ func start(c *cli.Context, filename string) error {
 
 	// Need to map devices from map to list - we don't need a map.
 	devices := []device.DeviceInfo{}
+	dev_index := 0
 	for _, dev := range config.Devices {
 		devices = append(devices, device.DeviceInfo{
-			Name:    dev.Name,
-			Sensors: dev.Sensors,
-			Network: dev.Network,
+			Name:      dev.Name,
+			MAC:       dev.MAC,
+			Sensors:   dev.Sensors,
+			Network:   dev.Network,
+			Interface: dev.Interface,
 		})
-		logrus.Infof("Adding a device: %v", dev)
+
+		logrus.WithFields(logrus.Fields{
+			"name":      devices[dev_index].Name,
+			"MAC":       devices[dev_index].MAC,
+			"sensors":   devices[dev_index].Sensors,
+			"network":   devices[dev_index].Network,
+			"interface": devices[dev_index].Interface,
+		}).Infof("adding a device")
 	}
 
 	controller := &device.DeviceController{}
-	if err := controller.Init("tcp://172.18.0.3:1883"); err != nil {
+	if err := controller.Init(config.Broker.Server); err != nil {
 		return err
 	}
 

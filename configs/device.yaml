@@ -1,8 +1,6 @@
 broker: 
-    server: "172.18.0.3"
-    port: "1883"
-    type: "tcp://"
-    username: "test"
+    server: "tcp://172.18.0.3:1883"
+    username: "device-sim"
     password: "test"
 devices:
     device1:
