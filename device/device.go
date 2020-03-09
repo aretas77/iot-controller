@@ -1,10 +1,14 @@
 package device
 
 import (
+	"encoding/json"
+	"fmt"
 	"sync"
 	"time"
 
 	"github.com/aretas77/iot-controller/device/hal"
+	"github.com/aretas77/iot-controller/types/mqtt"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -47,7 +51,7 @@ type NodeDevice struct {
 	SendInterval     time.Duration
 
 	Wg  *sync.WaitGroup
-	Hal *hal.HAL // What Hardware Abstraction Layer is used
+	Hal hal.HAL // What Hardware Abstraction Layer is used
 
 	ReceivedAck chan struct{}
 	Stop        chan struct{}
@@ -56,10 +60,68 @@ type NodeDevice struct {
 	Receive chan Message
 }
 
+// Start is essentially a 'state machine' for single NodeDevice which
+// will transition between states.
+// The NodeDevice will run as a goroutine which will have its own:
+//	- ReceiveLoop
+func (n *NodeDevice) Start() {
+	n.ReceivedAck = make(chan struct{})
+	ticker := time.NewTicker(3 * time.Second)
+
+	// will handle the broadcasted messages from main device controller
+	go n.ReceiveLoop()
+
+handshake:
+	for {
+		select {
+		case <-n.ReceivedAck:
+			logrus.Infof("received ACK %s", n.Mac)
+			break handshake
+		case <-ticker.C:
+			// publish a greeting
+			logrus.Infof("sending a greeting %s", n.Mac)
+			n.PublishGreeting()
+		case <-n.Stop:
+			ticker.Stop()
+			n.Wg.Done()
+			return
+		}
+	}
+
+	return
+}
+
+func (n *NodeDevice) ReceiveLoop() {
+	logrus.Debugf("receive loop running for %s", n.Mac)
+	for {
+		select {
+		case msg := <-n.Receive:
+			logrus.Infof("%s <- %s. Node: %s. Payload:\n%s", n.Mac, msg.Topic, msg.Node,
+				msg.Payload)
+
+			n.ReceivedAck <- struct{}{}
+		case <-n.Stop:
+			return
+		}
+	}
+}
+
 // PublishGreeting prepares a greeting message which will be sent to
 // IoT controller which will add it as an `acknowledged` Node.
 func (n *NodeDevice) PublishGreeting() {
+	payload, _ := json.Marshal(&mqtt.MessageGreeting{
+		MAC:     n.Mac,
+		Name:    n.Name,
+		Network: n.Network,
+	})
 
+	// Send to the main MQTT send channel
+	n.Send <- Message{
+		Node:    "",
+		Topic:   fmt.Sprintf("control/%s/%s/greeting", n.Network, n.Mac),
+		QoS:     0,
+		Payload: payload,
+	}
 	return
 }
 
@@ -67,8 +129,4 @@ func (n *NodeDevice) PublishGreeting() {
 // Reinforcement Learning.
 func (n *NodeDevice) PublishSensorData() {
 
-}
-
-func (n *NodeDevice) Start() {
-	n.ReceivedAck = make(chan struct{})
 }
