@@ -35,7 +35,7 @@ type DeviceController struct {
 }
 
 type Message struct {
-	Node    string
+	Mac     string
 	Topic   string
 	QoS     byte
 	Payload []byte
@@ -51,7 +51,7 @@ func (d *DeviceController) PublishLoop(stop chan bool) {
 			logrus.Info("exiting PublishLoop")
 			return
 		case packet := <-d.mqttQueue:
-			logrus.Infof("%s -> %s (len:%d)", packet.Node, packet.Topic, len(packet.Payload))
+			logrus.Infof("%s -> %s (len:%d)", packet.Mac, packet.Topic, len(packet.Payload))
 			d.Plain.Client.Publish(packet.Topic, packet.QoS, false, packet.Payload)
 		}
 	}

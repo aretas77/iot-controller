@@ -96,10 +96,18 @@ func (n *NodeDevice) ReceiveLoop() {
 	for {
 		select {
 		case msg := <-n.Receive:
-			logrus.Infof("%s <- %s. Node: %s. Payload:\n%s", n.Mac, msg.Topic, msg.Node,
-				msg.Payload)
 
-			n.ReceivedAck <- struct{}{}
+			if msg.Topic == "ack" {
+				n.ReceivedAck <- struct{}{}
+
+				// We now know that the device is acknowledged by the server
+				// as existing.
+				n.Status = NodeDeviceAcknowledged
+				logrus.Infof("Device (%s) status (%s) -> (%s)", n.Mac,
+					NodeDeviceNew, n.Status)
+			} else {
+				logrus.Infof("%s <- %s. Payload:\n%s", n.Mac, msg.Topic, msg.Payload)
+			}
 		case <-n.Stop:
 			return
 		}
@@ -117,7 +125,7 @@ func (n *NodeDevice) PublishGreeting() {
 
 	// Send to the main MQTT send channel
 	n.Send <- Message{
-		Node:    "",
+		Mac:     n.Mac,
 		Topic:   fmt.Sprintf("control/%s/%s/greeting", n.Network, n.Mac),
 		QoS:     0,
 		Payload: payload,

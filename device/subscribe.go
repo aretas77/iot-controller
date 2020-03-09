@@ -9,8 +9,8 @@ import (
 
 func (d *DeviceController) subscribeDevicePlainTopics() error {
 	d.PlainTopics = []mqtt.TopicHandler{
-		{"control/+/+/ack", d.MessageHandler},
-		{"test", d.MessageHandler},
+		{"control/+/+/ack", d.HandleAck},
+		{"test", d.HandleBroadcast},
 	}
 
 	for _, t := range d.PlainTopics {
