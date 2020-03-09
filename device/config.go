@@ -13,8 +13,6 @@ type DeviceInfo struct {
 type Config struct {
 	Broker struct {
 		Server   string
-		Port     string
-		Type     string
 		Username string
 		Password string
 	}
