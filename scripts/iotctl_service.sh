@@ -14,13 +14,10 @@ send_ack() {
         echo "empty mac" && exit 1
     fi
 
-    ackTopic="control/${mac}/global/ack"
+    ackTopic="control/global/${mac}/ack"
     
 cat > ${ackFile} << EOL
-{
-    "mac": "${mac}",
-    "network": "global",
-}
+{ "mac": "${mac}", "network": "global" }
 EOL
 
     mosquitto_pub -u mock -P test -h $server -p $port -t $ackTopic -f ack.json
