@@ -12,6 +12,7 @@ import (
 func (app *Iotctl) subscribePlainTopics() error {
 	app.PlainTopics = []mqtt.TopicHandler{
 		{"init/psw/request", app.OnMessagePswRequest},
+		{"control/+/+/greeting", app.OnMessageGreeting},
 	}
 
 	if !app.Plain.Client.IsConnected() {
@@ -31,7 +32,6 @@ func (app *Iotctl) subscribePlainTopics() error {
 
 func (app *Iotctl) subscribeSecureTopics() error {
 	app.SecureTopics = []mqtt.TopicHandler{
-		{"node/greeting", nil},
 		{"node/stats", nil},
 		{"node/model/update", nil},
 		{"node/model/", nil},
