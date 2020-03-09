@@ -2,6 +2,7 @@ package device
 
 import (
 	"errors"
+	"runtime"
 	"sync"
 
 	"github.com/aretas77/iot-controller/device/hal"
@@ -12,8 +13,6 @@ import (
 
 // DeviceController is the main struct for managing whole simulation.
 type DeviceController struct {
-	Options     *MQTT.ClientOptions
-	Client      MQTT.Client
 	NoTLSBroker string
 	ListHAL     []string
 
@@ -31,7 +30,6 @@ type DeviceController struct {
 	// Is used for sending out messages to all devices
 	broadcast map[string]chan Message
 	mqttQueue chan Message
-	kill      bool
 	stop      chan bool
 	wg        sync.WaitGroup
 }
@@ -43,26 +41,18 @@ type Message struct {
 	Payload []byte
 }
 
+// PublishLoop collects data from devices using `mqttQueue` channel and
+// published it on the MQTT client.
 func (d *DeviceController) PublishLoop(stop chan bool) {
 	for {
 		select {
 		case <-stop:
+			// if stop is nil - will block forever.
 			logrus.Info("exiting PublishLoop")
 			return
 		case packet := <-d.mqttQueue:
 			logrus.Infof("%s -> %s (len:%d)", packet.Node, packet.Topic, len(packet.Payload))
-		}
-	}
-}
-
-// MessageHandler will handle the MQTT messages. When a message is received,
-// the handler will broadcast the message to all Nodes.
-// Nodes should only process their own messages.
-func (d *DeviceController) MessageHandler(c MQTT.Client, msg MQTT.Message) {
-	for _, v := range d.broadcast {
-		v <- Message{
-			Topic:   msg.Topic(),
-			Payload: msg.Payload(),
+			d.Plain.Client.Publish(packet.Topic, packet.QoS, false, packet.Payload)
 		}
 	}
 }
@@ -73,13 +63,14 @@ func (d *DeviceController) Init(host string) error {
 	d.wg = sync.WaitGroup{}
 
 	// Initialize HALs
-	d.ListHAL = append(d.ListHAL, "esp32")
+	//d.ListHAL = append(d.ListHAL, "esp32")
 
 	d.Plain.Options = &MQTT.ClientOptions{}
 	d.Plain.Options.SetProtocolVersion(3)
 	d.Plain.Options.SetClientID("device-simulator")
 	d.Plain.Options.SetCleanSession(true)
 	d.Plain.Options.SetOrderMatters(true)
+	d.Plain.Options.SetAutoReconnect(true)
 	d.Plain.Options.SetUsername("devices")
 	d.Plain.Options.SetPassword("test")
 	d.Plain.Options.AddBroker(host)
@@ -141,12 +132,17 @@ func (d *DeviceController) Start(stop chan bool, devs []DeviceInfo) error {
 		// One new device going ONLINE!
 		d.wg.Add(1)
 
-		tempDevice.Start()
+		// This will start the device in the first mode: Handshake mode.
+		go tempDevice.Start()
 	}
 
+	// There should be a single instance of PublishLoop.
 	go d.PublishLoop(stop)
 
-	//<-stop
+	logrus.Infof("active goroutines: %d", runtime.NumGoroutine())
+
+	// nil stop will block forever
+	<-stop
 
 	close(exit)
 	d.wg.Wait()
