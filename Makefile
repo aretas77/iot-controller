@@ -7,9 +7,9 @@ BUILD_TIME ?= $(shell date -u +%Y-%m-%d@%H:%M:%S)
 HOSTNAME ?= $(shell hostname)
 LDFLAGS ?= -ldflags "-installsuffix 'static' -w -s -X main.GitCommit=$(GIT_COMMIT) -X main.Date=$(BUILD_TIME) -X main.Host=$(HOSTNAME)"
 
-.PHONY: all clean purge build build-ui build-device
+.PHONY: all clean purge build
 
-all: clean build build-ui build-device
+all: build
 
 purge:
 	rm -rf $(BUILD_DIR)/*
@@ -19,10 +19,8 @@ clean:
 	make -C $(PWD)/cmd/web clean
 
 build:
-	@go build $(LDFLAGS) -gcflags "all=-trimpath=${GOPATH}" -o ./build/main cmd/main.go
-
-build-device:
+	make -C $(PWD)/cmd/web build
 	make -C $(PWD)/cmd/device build
 
-start-services:
+start:
 	@docker-compose up --remove-orphans

@@ -78,6 +78,7 @@ func main() {
 func start(c *cli.Context, filename string) error {
 
 	config := device.Config{}
+	logrus.SetLevel(logrus.DebugLevel)
 
 	yamlConfig, err := ioutil.ReadFile(filename)
 	if err != nil {
