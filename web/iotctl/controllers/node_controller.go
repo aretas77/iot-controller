@@ -8,7 +8,7 @@ import (
 	"time"
 
 	db "github.com/aretas77/iot-controller/web/iotctl/database"
-	models "github.com/aretas77/iot-controller/web/iotctl/database/models"
+	"github.com/aretas77/iot-controller/web/iotctl/database/models"
 	mysql "github.com/aretas77/iot-controller/web/iotctl/database/mysql"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
@@ -150,6 +150,10 @@ func (n *NodeController) GetNodes(w http.ResponseWriter, r *http.Request,
 // database to see if such a Node already exists and if it exists - it will
 // register the `Node` and won't create an entry for `UnregisteredNode`.
 //
+// 2020-03-12 update: RegisterNode will create an `UnregisteredNode` entry
+// and wait for an incoming device Greeting. When the Greeting is received for
+// this entry, we remove the `UnregisteredNode` entry and add a new `Node`.
+//
 // Otherwise, the `UnregisteredNode` will be added to the database and will point
 // to the `Network` it was created and won't point to any of the `Node`s.
 func (n *NodeController) RegisterNode(w http.ResponseWriter, r *http.Request,
@@ -169,7 +173,9 @@ func (n *NodeController) RegisterNode(w http.ResponseWriter, r *http.Request,
 			return
 		}
 
-		// Check if a Node with current MAC address exists.
+		// Check if a Node with current MAC address exists. If no such Node
+		// exists - we still continue and we will add an `UnregisteredNode`
+		// later on.
 		node := models.Node{}
 		err := n.sql.GormDb.Where("mac = ?", tmpNode.Mac).Find(&node).Error
 		if err != nil && !gorm.IsRecordNotFoundError(err) {
@@ -179,6 +185,9 @@ func (n *NodeController) RegisterNode(w http.ResponseWriter, r *http.Request,
 		}
 
 		// The Node exists and its status is Registered - ignore this request.
+		//
+		// It means that the Node was acknowledged by the server and is
+		// assigned to a specific network.
 		if node.Status != "" && node.Status == models.Registered {
 			logrus.Infof("A Node(ID = %d) is already %s", node.ID, node.Status)
 			w.WriteHeader(http.StatusBadRequest)
@@ -220,6 +229,8 @@ func (n *NodeController) RegisterNode(w http.ResponseWriter, r *http.Request,
 	// If there are no existing `Node` with the same MAC address as an
 	// `UnregisteredNode` then a new `UnregisteredNode` entry is created in
 	// a database and thus StatusCreated is returned.
+	// `UnregisteredNode` will wait for a Node Greeting message to create
+	// a Node entry.
 	w.WriteHeader(http.StatusCreated)
 }
 

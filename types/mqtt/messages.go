@@ -5,12 +5,12 @@ package mqtt
 // TODO: currently, we need to manually set the Network name on the device,
 // however, we need to make it so that network is returned by the server.
 type MessageGreeting struct {
-	MAC     string `json:"mac"`
-	Name    string `json:"name"`
-	Network string `json:"network"`
+	MAC        string `json:"mac"`
+	Name       string `json:"name"`
+	IpAddress4 string `json:"ip_address4"`
 }
 
-// MessageAck is sent by the server after receiving a MessageGreetinge from
+// `MessageAck` is sent by the server after receiving a `MessageGreeting` from
 // the device.
 type MessageAck struct {
 	MAC     string `json:"mac"`
