@@ -98,13 +98,22 @@ func (n *NodeDevice) ReceiveLoop() {
 		case msg := <-n.Receive:
 
 			if msg.Topic == "ack" {
-				n.ReceivedAck <- struct{}{}
+				ack := mqtt.MessageAck{}
+				if err := json.Unmarshal(msg.Payload, &ack); err != nil {
+					logrus.WithError(err).WithFields(logrus.Fields{
+						"topic": msg.Topic,
+						"msg":   msg.Payload,
+					}).Error("failed to unmarshal ack message")
+				}
 
 				// We now know that the device is acknowledged by the server
 				// as existing.
-				n.Status = NodeDeviceAcknowledged
+				n.Status = NodeDeviceRegistered
+				n.Network = ack.Network
 				logrus.Infof("Device (%s) status (%s) -> (%s)", n.Mac,
 					NodeDeviceNew, n.Status)
+
+				n.ReceivedAck <- struct{}{}
 			} else {
 				logrus.Infof("%s <- %s. Payload:\n%s", n.Mac, msg.Topic, msg.Payload)
 			}
@@ -118,9 +127,9 @@ func (n *NodeDevice) ReceiveLoop() {
 // IoT controller which will add it as an `acknowledged` Node.
 func (n *NodeDevice) PublishGreeting() {
 	payload, _ := json.Marshal(&mqtt.MessageGreeting{
-		MAC:     n.Mac,
-		Name:    n.Name,
-		Network: n.Network,
+		MAC:        n.Mac,
+		Name:       n.Name,
+		IpAddress4: "172.16.0.5",
 	})
 
 	// Send to the main MQTT send channel

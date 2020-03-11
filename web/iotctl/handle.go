@@ -20,14 +20,14 @@ func (app *Iotctl) OnMessagePswRequest(client MQTT.Client, msg MQTT.Message) {
 
 func (app *Iotctl) OnMessageGreeting(client MQTT.Client, msg MQTT.Message) {
 	logrus.Infof("plain got message on: %s", msg.Topic())
-	payload := mqtt.MessageAck{}
+	payload := mqtt.MessageGreeting{}
 
 	// check if a valid network ID is provided
 	if err := json.Unmarshal(msg.Payload(), &payload); err != nil {
 		logrus.WithError(err).WithFields(logrus.Fields{
 			"topic": msg.Topic,
 			"msg":   msg.Payload,
-		}).Error("failed to unmarshal ack message")
+		}).Error("failed to unmarshal greeting message")
 		return
 	}
 
