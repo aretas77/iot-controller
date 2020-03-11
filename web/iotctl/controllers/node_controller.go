@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 	"time"
@@ -23,21 +24,19 @@ type NodeController struct {
 	sql *mysql.MySql
 }
 
-func (n *NodeController) Init() error {
+func (n *NodeController) Init() (err error) {
 	if n.Database == nil {
-		logrus.Error("NodeController: Database is nil!")
+		return errors.New("NodeController: Database is nil!")
 	}
 
-	if n.Database.GetMySql() == nil {
+	if n.sql, err = n.Database.GetMySql(); err != nil {
 		logrus.Error("NodeController: failed to get MySQL instance")
-	} else {
-		n.sql = n.Database.GetMySql()
+		return err
 	}
 
 	n.migrateNodeGorm()
-
 	logrus.Debug("Initialized NodeController")
-	return nil
+	return
 }
 
 func (n *NodeController) migrateNodeGorm() error {

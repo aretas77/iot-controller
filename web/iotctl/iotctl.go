@@ -7,6 +7,7 @@ import (
 	"github.com/aretas77/iot-controller/types/mqtt"
 	"github.com/aretas77/iot-controller/web/iotctl/controllers"
 	db "github.com/aretas77/iot-controller/web/iotctl/database"
+	mysql "github.com/aretas77/iot-controller/web/iotctl/database/mysql"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
@@ -18,6 +19,8 @@ type Iotctl struct {
 	Controller *controllers.ApiController
 	Database   *db.Database
 	UseGorm    bool
+
+	sql *mysql.MySql
 
 	die chan struct{}
 	wg  sync.WaitGroup

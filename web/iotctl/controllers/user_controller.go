@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	db "github.com/aretas77/iot-controller/web/iotctl/database"
@@ -20,19 +21,17 @@ type UserController struct {
 	sql *mysql.MySql
 }
 
-func (u *UserController) Init() error {
+func (u *UserController) Init() (err error) {
 	if u.Database == nil {
-		logrus.Error("UserController: Database is nil!")
+		return errors.New("UserController: Database is nil!")
 	}
 
-	if u.Database.GetMySql() == nil {
+	if u.sql, err = u.Database.GetMySql(); err != nil {
 		logrus.Error("UserController: failed to get MySQL instance")
-	} else {
-		u.sql = u.Database.GetMySql()
+		return err
 	}
 
 	u.migrateUserGorm()
-
 	logrus.Debug("Initialized UserController")
 	return nil
 }

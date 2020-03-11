@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	db "github.com/aretas77/iot-controller/web/iotctl/database"
@@ -21,21 +22,19 @@ type NetworkController struct {
 	sql *mysql.MySql
 }
 
-func (n *NetworkController) Init() error {
+func (n *NetworkController) Init() (err error) {
 	if n.Database == nil {
-		logrus.Error("NetworkController: Database is nil!")
+		return errors.New("NetworkController: Database is nil!")
 	}
 
-	if n.Database.GetMySql() == nil {
+	if n.sql, err = n.Database.GetMySql(); err != nil {
 		logrus.Error("NetworkController: failed to get MySQL instance")
-	} else {
-		n.sql = n.Database.GetMySql()
+		return err
 	}
 
 	n.migrateNetworkGorm()
-
 	logrus.Debug("Initialized NetworkController")
-	return nil
+	return
 }
 
 func (n *NetworkController) migrateNetworkGorm() error {

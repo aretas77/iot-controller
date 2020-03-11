@@ -43,12 +43,18 @@ func (app *Iotctl) initQueues() error {
 	return nil
 }
 
-func (app *Iotctl) initServices() error {
+func (app *Iotctl) initServices() (err error) {
 
-	if err := app.Controller.Init(app.Database); err != nil {
-		logrus.Error("Failed to Initialize Controllers")
-		return err
+	if err = app.Controller.Init(app.Database); err != nil {
+		logrus.Error("Failed to initialize Controllers")
+		return
 	}
 
-	return nil
+	// XXX: this looks ugly, fuuuu
+	if app.sql, err = app.Database.GetMySql(); err != nil {
+		logrus.Error("Failed to assign Gorm Database to Iotctl struct")
+		return
+	}
+
+	return
 }
