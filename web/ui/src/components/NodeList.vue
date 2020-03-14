@@ -1,14 +1,22 @@
 <template>
-  <div>
-    <b-progress-bar
-      v-if="isLoading"
-      label="Loading nodes..."
-      :value="value"
-      :max=100
-      animated>
-    </b-progress-bar>
+  <div class="h-100">
+    <b-container v-if="isLoading" class="mh-100">
+      <b-progress-bar
+        label="Loading nodes..."
+        :value="value"
+        :max=100
+        animated>
+      </b-progress-bar>
+    </b-container>
 
-    <div v-else>
+    <b-container fluid class="node-list-container" v-else>
+      <b-row class="m-3">
+        <b-col col class="d-flex align-items-start">
+          <router-link to="/">
+            <b-button>Button</b-button>
+          </router-link>
+        </b-col>
+      </b-row>
       <div v-if="nodes.length === 0" class="node-preview">
         No nodes are added.
       </div>
@@ -16,9 +24,9 @@
         v-for="(node, index) in nodes"
         :node="node"
         :key="node.mac + index"
-      />
+        />
       <VPagination :pages="pages" :currentPage.sync="currentPage" />
-    </div>
+    </b-container>
   </div>
 </template>
 
@@ -57,6 +65,11 @@ export default {
     }
   },
   computed: {
+    nodeCreate () {
+      return {
+        name: 'createNode'
+      }
+    },
     listConfig () {
       const { type } = this
       const filters = {
@@ -108,3 +121,7 @@ export default {
   }
 }
 </script>
+
+<style>
+
+</style>

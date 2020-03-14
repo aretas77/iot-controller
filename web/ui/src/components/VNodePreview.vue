@@ -1,12 +1,20 @@
 <template>
-  <div class="node-preview">
-    <NodeMeta isPreview :node="node" />
-    <router-link :to="nodeLink" class="preview-link">
-      <h1 v-text="node.name" />
-      <p v-text="node.mac" />
-      <span>Read more...</span>
-    </router-link>
-  </div>
+  <b-container fluid class="node-preview-container">
+    <b-row class="m-3 node-preview-row ">
+      <b-col cols=8 class="d-flex align-items-start">
+        <router-link :to="nodeLink" class="preview-link">
+          <h3 v-text="node.name" />
+          <p v-text="node.mac" />
+        </router-link>
+      </b-col>
+
+      <b-col cols=4>
+        <NodeMeta isPreview :node="node" />
+      </b-col>
+
+    </b-row>
+    <hr/>
+  </b-container>
 </template>
 
 <script>
@@ -32,3 +40,15 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+.node-preview-container {
+  margin: 7px;
+}
+
+.node-preview-row {
+}
+
+.preview-link {
+}
+</style>
