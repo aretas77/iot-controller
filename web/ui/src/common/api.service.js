@@ -19,6 +19,8 @@ const ApiService = {
     })
   },
 
+  // TODO: maybe transfer more specific calls to upper layer (e.g. NodeService
+  // or any other service)?
   get (resource, slug = '') {
     var params = null
     if (slug.filters != null && slug.filters.limit != null) {
