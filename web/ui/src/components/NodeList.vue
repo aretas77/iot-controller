@@ -5,6 +5,11 @@
       <div v-if="nodes.length === 0" class="node-preview">
         No nodes are added.
       </div>
+      <IotctlNodePreview
+        v-for="(node, index) in nodes"
+        :node="node"
+        :key="node.mac + index"
+      />
       <VPagination :pages="pages" :currentPage.sync="currentPage" />
     </div>
   </div>
@@ -12,12 +17,14 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { NODE_GET_ALL } from '../store/actions.type'
+import IotctlNodePreview from './VNodePreview.vue'
 import VPagination from './VPagination.vue'
+import { FETCH_NODES } from '../store/actions.type'
 
 export default {
   name: 'NodeList',
   components: {
+    IotctlNodePreview,
     VPagination
   },
   props: {
@@ -25,6 +32,10 @@ export default {
       type: String,
       required: false,
       default: 'all'
+    },
+    id: {
+      type: Number,
+      required: false
     },
     itemsPerPage: {
       type: Number,
@@ -44,7 +55,9 @@ export default {
         offset: (this.currentPage - 1) * this.itemsPerPage,
         limit: this.itemsPerPage
       }
-
+      if (this.id) {
+        filters.id = this.id
+      }
       return {
         type,
         filters
@@ -62,7 +75,7 @@ export default {
   },
   methods: {
     fetchNodes () {
-      this.$store.dispatch(NODE_GET_ALL, this.listConfig)
+      this.$store.dispatch(FETCH_NODES, this.listConfig)
     },
     resetPagination () {
       this.currentPage = 1
@@ -71,6 +84,10 @@ export default {
   watch: {
     currentPage (newValue) {
       this.listConfig.filters.offset = (newValue - 1) * this.itemsPerPage
+      this.fetchNodes()
+    },
+    type () {
+      this.resetPagination()
       this.fetchNodes()
     }
   },
