@@ -8,25 +8,48 @@ const ApiService = {
     Vue.use(VueAxios, axios)
     Vue.axios.defaults.baseURL = API_URL
   },
+
   setHeader () {
     Vue.axios.defaults.headers.common.Authorization = 'Token ad'
   },
+
   query (resource, params) {
     return Vue.axios.get(resource, params).catch(error => {
       throw new Error(`[Iotctl] ApiService ${error}`)
     })
   },
+
   get (resource, slug = '') {
-    return Vue.axios.get(`${resource}/${slug}`).catch(error => {
+    var params = null
+    if (slug.filters != null && slug.filters.limit != null) {
+      params = {
+        offset: slug.filters.offset,
+        limit: slug.filters.limit
+      }
+    }
+
+    var requestUrl
+    if (params == null) {
+      requestUrl = `${resource}/${slug}`
+    } else {
+      requestUrl = `${resource}`
+    }
+
+    return Vue.axios.get(requestUrl, {
+      params
+    }).catch(error => {
       throw new Error(`[Iotctl] ApiService ${error}`)
     })
   },
+
   post (resource, params) {
     return Vue.axios.post(`${resource}`, params)
   },
+
   update (resource, slug, params) {
     return Vue.axios.put(`${resource}/${slug}`, params)
   },
+
   delete (resource) {
     return Vue.axios.delete(`${resource}/${resource}`).catch(error => {
       throw new Error(`[Iotctl] ApiService ${error}`)
@@ -36,6 +59,7 @@ const ApiService = {
 
 export default ApiService
 
+// An exported Wrapper of ApiService.
 export const NodesService = {
   // Will run a query on nodes.
   query (type, params) {
