@@ -5,13 +5,25 @@
         <h1>{{ node.name }}</h1>
       </div>
     </div>
-    <div class="container page">
-      <div class="row node-content">
-      </div>
-    </div>
-    <hr />
-    <div class='node-actions'>
-      <NodeMeta :node='node' :actions='true'></NodeMeta>
+    <div>
+      <b-tabs content-class="mt-3">
+        <b-tab title="Statistics" active>
+          <div class="container page">
+            <div class="row node-content">
+            </div>
+          </div>
+        </b-tab>
+
+        <b-tab title="Models">
+
+        </b-tab>
+
+        <b-tab title="Information">
+          <div class='node-actions'>
+            <NodeMeta :node='node' :actions='true'></NodeMeta>
+          </div>
+        </b-tab>
+      </b-tabs>
     </div>
   </div>
 </template>
@@ -27,7 +39,7 @@ export default {
   name: 'iotctl-node',
   props: {
     slug: {
-      type: Number,
+      type: [Number, String],
       required: true
     }
   },
@@ -52,5 +64,4 @@ export default {
     }
   }
 }
-
 </script>
