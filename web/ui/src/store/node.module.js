@@ -31,21 +31,24 @@ export const state = { ...initialState }
 export const actions = {
   // FETCH_NODE get node by its ID.
   async [FETCH_NODE] (context, nodeSlug, prevNode) {
+    console.log('FETCH_NODE start')
     // avoid additional network call if node exists
     if (prevNode !== undefined) {
       return context.commit(SET_NODE, prevNode)
     }
     const { data } = await NodesService.get(nodeSlug)
-    context.commit(SET_NODE, data.node)
+    context.commit(SET_NODE, data)
     return data
   },
+
   // NODE_GET_ALL fetches all Node devices.
   async [NODE_GET_ALL] (context, nodeSlug) {
     console.log('NODE_GET_ALL start')
     const { data } = await NodesService.get(nodeSlug)
-    context.commit(SET_NODES, data.nodes)
-    return data.nodes
+    context.commit(SET_NODES, data)
+    return data
   },
+
   // FETCH_NODES fetches Node devices by given filters.
   [FETCH_NODES] ({ commit }, params) {
     console.log('FETCH_NODES start')
@@ -81,9 +84,9 @@ export const mutations = {
   [FETCH_START] (state) {
     state.isLoading = true
   },
-  [FETCH_END] (state, { nodes, nodesCount }) {
+  [FETCH_END] (state, { nodes }) {
     state.nodes = nodes
-    state.nodesCount = nodesCount
+    state.nodesCount = nodes.length
     state.isLoading = false
   },
   [RESET_STATE] () {

@@ -22,9 +22,14 @@ const getters = {
   }
 }
 
+// actions for auth should provide some way of:
+//  - Login
+//  - Logout
+//  - Check Authentication header
+//  - Register a new user
 const actions = {
   [LOGIN] (context, credentials) {
-    console.log('hello ' + credentials)
+    console.log('hello ' + credentials.email)
     return new Promise(resolve => {
       ApiService.post('users/login', { user: credentials })
         .then(({ data }) => {
@@ -57,6 +62,7 @@ const actions = {
 
 const mutations = {
   [SET_ERROR] (state, error) {
+    console.log('Setting SET_ERROR: ' + error)
     state.errors = error
   },
   [SET_AUTH] (state, user) {
