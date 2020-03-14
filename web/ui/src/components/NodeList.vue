@@ -1,5 +1,5 @@
 <template>
-  <div class="h-100">
+  <div>
     <b-container v-if="isLoading" class="mh-100">
       <b-progress-bar
         label="Loading nodes..."
@@ -17,14 +17,19 @@
           </router-link>
         </b-col>
       </b-row>
-      <div v-if="nodes.length === 0" class="node-preview">
-        No nodes are added.
-      </div>
-      <IotctlNodePreview
-        v-for="(node, index) in nodes"
-        :node="node"
-        :key="node.mac + index"
-        />
+
+      <b-row>
+        <b-col>
+          <div v-if="nodes.length === 0" class="node-preview">
+            No nodes are added.
+          </div>
+          <IotctlNodePreview
+            v-for="(node, index) in nodes"
+            :node="node"
+            :key="node.mac + index"
+            />
+        </b-col>
+      </b-row>
       <VPagination :pages="pages" :currentPage.sync="currentPage" />
     </b-container>
   </div>
