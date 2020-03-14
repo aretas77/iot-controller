@@ -6,12 +6,25 @@
       <b-collapse is-nav id="nav_collapse">
         <b-navbar-nav>
           <b-nav-item to="/">Home</b-nav-item>
-          <b-nav-item to="/nodes-manager">Nodes</b-nav-item>
+          <b-nav-item to="/nodes">Nodes</b-nav-item>
           <b-nav-item to="/models">Models</b-nav-item>
-          <b-nav-item to="/login" @click.prevent="login" v-if="!activeUser">Login</b-nav-item>
-          <b-nav-item href="#" @click.prevent="logout" v-else>Logout</b-nav-item>
+          <b-nav-item to="/login" @click.prevent="login">Login</b-nav-item>
         </b-navbar-nav>
       </b-collapse>
+      <li class="nav-item" v-if="currentUser.username">
+        <router-link
+          class="nav-link"
+          active-class="active"
+          exact :to="{
+            name: 'profile',
+            params: { username: currentUser.username }
+          }"
+        >
+        </router-link>
+      </li>
+      <span class="navbar-text">
+        {{ currentUser.username }}
+      </span>
     </b-navbar>
     <router-view/>
   </div>
@@ -48,11 +61,10 @@ export default {
       this.$router.push('/')
     }
   }
-
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 #nav {
   padding: 30px;
 
