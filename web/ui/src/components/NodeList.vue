@@ -1,6 +1,13 @@
 <template>
   <div>
-    <div v-if="isLoading" class="node-preview">Loading nodes...</div>
+    <b-progress-bar
+      v-if="isLoading"
+      label="Loading nodes..."
+      :value="value"
+      :max=100
+      animated>
+    </b-progress-bar>
+
     <div v-else>
       <div v-if="nodes.length === 0" class="node-preview">
         No nodes are added.
@@ -40,11 +47,12 @@ export default {
     itemsPerPage: {
       type: Number,
       required: false,
-      default: 10
+      default: 1
     }
   },
   data () {
     return {
+      value: 0,
       currentPage: 1
     }
   },
@@ -58,6 +66,7 @@ export default {
       if (this.id) {
         filters.id = this.id
       }
+
       return {
         type,
         filters
@@ -75,6 +84,7 @@ export default {
   },
   methods: {
     fetchNodes () {
+      this.value = 50
       this.$store.dispatch(FETCH_NODES, this.listConfig)
     },
     resetPagination () {
@@ -92,7 +102,9 @@ export default {
     }
   },
   mounted () {
+    this.value = 0
     this.fetchNodes()
+    this.value = 100
   }
 }
 </script>
