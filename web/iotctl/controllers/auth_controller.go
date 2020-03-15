@@ -23,6 +23,15 @@ const (
 	authTokenValidTime    = 15 // minutes
 )
 
+var (
+	// ErrAuthTokenExpired is used to indicate that the JWT token is expired.
+	ErrAuthTokenExpired = errors.New("(Authorization) Token has expired")
+	// ErrAuthUnknownError is used to indicate an unknown JWT error.
+	ErrAuthUnknownError = errors.New("(Authorization) Unknown error occured")
+	// ErrAuthInvalidToken is used to indicate that Bearer token is invalid.
+	ErrAuthInvalidToken = errors.New("(Authorization) Invalid bearer token")
+)
+
 type Claims struct {
 	Email string `json:"email"`
 	Role  string `json:"role"`
@@ -61,7 +70,9 @@ func (a *AuthController) setupHeader(w *http.ResponseWriter) {
 		"Accept, Content-Type, Content-Length, Accept-Encoding, Authorization, Access-Control-Allow-Origin")
 }
 
-func (a *AuthController) GenerateBearerToken(userUUID string, role string) (string, error) {
+// generateBearerToken should generate a Bearer token for a user with a given
+// identification value and its role encoded.
+func (a *AuthController) generateBearerToken(userUUID string, role string) (string, error) {
 	loc, err := time.LoadLocation("Europe/Vilnius")
 	if err != nil {
 		panic(err)
@@ -85,28 +96,31 @@ func (a *AuthController) GenerateBearerToken(userUUID string, role string) (stri
 	return "Bearer " + tokenString, nil
 }
 
+// CheckBearerToken will check whether token is valid.
 func (a *AuthController) CheckBearerToken(bearerToken string) (status int, err error) {
-	authToken, _ := jwt.ParseWithClaims(bearerToken, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		return jwtkey, nil
-	})
+	authToken, e := jwt.ParseWithClaims(bearerToken, &Claims{},
+		func(token *jwt.Token) (interface{}, error) {
+			return jwtkey, nil
+		})
 
 	if authToken.Valid {
 		fmt.Println("Auth token is valid")
 		return http.StatusOK, nil
-	} else if ve, ok := err.(*jwt.ValidationError); ok {
+	} else if ve, ok := e.(*jwt.ValidationError); ok {
 		if ve.Errors&(jwt.ValidationErrorExpired) != 0 {
-			logrus.Info("Auth token is expired")
+			err = ErrAuthTokenExpired
 		} else {
-			logrus.Info("Error in Auth token")
+			err = ErrAuthUnknownError
 		}
 	}
 
-	logrus.Error("Bearer token is invalid")
-	return http.StatusUnauthorized, nil
+	return http.StatusUnauthorized, err
 }
 
+// loginBearer is called by Login method when a User is found in the database.
+// It will generate a Bearer token and will set a Authorization header.
 func (a *AuthController) loginBearer(user *models.User, w *http.ResponseWriter) int {
-	token, err := a.GenerateBearerToken(user.Email, "admin")
+	token, err := a.generateBearerToken(user.Email, "admin")
 	if err != nil {
 		return http.StatusInternalServerError
 	}
@@ -129,7 +143,7 @@ func (a *AuthController) Login(w http.ResponseWriter, r *http.Request, next http
 	}
 
 	// Check if such user exists
-	user, err := a.sql.CheckAuth(&creds)
+	user, err := a.sql.CheckUserExists(&creds)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
@@ -138,4 +152,18 @@ func (a *AuthController) Login(w http.ResponseWriter, r *http.Request, next http
 	// Construct a Bearer token
 	response := a.loginBearer(user, &w)
 	w.WriteHeader(response)
+}
+
+// Logout ...
+func (a *AuthController) Logout(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	a.setupHeader(&w)
+
+	var creds models.Credentials
+	if err := json.NewDecoder(r.Body).Decode(&creds); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusBadRequest)
+	return
 }

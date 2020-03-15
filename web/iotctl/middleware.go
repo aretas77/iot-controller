@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/aretas77/iot-controller/web/iotctl/controllers"
 	"github.com/sirupsen/logrus"
 )
 
@@ -15,7 +16,9 @@ func stripBearerPrefixFromTokenString(tok string) (string, error) {
 	return tok, nil
 }
 
-func (app *Iotctl) userAuthHandler(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+// userAuthBearer will validate an incoming request with a JWT Authorization
+// header. If the JWT is invalid - stop the request chain.
+func (app *Iotctl) userAuthBearer(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -30,6 +33,11 @@ func (app *Iotctl) userAuthHandler(w http.ResponseWriter, r *http.Request, next 
 
 	if token != "" {
 		logrus.Infof("Auth token = %s", token)
+		status, err := controllers.CheckBearerToken(token)
+		if status != http.StatusOK || err != nil {
+			w.WriteHeader(status)
+			return
+		}
 	}
 
 	next(w, r)
