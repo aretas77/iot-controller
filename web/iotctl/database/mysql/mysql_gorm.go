@@ -58,7 +58,7 @@ func (m *MySql) CheckAuth(creds *models.Credentials) (*models.User, error) {
 
 	logrus.Debugf("Authenticating user (email = %s)", creds.Email)
 
-	query := "name = ? AND password = ?"
+	query := "email = ? AND password = ?"
 	err := m.GormDb.Where(query, creds.Email, creds.Password).Find(&user).Error
 	if err != nil {
 		if gorm.IsRecordNotFoundError(err) {
