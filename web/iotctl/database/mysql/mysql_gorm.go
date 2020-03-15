@@ -53,7 +53,7 @@ func (m *MySql) InitializeMigrationGorm() {
 
 // CheckAuth should check whether given credentials are valid and if valid,
 // return the User.
-func (m *MySql) CheckAuth(creds *models.Credentials) (*models.User, error) {
+func (m *MySql) CheckUserExists(creds *models.Credentials) (*models.User, error) {
 	var user models.User
 
 	logrus.Debugf("Authenticating user (email = %s)", creds.Email)
