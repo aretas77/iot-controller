@@ -68,6 +68,11 @@ func (n *NodeDevice) Start() {
 	n.ReceivedAck = make(chan struct{})
 	ticker := time.NewTicker(3 * time.Second)
 
+	if err := n.Hal.Initialize(); err != nil {
+		logrus.Error(err)
+		return
+	}
+
 	// will handle the broadcasted messages from main device controller
 	go n.ReceiveLoop()
 
@@ -85,6 +90,15 @@ handshake:
 			ticker.Stop()
 			n.Wg.Done()
 			return
+		}
+	}
+
+init:
+	for {
+		select {
+		case <-n.Stop:
+			n.Wg.Done()
+			break init
 		}
 	}
 

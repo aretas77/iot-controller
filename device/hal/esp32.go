@@ -1,6 +1,10 @@
 package hal
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/sirupsen/logrus"
+)
 
 const (
 	// Radio chip is on. The chip can receive, transmit or listen.
@@ -48,6 +52,7 @@ func (e *ESP32) Initialize() error {
 		Battery: 100,
 	}
 
+	logrus.Debugf("initialized ESP32 HAL")
 	return nil
 }
 
