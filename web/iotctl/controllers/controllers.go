@@ -13,6 +13,7 @@ var (
 
 type ApiController struct {
 	Version    string
+	AuthCtl    *AuthController
 	NodeCtl    *NodeController
 	UserCtl    *UserController
 	NetworkCtl *NetworkController
@@ -30,22 +31,25 @@ func (api *ApiController) Init(database *db.Database) error {
 	api.NodeCtl.Database = database
 	api.UserCtl.Database = database
 	api.NetworkCtl.Database = database
+	api.AuthCtl.Database = database
 
-	err := api.UserCtl.Init()
-	if err != nil {
+	if err := api.UserCtl.Init(); err != nil {
 		logrus.Error("Failed to initialize User Controller")
 		return err
 	}
 
-	err = api.NetworkCtl.Init()
-	if err != nil {
+	if err := api.NetworkCtl.Init(); err != nil {
 		logrus.Error("Failed to initialize Network Controller")
 		return err
 	}
 
-	err = api.NodeCtl.Init()
-	if err != nil {
+	if err := api.NodeCtl.Init(); err != nil {
 		logrus.Error("Failed to initialize Node Controller")
+		return err
+	}
+
+	if err := api.AuthCtl.Init(); err != nil {
+		logrus.Error("Failed to initialize Auth Controller")
 		return err
 	}
 
