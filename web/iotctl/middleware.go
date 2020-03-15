@@ -32,7 +32,7 @@ func (app *Iotctl) userAuthBearer(w http.ResponseWriter, r *http.Request, next h
 	}
 
 	if token != "" {
-		logrus.Infof("Auth token = %s", token)
+		logrus.Debugf("Auth token = %s", token)
 		status, err := controllers.CheckBearerToken(token)
 		if status != http.StatusOK || err != nil {
 			w.WriteHeader(status)

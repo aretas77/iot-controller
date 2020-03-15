@@ -125,11 +125,8 @@ func (n *NodeController) GetNode(w http.ResponseWriter, r *http.Request,
 	n.sql.GormDb.Where("id = ?", node.SettingsID).First(&settings)
 	node.Settings = settings
 
-	mapNode := map[string]models.Node{}
-	mapNode["node"] = node
-
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(mapNode)
+	json.NewEncoder(w).Encode(node)
 }
 
 // GetNodes should return all registered Nodes.
