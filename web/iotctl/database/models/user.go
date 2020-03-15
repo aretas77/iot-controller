@@ -11,6 +11,8 @@ var (
 	ErrUserNilPass = errors.New("(nil) passed instead of (User)")
 	// ErrUserNotFound ...
 	ErrUserNotFound = errors.New("(User) not found")
+	// ErrUserUnauthorized ...
+	ErrUserUnauthorized = errors.New("(User) not authorized")
 )
 
 const (
@@ -18,6 +20,12 @@ const (
 	NetworkManager = "manager"
 	NetworkUser    = "user"
 )
+
+// Credentials ...
+type Credentials struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
 
 // User ...
 type User struct {
