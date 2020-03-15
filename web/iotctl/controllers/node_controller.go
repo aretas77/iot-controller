@@ -62,27 +62,29 @@ func (n *NodeController) migrateNodeGorm() error {
 	}
 
 	node := &models.Node{
-		Name:         "TestNode",
-		Mac:          "AA:BB:CC:DD:EE",
-		Location:     "Kaunas",
-		IpAddress4:   "172.8.0.20",
-		IpAddress6:   "NA",
-		LastSentAck:  time.Now(),
-		Status:       "acknowledged",
-		SettingsID:   settings2.ID,
-		NetworkRefer: 1,
+		Name:          "TestNode",
+		Mac:           "AA:BB:CC:DD:EE",
+		Location:      "Kaunas",
+		IpAddress4:    "172.8.0.20",
+		IpAddress6:    "NA",
+		LastSentAck:   time.Now(),
+		Status:        "acknowledged",
+		SettingsID:    settings2.ID,
+		AddedUsername: "admin",
+		NetworkRefer:  1,
 	}
 
 	node2 := &models.Node{
-		Name:         "TestNode2",
-		Mac:          "AA:BB:CC:DD:EF",
-		Location:     "Kaunas",
-		IpAddress4:   "172.8.0.21",
-		IpAddress6:   "NA",
-		LastSentAck:  time.Now(),
-		Status:       "acknowledged",
-		SettingsID:   settings.ID,
-		NetworkRefer: 1,
+		Name:          "TestNode2",
+		Mac:           "AA:BB:CC:DD:EF",
+		Location:      "Kaunas",
+		IpAddress4:    "172.8.0.21",
+		IpAddress6:    "NA",
+		LastSentAck:   time.Now(),
+		Status:        "acknowledged",
+		SettingsID:    settings.ID,
+		AddedUsername: "admin",
+		NetworkRefer:  1,
 	}
 
 	if n.sql.GormDb.NewRecord(node) {
@@ -112,14 +114,22 @@ func (n *NodeController) GetNode(w http.ResponseWriter, r *http.Request,
 
 	vars := mux.Vars(r)
 	node := models.Node{}
-	n.sql.GormDb.First(&node, vars["id"])
-
-	if node.Mac != "" {
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(node)
-	} else {
+	err := n.sql.GormDb.First(&node, vars["id"]).Error
+	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
+		return
 	}
+
+	// XXX: optimize with one method - 'join tables' with GORM.
+	settings := models.NodeSettings{}
+	n.sql.GormDb.Where("id = ?", node.SettingsID).First(&settings)
+	node.Settings = settings
+
+	mapNode := map[string]models.Node{}
+	mapNode["node"] = node
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(mapNode)
 }
 
 // GetNodes should return all registered Nodes.
@@ -142,8 +152,11 @@ func (n *NodeController) GetNodes(w http.ResponseWriter, r *http.Request,
 		nodes[i].Network = &network
 	}
 
+	mapNodes := map[string][]models.Node{}
+	mapNodes["nodes"] = nodes
+
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(nodes)
+	json.NewEncoder(w).Encode(mapNodes)
 }
 
 // RegisterNode will parse `UnregisteredNode` from the request and check it against
