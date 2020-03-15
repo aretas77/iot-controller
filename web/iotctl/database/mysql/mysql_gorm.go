@@ -50,3 +50,24 @@ func (m *MySql) InitializeMigrationGorm() {
 	//"nodes(mac)", "RESTRICT", "RESTRICT")
 
 }
+
+// CheckAuth should check whether given credentials are valid and if valid,
+// return the User.
+func (m *MySql) CheckAuth(creds *models.Credentials) (*models.User, error) {
+	var user models.User
+
+	logrus.Debugf("Authenticating user (email = %s)", creds.Email)
+
+	query := "name = ? AND password = ?"
+	err := m.GormDb.Where(query, creds.Email, creds.Password).Find(&user).Error
+	if err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return nil, models.ErrUserNotFound
+		}
+		return nil, models.ErrUserUnauthorized
+	}
+
+	logrus.Debugf("User (name = %s, email = %s) authenticated", user.Username,
+		user.Email)
+	return &user, nil
+}

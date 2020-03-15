@@ -115,29 +115,27 @@ func (a *AuthController) loginBearer(user *models.User, w *http.ResponseWriter) 
 	return http.StatusOK
 }
 
+// Login will attempt to authenticate the user using JWT Authorization token.
+// Header: Authorization = Bearer `token`
+// Endpoint: POST /login
 func (a *AuthController) Login(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	var creds models.Credentials
-	var user models.User
-
 	a.setupHeader(&w)
 
 	// Decode the request JSON into our Credentials struct
+	var creds models.Credentials
 	if err := json.NewDecoder(r.Body).Decode(&creds); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	// Check if such user exists
-	logrus.Debugf("Validating user (email = %s) credentials",
-		creds.Email)
-	err := a.sql.GormDb.Where("", creds.Email).Find(&user).Error
+	user, err := a.sql.CheckAuth(&creds)
 	if err != nil {
-		logrus.Info(models.ErrUserUnauthorized)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	// Construct a Bearer token
-	response := a.loginBearer(&user, &w)
+	response := a.loginBearer(user, &w)
 	w.WriteHeader(response)
 }
