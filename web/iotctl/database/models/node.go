@@ -28,13 +28,14 @@ const (
 // Node describes information about a specific Node device.
 type Node struct {
 	gorm.Model
-	Name        string    `json:"name"`
-	Mac         string    `json:"mac" gorm:"unique;not null"`
-	Location    string    `json:"location"`
-	IpAddress4  string    `json:"ipv4"`
-	IpAddress6  string    `json:"ipv6"`
-	LastSentAck time.Time `json:"last_sent_ack"`
-	Status      Status    `json:"status" sql:"type:ENUM('acknowledged', 'registered')" gorm:"default:'acknowledged'"`
+	Name          string    `json:"name"`
+	Mac           string    `json:"mac" gorm:"unique;not null"`
+	Location      string    `json:"location"`
+	IpAddress4    string    `json:"ipv4"`
+	IpAddress6    string    `json:"ipv6"`
+	LastSentAck   time.Time `json:"last_sent_ack"`
+	Status        Status    `json:"status" sql:"type:ENUM('acknowledged', 'registered')" gorm:"default:'acknowledged'"`
+	AddedUsername string    `json:"username"`
 
 	// a `Has One` relationship. Node 1 <-> 1 NodeSettings.
 	// Node `Has One` Settings.
