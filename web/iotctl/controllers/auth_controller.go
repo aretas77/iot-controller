@@ -134,7 +134,7 @@ func (a *AuthController) Login(w http.ResponseWriter, r *http.Request, next http
 }
 
 // Logout will clear the header of Authorization JWT token.
-// Endpoints: POST /logout
+// Endpoint: POST /logout
 func (a *AuthController) Logout(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	a.setupHeader(&w)
 
