@@ -88,6 +88,10 @@ func start(c *cli.Context) (err error) {
 				TableName: "networks",
 				Database:  MySqlDb,
 			},
+			AuthCtl: &controllers.AuthController{
+				TableName: "users",
+				Database:  MySqlDb,
+			},
 		},
 		Debug: &iotctl.DebugInfo{
 			Level:        logrus.DebugLevel,
