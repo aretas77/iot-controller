@@ -84,6 +84,21 @@ func (n *NetworkController) CreateNetwork(w http.ResponseWriter, r *http.Request
 	}
 }
 
+func (n *NetworkController) RemoveNetwork(w http.ResponseWriter, r *http.Request,
+	next http.HandlerFunc) {
+	n.setupHeader(&w)
+
+	vars := mux.Vars(r)
+	err := n.sql.GormDb.Where("id = ?", vars["id"]).Delete(models.Network{}).Error
+	if err != nil {
+		logrus.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
 // GetNetwork will return a single Network specified by ID. The returned Network
 // should consist of its Nodes and their NodeSettings.
 // Endpoint: GET /networks/{id}
