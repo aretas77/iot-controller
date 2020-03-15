@@ -3,7 +3,6 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -17,10 +16,10 @@ import (
 var jwtkey = []byte("secret_key")
 
 const (
-	tokenDuration         = 72
+	tokenDuration         = 720
 	expireOffset          = 3600
 	refreshTokenValidTime = 72 // hours
-	authTokenValidTime    = 15 // minutes
+	authTokenValidTime    = 30 // minutes
 )
 
 var (
@@ -78,7 +77,7 @@ func (a *AuthController) generateBearerToken(userUUID string, role string) (stri
 		panic(err)
 	}
 
-	expirationTime := time.Now().In(loc).Add(5 * time.Minute)
+	expirationTime := time.Now().In(loc).Add(50 * time.Minute)
 	claims := &Claims{
 		Email: userUUID,
 		Role:  role,
@@ -98,14 +97,14 @@ func (a *AuthController) generateBearerToken(userUUID string, role string) (stri
 
 // loginBearer is called by Login method when a User is found in the database.
 // It will generate a Bearer token and will set a Authorization header.
-func (a *AuthController) loginBearer(user *models.User, w *http.ResponseWriter) int {
+func (a *AuthController) loginBearer(user *models.User, w *http.ResponseWriter) (string, int) {
 	token, err := a.generateBearerToken(user.Email, "admin")
 	if err != nil {
-		return http.StatusInternalServerError
+		return "", http.StatusInternalServerError
 	}
 
 	(*w).Header().Set("Authorization", token)
-	return http.StatusOK
+	return token, http.StatusOK
 }
 
 // Login will attempt to authenticate the user using JWT Authorization token.
@@ -127,10 +126,25 @@ func (a *AuthController) Login(w http.ResponseWriter, r *http.Request, next http
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-
 	// Construct a Bearer token
-	response := a.loginBearer(user, &w)
+	token, response := a.loginBearer(user, &w)
 	w.WriteHeader(response)
+	if token == "" {
+		return
+	}
+
+	err = a.sql.GormDb.Model(&user).Update("token", token).Error
+	if err != nil {
+		logrus.Errorf("Failed to update User (ID = %d) token", user.ID)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// TODO: fix this shit :D
+	// TODO: remove 'Bearer' from token
+	user.Password = "invisible"
+	user.Token = token
+	json.NewEncoder(w).Encode(user)
 }
 
 // Logout will clear the header of Authorization JWT token.
@@ -148,6 +162,27 @@ func (a *AuthController) Logout(w http.ResponseWriter, r *http.Request, next htt
 	w.WriteHeader(http.StatusOK)
 }
 
+// CheckUsersToken should analyze a given Authorization token to determine
+// to whom it belongs to and return corresponding `User`.
+// Prerequisites:
+//	- Check authorization.
+// Endpoint: GET /users/check
+func (a *AuthController) CheckUsersToken(w http.ResponseWriter, r *http.Request,
+	next http.HandlerFunc) {
+	a.setupHeader(&w)
+
+	authToken := r.Header.Get("Authorization")
+	user := models.User{}
+	err := a.sql.GormDb.Where("token = ?", authToken).Find(&user).Error
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(user)
+}
+
 // CheckBearerToken will check whether token is valid.
 func CheckBearerToken(bearerToken string) (status int, err error) {
 	authToken, e := jwt.ParseWithClaims(bearerToken, &Claims{},
@@ -156,7 +191,6 @@ func CheckBearerToken(bearerToken string) (status int, err error) {
 		})
 
 	if authToken.Valid {
-		fmt.Println("Auth token is valid")
 		return http.StatusOK, nil
 	} else if ve, ok := e.(*jwt.ValidationError); ok {
 		if ve.Errors&(jwt.ValidationErrorExpired) != 0 {

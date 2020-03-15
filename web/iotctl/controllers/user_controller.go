@@ -61,6 +61,15 @@ func (u *UserController) setupHeader(w *http.ResponseWriter) {
 		"Accept, Content-Type, Content-Length, Accept-Encoding, Authorization, Access-Control-Allow-Origin")
 }
 
+func (u *UserController) Index(w http.ResponseWriter, r *http.Request,
+	next http.HandlerFunc) {
+	u.setupHeader(&w)
+	w.WriteHeader(http.StatusOK)
+}
+
+// GetUserById should return a User by a provided ID. This endpoint should
+// be preceeded by an authorization check.
+// Endpoint: GET /users/:id
 func (u *UserController) GetUserById(w http.ResponseWriter, r *http.Request,
 	next http.HandlerFunc) {
 	u.setupHeader(&w)
@@ -78,7 +87,7 @@ func (u *UserController) GetUserById(w http.ResponseWriter, r *http.Request,
 }
 
 // GetUsers should return all system users.
-// Endpoint:	GET /users
+// Endpoint: GET /users
 func (u *UserController) GetUsers(w http.ResponseWriter, r *http.Request,
 	next http.HandlerFunc) {
 	u.setupHeader(&w)
