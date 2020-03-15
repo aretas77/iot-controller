@@ -36,7 +36,7 @@ func (app *Iotctl) httpSetup() error {
 
 // setupRoutes will prepare all endpoints for http server.
 func (app *Iotctl) setupRoutes() {
-	logrus.Debug("Setting up Routes")
+	logrus.Debug("Setting up routing")
 	app.Router = mux.NewRouter()
 
 	// Currently everything is as admin.
@@ -46,8 +46,8 @@ func (app *Iotctl) setupRoutes() {
 	app.setupNetwork()
 }
 
+// setupNetwork will setup `Network` related routes.
 func (app *Iotctl) setupNetwork() {
-
 	app.Router.Handle(
 		"/networks",
 		negroni.New(
@@ -62,7 +62,6 @@ func (app *Iotctl) setupNetwork() {
 }
 
 func (app *Iotctl) setupNode() {
-
 	app.Router.Handle(
 		"/nodes",
 		negroni.New(
@@ -83,6 +82,13 @@ func (app *Iotctl) setupNode() {
 }
 
 func (app *Iotctl) setupUser() {
+
+	app.Router.Handle(
+		"/login",
+		negroni.New(
+			negroni.HandlerFunc(app.Controller.AuthCtl.Login),
+		)).Methods("POST")
+
 	app.Router.Handle(
 		"/users",
 		negroni.New(
