@@ -90,6 +90,13 @@ func (app *Iotctl) setupUser() {
 		)).Methods("POST")
 
 	app.Router.Handle(
+		"/logout",
+		negroni.New(
+			negroni.HandlerFunc(app.userAuthBearer),
+			negroni.HandlerFunc(app.Controller.AuthCtl.Logout),
+		)).Methods("POST")
+
+	app.Router.Handle(
 		"/users",
 		negroni.New(
 			negroni.HandlerFunc(app.Controller.UserCtl.GetUsers),

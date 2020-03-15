@@ -96,27 +96,6 @@ func (a *AuthController) generateBearerToken(userUUID string, role string) (stri
 	return "Bearer " + tokenString, nil
 }
 
-// CheckBearerToken will check whether token is valid.
-func (a *AuthController) CheckBearerToken(bearerToken string) (status int, err error) {
-	authToken, e := jwt.ParseWithClaims(bearerToken, &Claims{},
-		func(token *jwt.Token) (interface{}, error) {
-			return jwtkey, nil
-		})
-
-	if authToken.Valid {
-		fmt.Println("Auth token is valid")
-		return http.StatusOK, nil
-	} else if ve, ok := e.(*jwt.ValidationError); ok {
-		if ve.Errors&(jwt.ValidationErrorExpired) != 0 {
-			err = ErrAuthTokenExpired
-		} else {
-			err = ErrAuthUnknownError
-		}
-	}
-
-	return http.StatusUnauthorized, err
-}
-
 // loginBearer is called by Login method when a User is found in the database.
 // It will generate a Bearer token and will set a Authorization header.
 func (a *AuthController) loginBearer(user *models.User, w *http.ResponseWriter) int {
@@ -154,7 +133,8 @@ func (a *AuthController) Login(w http.ResponseWriter, r *http.Request, next http
 	w.WriteHeader(response)
 }
 
-// Logout ...
+// Logout will clear the header of Authorization JWT token.
+// Endpoints: POST /logout
 func (a *AuthController) Logout(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	a.setupHeader(&w)
 
@@ -164,6 +144,27 @@ func (a *AuthController) Logout(w http.ResponseWriter, r *http.Request, next htt
 		return
 	}
 
-	w.WriteHeader(http.StatusBadRequest)
-	return
+	w.Header().Del("Authorization")
+	w.WriteHeader(http.StatusOK)
+}
+
+// CheckBearerToken will check whether token is valid.
+func CheckBearerToken(bearerToken string) (status int, err error) {
+	authToken, e := jwt.ParseWithClaims(bearerToken, &Claims{},
+		func(token *jwt.Token) (interface{}, error) {
+			return jwtkey, nil
+		})
+
+	if authToken.Valid {
+		fmt.Println("Auth token is valid")
+		return http.StatusOK, nil
+	} else if ve, ok := e.(*jwt.ValidationError); ok {
+		if ve.Errors&(jwt.ValidationErrorExpired) != 0 {
+			err = ErrAuthTokenExpired
+		} else {
+			err = ErrAuthUnknownError
+		}
+	}
+
+	return http.StatusUnauthorized, err
 }
