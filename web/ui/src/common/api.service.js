@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
+import JwtService from '@/common/jwt.service'
 import { API_URL } from '@/common/config'
 
 const ApiService = {
@@ -10,7 +11,7 @@ const ApiService = {
   },
 
   setHeader () {
-    Vue.axios.defaults.headers.common.Authorization = 'Token ad'
+    Vue.axios.defaults.headers.common.Authorization = `${JwtService.getToken()}`
   },
 
   query (resource, params) {
@@ -31,7 +32,7 @@ const ApiService = {
     }
 
     var requestUrl
-    if (params == null) {
+    if (params != null || slug !== '') {
       requestUrl = `${resource}/${slug}`
     } else {
       requestUrl = `${resource}`
