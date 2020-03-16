@@ -1,4 +1,4 @@
-// import Vue from 'vue'
+import Vue from 'vue'
 import { NodesService } from '@/common/api.service'
 import {
   NODE_GET_ALL,
@@ -6,7 +6,8 @@ import {
   FETCH_NODES,
   NODE_EDIT,
   NODE_REMOVE,
-  NODE_ADD
+  NODE_ADD,
+  NODE_RESET_STATE
 } from './actions.type'
 import {
   SET_NODE,
@@ -37,6 +38,7 @@ export const actions = {
       return context.commit(SET_NODE, prevNode)
     }
     const { data } = await NodesService.get(nodeSlug)
+    console.log(data)
     context.commit(SET_NODE, data)
     return data
   },
@@ -69,6 +71,10 @@ export const actions = {
   },
   [NODE_REMOVE] (context, slug) {
     return NodesService.destroy(slug)
+  },
+  [NODE_RESET_STATE] ({ commit }) {
+    console.log('NODE_RESET_STATE start')
+    commit(RESET_STATE)
   }
 
 }
@@ -76,6 +82,7 @@ export const actions = {
 /* eslint no-param-reassign: ["error", { "props": false }] */
 export const mutations = {
   [SET_NODE] (state, node) {
+    console.log('SET_NODE' + node)
     state.node = node
   },
   [SET_NODES] (state, nodes) {
@@ -90,9 +97,10 @@ export const mutations = {
     state.isLoading = false
   },
   [RESET_STATE] () {
-  //    for (let f in state) {
-  //      Vue.set(state, f, initialState[f])
-  //    }
+    console.log(state)
+    for (const f in state) {
+      Vue.set(state, f, initialState[f])
+    }
   }
 }
 

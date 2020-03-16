@@ -29,11 +29,13 @@ const getters = {
 //  - Register a new user
 const actions = {
   [LOGIN] (context, credentials) {
-    console.log('hello ' + credentials.email)
+    const email = credentials.email
+    const password = credentials.password
+
     return new Promise(resolve => {
-      ApiService.post('users/login', { user: credentials })
+      ApiService.post('login', { email, password })
         .then(({ data }) => {
-          context.commit(SET_AUTH, data.user)
+          context.commit(SET_AUTH, data)
           resolve(data)
         })
         .catch(({ response }) => {
@@ -44,15 +46,20 @@ const actions = {
   [LOGOUT] (context) {
     context.commit(PURGE_AUTH)
   },
+
+  // Is called each time we load a new View.
   [CHECK_AUTH] (context) {
+    console.log('Calling CHECK_AUTH')
+
+    // Getting token from JwtService - currently local storage.
     if (JwtService.getToken()) {
       ApiService.setHeader()
-      ApiService.get('user')
+      ApiService.get('users/check')
         .then(({ data }) => {
-          context.commit(SET_AUTH, data.user)
+          context.commit(SET_AUTH, data)
         })
-        .catch(({ response }) => {
-          context.commit(SET_ERROR, response.data.errors)
+        .catch(({ error }) => {
+          context.commit(SET_ERROR, error)
         })
     } else {
       context.commit(PURGE_AUTH)
@@ -66,12 +73,14 @@ const mutations = {
     state.errors = error
   },
   [SET_AUTH] (state, user) {
+    console.log('Setting SET_AUTH')
     state.isAuthenticated = true
     state.user = user
     state.errors = {}
     JwtService.saveToken(state.user.token)
   },
   [PURGE_AUTH] (state) {
+    console.log('Calling PURGE_AUTH')
     state.isAuthenticated = false
     state.user = {}
     state.errors = {}
