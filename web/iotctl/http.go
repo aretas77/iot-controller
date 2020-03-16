@@ -65,12 +65,25 @@ func (app *Iotctl) setupNode() {
 	app.Router.Handle(
 		"/nodes",
 		negroni.New(
+			negroni.HandlerFunc(app.Controller.UserCtl.Index),
+		)).Methods("OPTIONS")
+	app.Router.Handle(
+		"/nodes/{id}",
+		negroni.New(
+			negroni.HandlerFunc(app.Controller.UserCtl.Index),
+		)).Methods("OPTIONS")
+
+	app.Router.Handle(
+		"/nodes",
+		negroni.New(
+			negroni.HandlerFunc(app.userAuthBearer),
 			negroni.HandlerFunc(app.Controller.NodeCtl.GetNodes),
 		)).Methods("GET")
 
 	app.Router.Handle(
 		"/nodes/{id}",
 		negroni.New(
+			negroni.HandlerFunc(app.userAuthBearer),
 			negroni.HandlerFunc(app.Controller.NodeCtl.GetNode),
 		)).Methods("GET")
 
@@ -82,6 +95,30 @@ func (app *Iotctl) setupNode() {
 }
 
 func (app *Iotctl) setupUser() {
+	// Routes for OPTIONS method
+	app.Router.Handle(
+		"/login",
+		negroni.New(
+			negroni.HandlerFunc(app.Controller.UserCtl.Index),
+		)).Methods("OPTIONS")
+	app.Router.Handle(
+		"/users",
+		negroni.New(
+			negroni.HandlerFunc(app.Controller.UserCtl.Index),
+		)).Methods("OPTIONS")
+	app.Router.Handle(
+		"/users/check",
+		negroni.New(
+			negroni.HandlerFunc(app.Controller.UserCtl.Index),
+		)).Methods("OPTIONS")
+
+	// Other routes
+	app.Router.Handle(
+		"/users/check",
+		negroni.New(
+			negroni.HandlerFunc(app.userAuthBearer),
+			negroni.HandlerFunc(app.Controller.AuthCtl.CheckUsersToken),
+		)).Methods("GET")
 
 	app.Router.Handle(
 		"/login",
@@ -105,13 +142,7 @@ func (app *Iotctl) setupUser() {
 	app.Router.Handle(
 		"/users/{id}",
 		negroni.New(
+			negroni.HandlerFunc(app.userAuthBearer),
 			negroni.HandlerFunc(app.Controller.UserCtl.GetUserById),
 		)).Methods("GET")
-
-	app.Router.Handle(
-		"/users",
-		negroni.New(
-			nil,
-		)).Methods("POST")
-
 }
