@@ -19,7 +19,7 @@ const routes = [
     component: () => import('@/views/Profile'),
     children: [
       {
-        path: '',
+        path: '/@:username/profile',
         name: 'profile',
         component: () => import('@/views/ProfileNodes')
       }
@@ -34,6 +34,12 @@ const routes = [
     path: '/nodes/:slug',
     name: 'node',
     component: () => import('@/views/Node'),
+    props: true
+  },
+  {
+    path: '/nodes/:slug?',
+    name: 'node-edit',
+    component: () => import('@/views/NodeCreate'),
     props: true
   }
 ]
