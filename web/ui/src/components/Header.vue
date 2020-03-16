@@ -8,7 +8,7 @@
           <b-nav-item to="/">Home</b-nav-item>
           <b-nav-item to="/nodes">Nodes</b-nav-item>
           <b-nav-item to="/models">Models</b-nav-item>
-          <b-nav-item to="/login" @click.prevent="login">Login</b-nav-item>
+          <b-nav-item to="/login">Login</b-nav-item>
         </b-navbar-nav>
       </b-collapse>
       <li class="nav-item" v-if="currentUser.username">
@@ -51,9 +51,6 @@ export default {
     $route: 'refreshActiveUser'
   },
   methods: {
-    login () {
-      this.$auth.loginRedirect()
-    },
     async refreshActiveUser () {
     },
     async logout () {
