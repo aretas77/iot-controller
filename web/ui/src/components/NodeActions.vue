@@ -1,7 +1,10 @@
 <template>
   <!-- Used when User is also owner of the Node or Admin -->
   <span v-if="canModify">
-
+    <router-link class="btn btn-sm btn-outline-secondary" :to="editNodeLink">
+      <i class="ion-edit"></i> <span>&nbsp;Edit Node</span>
+    </router-link>
+    <span>&nbsp;&nbsp;</span>
     <button class="btn btn-outline-danger btn-sm" @click="deleteNode">
       <i class="ion-trash-a"></i> <span>&nbsp;Delete Node</span>
     </button>
