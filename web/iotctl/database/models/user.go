@@ -35,6 +35,9 @@ type User struct {
 	Email      string `json:"email"`
 	Role       string `json:"role" sql:"type:ENUM('admin', 'manager', 'user')" gorm:"default:'user'"`
 
+	// XXX: Should be kept in some cache storage, e.g. Redis.
+	Token string `json:"token"`
+
 	// a `Has Many` relationship. User 1 <-> 0..* Network.
 	// User `Has Many` Networks.
 	Networks []Network `json:"networks" gorm:"foreignkey:UserRefer"`
