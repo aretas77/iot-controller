@@ -84,3 +84,21 @@ export const NodesService = {
     return ApiService.update(`nodes/${slug}`)
   }
 }
+
+export const NetworkService = {
+  query (type, params) {
+    return ApiService.query('networks', {
+      params: params
+    })
+  },
+
+  get (slug) {
+    return ApiService.get('networks', slug)
+  },
+  create (params) {
+    return ApiService.post('networks', { network: params })
+  },
+  update (slug, params) {
+    return ApiService.update('networks', slug, { network: params })
+  }
+}
