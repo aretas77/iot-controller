@@ -99,6 +99,28 @@ func (n *NetworkController) RemoveNetwork(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusOK)
 }
 
+// GetNetworkByUser will return Network list which belong to the user of
+// specified ID.
+func (n *NetworkController) GetNetworkByUser(w http.ResponseWriter, r *http.Request,
+	next http.HandlerFunc) {
+	n.setupHeader(&w)
+
+	vars := mux.Vars(r)
+	networks := []models.Network{}
+
+	// Query all networks who belong to the specified user. Return error code
+	// if an error occured.
+	err := n.sql.GormDb.Where("user_refer = ?", vars["user_id"]).Find(&networks).Error
+	if err != nil && !gorm.IsRecordNotFoundError(err) {
+		logrus.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(networks)
+}
+
 // GetNetwork will return a single Network specified by ID. The returned Network
 // should consist of its Nodes and their NodeSettings.
 // Endpoint: GET /networks/{id}

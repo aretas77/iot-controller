@@ -49,6 +49,18 @@ func (app *Iotctl) setupRoutes() {
 // setupNetwork will setup `Network` related routes.
 func (app *Iotctl) setupNetwork() {
 	app.Router.Handle(
+		"/users/{user_id}/networks",
+		negroni.New(
+			negroni.HandlerFunc(app.Controller.UserCtl.Index),
+		)).Methods("OPTIONS")
+
+	app.Router.Handle(
+		"/networks/{id}",
+		negroni.New(
+			negroni.HandlerFunc(app.Controller.UserCtl.Index),
+		)).Methods("OPTIONS")
+
+	app.Router.Handle(
 		"/networks",
 		negroni.New(
 			negroni.HandlerFunc(app.Controller.NetworkCtl.CreateNetwork),
@@ -59,6 +71,13 @@ func (app *Iotctl) setupNetwork() {
 		negroni.New(
 			negroni.HandlerFunc(app.Controller.NetworkCtl.GetNetwork),
 		)).Methods("GET")
+
+	app.Router.Handle(
+		"/users/{user_id}/networks",
+		negroni.New(
+			negroni.HandlerFunc(app.userAuthBearer),
+			negroni.HandlerFunc(app.Controller.NetworkCtl.GetNetworkByUser),
+		)).Methods("OPTIONS")
 }
 
 func (app *Iotctl) setupNode() {
