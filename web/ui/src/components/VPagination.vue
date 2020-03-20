@@ -3,6 +3,7 @@
     <ul class="pagination">
       <li
         v-for="page in pages"
+        :data-test="`page-link-${page}`"
         :key="page"
         :class="paginationClass(page)"
         @click.prevent="changePage(page)"

@@ -1,6 +1,7 @@
 <template>
   <b-container fluid class="node-preview-container">
     <b-row class="m-3 node-preview-row ">
+
       <b-col cols=8 class="d-flex align-items-start">
         <router-link :to="nodeLink" class="preview-link">
           <h3 v-text="node.name" />

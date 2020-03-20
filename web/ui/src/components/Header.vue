@@ -2,8 +2,9 @@
   <div>
     <b-navbar class="sticky-top fixed" toggleable="md" type="dark" variant="dark">
       <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
-      <b-navbar-brand to="/">IoT Controller</b-navbar-brand>
       <b-collapse is-nav id="nav_collapse">
+        <b-navbar-brand to="/">IoT Controller</b-navbar-brand>
+
         <b-navbar-nav>
           <b-nav-item to="/">Home</b-nav-item>
           <b-nav-item v-if="isAuthenticated" to="/nodes">Nodes</b-nav-item>
@@ -11,21 +12,40 @@
           <b-nav-item v-if="!isAuthenticated" to="/login">Login</b-nav-item>
           <b-nav-item v-if="isAuthenticated" @click="logout">Logout</b-nav-item>
         </b-navbar-nav>
+
+        <!-- Right aligned nav items -->
+        <b-navbar-nav class="ml-auto">
+          <!-- Links to the currently active network -->
+          <b-nav-item v-if="currentNetwork.name">
+            <router-link
+              class="nav-link"
+              active-class="active"
+              exact :to="{
+                name: 'network',
+                params: { id: currentNetwork.id }
+              }"
+              >
+              Global
+            </router-link>
+          </b-nav-item>
+
+          <!-- Links to the currently active user profile -->
+          <b-nav-item v-if="currentUser.username">
+            <router-link
+              class="nav-link"
+              active-class="active"
+              exact :to="{
+                name: 'profile',
+                params: { username: currentUser.username }
+              }"
+              >
+              {{ currentUser.username }}
+            </router-link>
+          </b-nav-item>
+          <!-- Right aligned nav items end -->
+        </b-navbar-nav>
+
       </b-collapse>
-      <li class="nav-item" v-if="currentUser.username">
-        <router-link
-          class="nav-link"
-          active-class="active"
-          exact :to="{
-            name: 'profile',
-            params: { username: currentUser.username }
-          }"
-        >
-        </router-link>
-      </li>
-      <span class="navbar-text">
-        {{ currentUser.username }}
-      </span>
     </b-navbar>
     <router-view/>
   </div>
@@ -38,7 +58,7 @@ import { LOGOUT } from '@/store/actions.type'
 export default {
   name: 'Header',
   computed: {
-    ...mapGetters(['currentUser', 'isAuthenticated'])
+    ...mapGetters(['currentUser', 'isAuthenticated', 'currentNetwork'])
   },
   data () {
     return {
