@@ -21,7 +21,7 @@ const routes = [
       {
         path: '/@:username/profile',
         name: 'profile',
-        component: () => import('@/views/ProfileNodes')
+        component: null
       }
     ]
   },
