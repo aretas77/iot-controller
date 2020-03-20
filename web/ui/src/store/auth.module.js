@@ -3,7 +3,8 @@ import JwtService from '@/common/jwt.service'
 import {
   LOGIN,
   LOGOUT,
-  CHECK_AUTH
+  CHECK_AUTH,
+  FETCH_CURRENT_USER
 } from './actions.type'
 import { SET_AUTH, PURGE_AUTH, SET_ERROR } from './mutations.type'
 
@@ -60,6 +61,7 @@ const actions = {
         })
         .catch(({ error }) => {
           context.commit(SET_ERROR, error)
+          context.commit(PURGE_AUTH)
         })
     } else {
       context.commit(PURGE_AUTH)
@@ -85,6 +87,10 @@ const mutations = {
     state.user = {}
     state.errors = {}
     JwtService.destroyToken()
+  },
+  [FETCH_CURRENT_USER] (state) {
+    console.log('Calling FETCH_CURRENT_USER')
+    return state.user
   }
 }
 
