@@ -38,7 +38,6 @@ export const actions = {
       return context.commit(SET_NODE, prevNode)
     }
     const { data } = await NodesService.get(nodeSlug)
-    console.log(data)
     context.commit(SET_NODE, data)
     return data
   },
@@ -64,6 +63,7 @@ export const actions = {
       })
   },
   [NODE_ADD] ({ state }) {
+    console.log('NODE_ADD call')
     return NodesService.create(state.node)
   },
   [NODE_EDIT] ({ state }) {
