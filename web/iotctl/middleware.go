@@ -2,31 +2,35 @@ package iotctl
 
 import (
 	"net/http"
-	"strings"
 
+	"github.com/aretas77/iot-controller/utils"
 	"github.com/aretas77/iot-controller/web/iotctl/controllers"
 	"github.com/sirupsen/logrus"
 )
 
-func stripBearerPrefixFromTokenString(tok string) (string, error) {
-	// Should be a bearer token
-	if len(tok) > 6 && strings.ToUpper(tok[0:7]) == "BEARER " {
-		return tok[7:], nil
-	}
-	return tok, nil
+func setupHeader(w *http.ResponseWriter) {
+	(*w).Header().Set("Content-Type", "application/json")
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Methods",
+		"POST, GET, OPTIONS, DELETE, PATCH")
+	(*w).Header().Set("Access-Control-Allow-Headers",
+		"Accept, Content-Type, Content-Length, Accept-Encoding, Authorization, Access-Control-Allow-Origin")
 }
 
 // userAuthBearer will validate an incoming request with a JWT Authorization
 // header. If the JWT is invalid - stop the request chain.
 func (app *Iotctl) userAuthBearer(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	setupHeader(&w)
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
+		logrus.Debug("No Authorization header")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	token, err := stripBearerPrefixFromTokenString(authHeader)
+	token, err := utils.StripBearerPrefixFromTokenString(authHeader)
 	if err != nil {
+		logrus.Debug("Failed to strip Bearer prefix")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -35,6 +39,7 @@ func (app *Iotctl) userAuthBearer(w http.ResponseWriter, r *http.Request, next h
 		//logrus.Debugf("Auth token = %s", token)
 		status, err := controllers.CheckBearerToken(token)
 		if status != http.StatusOK || err != nil {
+			logrus.Debugf("Failed")
 			w.WriteHeader(status)
 			return
 		}

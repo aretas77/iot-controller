@@ -77,7 +77,7 @@ func (app *Iotctl) setupNetwork() {
 		negroni.New(
 			negroni.HandlerFunc(app.userAuthBearer),
 			negroni.HandlerFunc(app.Controller.NetworkCtl.GetNetworkByUser),
-		)).Methods("OPTIONS")
+		)).Methods("GET")
 }
 
 func (app *Iotctl) setupNode() {
