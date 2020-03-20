@@ -12,9 +12,18 @@
     <b-container fluid class="node-list-container" v-else>
       <b-row class="m-3">
         <b-col col class="d-flex align-items-start">
-          <router-link to="/">
-            <b-button>Button</b-button>
+          <router-link
+            active-class="active"
+            :to="{ name: 'node-register' }"
+            >
+            <b-button>
+              Register node
+            </b-button>
           </router-link>
+        </b-col>
+
+        <b-col>
+          <VPagination :pages="pages" :currentPage.sync="currentPage" />
         </b-col>
       </b-row>
 
@@ -30,7 +39,6 @@
             />
         </b-col>
       </b-row>
-      <VPagination :pages="pages" :currentPage.sync="currentPage" />
     </b-container>
   </div>
 </template>
@@ -127,6 +135,8 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
+.node-list-container {
 
+}
 </style>

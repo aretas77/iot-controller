@@ -1,6 +1,6 @@
 <template>
   <b-container class="node-meta p-3">
-    <b-row cols="4" align-content="start">
+    <b-row align-content="start">
       <b-col align-self="start">
         <div class="info">
           Added by:
