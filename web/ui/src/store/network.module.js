@@ -1,8 +1,9 @@
 import { NetworkService } from '@/common/api.service'
 import {
-  CHECK_NETWORK,
   FETCH_NETWORK,
-  SET_NETWORK
+  FETCH_NETWORKS,
+  SET_NETWORK,
+  SET_NETWORKS
 } from './actions.type'
 
 const initialState = {
@@ -26,9 +27,14 @@ export const actions = {
     return data
   },
 
-  [CHECK_NETWORK] (context) {
-    // Get current user ID from ProfileService.
-    // const user = context.dispatch(CHECK_AUTH)
+  async [FETCH_NETWORKS] (context, userID) {
+    if (userID === undefined) {
+      return null
+    }
+
+    const { data } = await NetworkService.getByUser(userID)
+    context.commit(SET_NETWORKS, data)
+    return data
   }
 }
 
@@ -37,6 +43,10 @@ export const mutations = {
   [SET_NETWORK] (state, network) {
     console.log('SET_NETWORK' + network)
     state.network = network
+  },
+  [SET_NETWORKS] (state, networks) {
+    console.log('SET_NETWORKS' + networks)
+    state.networks = networks
   }
 }
 
