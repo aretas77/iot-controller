@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/aretas77/iot-controller/utils"
 	db "github.com/aretas77/iot-controller/web/iotctl/database"
 	models "github.com/aretas77/iot-controller/web/iotctl/database/models"
 	mysql "github.com/aretas77/iot-controller/web/iotctl/database/mysql"
@@ -133,7 +134,14 @@ func (a *AuthController) Login(w http.ResponseWriter, r *http.Request, next http
 		return
 	}
 
-	err = a.sql.GormDb.Model(&user).Update("token", token).Error
+	tkn, err := utils.StripBearerPrefixFromTokenString(token)
+	if err != nil {
+		logrus.Errorf("Failed to strip bearer prefix")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = a.sql.GormDb.Model(&user).Update("token", tkn).Error
 	if err != nil {
 		logrus.Errorf("Failed to update User (ID = %d) token", user.ID)
 		w.WriteHeader(http.StatusUnauthorized)
@@ -141,9 +149,8 @@ func (a *AuthController) Login(w http.ResponseWriter, r *http.Request, next http
 	}
 
 	// TODO: fix this shit :D
-	// TODO: remove 'Bearer' from token
 	user.Password = "invisible"
-	user.Token = token
+	user.Token = tkn
 	json.NewEncoder(w).Encode(user)
 }
 
