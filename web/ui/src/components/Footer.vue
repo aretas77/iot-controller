@@ -16,11 +16,12 @@ export default {
 
 <style scoped lang="scss">
 .footer {
-  position: absolute;
-  bottom: 0px;
+  bottom: 0;
   width: 100%;
-  height: 60px;
-  line-height: 60px;
+  height: 40px;
+  line-height: 40px;
   background-color: #f5f5f5;
+  text-align: center;
+  font-size: 0.8em;
 }
 </style>

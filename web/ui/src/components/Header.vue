@@ -1,14 +1,15 @@
 <template>
   <div>
-    <b-navbar class="fixed" toggleable="md" type="dark" variant="dark">
+    <b-navbar class="sticky-top fixed" toggleable="md" type="dark" variant="dark">
       <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
       <b-navbar-brand to="/">IoT Controller</b-navbar-brand>
       <b-collapse is-nav id="nav_collapse">
         <b-navbar-nav>
           <b-nav-item to="/">Home</b-nav-item>
-          <b-nav-item to="/nodes">Nodes</b-nav-item>
-          <b-nav-item to="/models">Models</b-nav-item>
-          <b-nav-item to="/login">Login</b-nav-item>
+          <b-nav-item v-if="isAuthenticated" to="/nodes">Nodes</b-nav-item>
+          <b-nav-item v-if="isAuthenticated" to="/models">Models</b-nav-item>
+          <b-nav-item v-if="!isAuthenticated" to="/login">Login</b-nav-item>
+          <b-nav-item v-if="isAuthenticated" @click="logout">Logout</b-nav-item>
         </b-navbar-nav>
       </b-collapse>
       <li class="nav-item" v-if="currentUser.username">
@@ -32,6 +33,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { LOGOUT } from '@/store/actions.type'
 
 export default {
   name: 'Header',
@@ -54,8 +56,9 @@ export default {
     async refreshActiveUser () {
     },
     async logout () {
-      await this.refreshActiveUser()
-      this.$router.push('/')
+      this.$store.dispatch(LOGOUT).then(() => {
+        this.$router.push('/')
+      })
     }
   }
 }
