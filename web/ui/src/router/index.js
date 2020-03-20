@@ -37,9 +37,9 @@ const routes = [
     props: true
   },
   {
-    path: '/nodes/:slug?',
-    name: 'node-edit',
-    component: () => import('@/views/NodeCreate'),
+    path: '/editor/:slug?',
+    name: 'node-register',
+    component: () => import('@/views/NodeRegister'),
     props: true
   }
 ]
