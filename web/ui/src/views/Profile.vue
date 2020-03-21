@@ -4,32 +4,40 @@
       <b-row>
         <b-col>
           <h1 class="text-xs-center mt-4">Your Profile</h1>
-          <form @submit.prevent="updateProfile()">
-            <fieldset>
-              <fieldset class="form-group">
-                <input
-                  class="form-control"
-                  label="Your Name:"
-                  type="text"
-                  v-model="currentUser.name"
-                  placeholder="Enter name"
+          <b-form @submit.prevent="updateProfile()">
+            <b-form-group>
+              <b-form-input
+                class="form-control"
+                label="Your Name:"
+                type="text"
+                v-model="currentUser.name"
+                placeholder="Enter name"
                 />
-              </fieldset>
+            </b-form-group>
 
-              <fieldset class="form-group">
-                <input
-                  class="form-control form-control-lg"
-                  type="password"
-                  v-model="currentUser.password"
-                  placeholder="Password"
+            <b-form-group>
+              <b-form-input
+                class="form-control form-control-lg"
+                type="password"
+                v-model="password"
+                placeholder="Current password"
                 />
-              </fieldset>
+            </b-form-group>
+            <b-form-group>
+              <b-form-input
+                class="form-control form-control-lg"
+                type="password"
+                v-model="password"
+                placeholder="Password"
+                />
+            </b-form-group>
 
+            <b-form-group>
               <button class="btn btn-lg btn-primary pull-xs-right">
                 Update Profile
               </button>
-           </fieldset>
-          </form>
+            </b-form-group>
+          </b-form>
           <!-- Line break for logout button -->
           <hr />
           <button @click="logout" class="btn btn-outline-danger">
@@ -38,16 +46,17 @@
         </b-col>
         <b-col>
           <h1 class="text-xs-center mt-4">Network settings</h1>
-          <form @submit.prevent="selectNetwork()" class="float-left">
-            <fieldset class="form-group">
-              <select v-model="network">
-                <option disabled value="">Select a network</option>
-              </select>
-            </fieldset>
+          <b-form @submit.prevent="selectNetwork()" class="float-left">
+            <b-form-group>
+              <b-form-select
+                v-model="network"
+                :options="networksOptions"
+                ></b-form-select>
+            </b-form-group>
             <button class="btn btn-lg btn-primary pull-xs-right">
               Set network
             </button>
-          </form>
+          </b-form>
 
         </b-col>
       </b-row>
@@ -61,7 +70,7 @@ import {
   UPDATE_USER,
   LOGOUT,
   FETCH_NETWORKS,
-  SET_NETWORK
+  UPDATE_CURRENT_NETWORK
 } from '@/store/actions.type'
 
 // XXX: Export Profile and Network settings into modules.
@@ -69,11 +78,21 @@ export default {
   name: 'Profile',
   data () {
     return {
-      network: ''
+      network: {},
+      password: '',
+      networksOptions: []
     }
   },
   computed: {
-    ...mapGetters(['currentUser', 'currentNetwork'])
+    ...mapGetters(['currentUser', 'currentNetwork', 'networks'])
+  },
+  watch: {
+    networks (newValue, oldValue) {
+      // Lets build options
+      for (const key of newValue) {
+        this.networksOptions.push({ text: key.name, value: key })
+      }
+    }
   },
   mounted () {
     this.fetchNetworks()
@@ -84,8 +103,9 @@ export default {
         this.$router.push({ name: '/' })
       })
     },
+    // will set the current global network as the selected network.
     selectNetwork () {
-      this.$store.dispatch(SET_NETWORK, null)
+      this.$store.dispatch(UPDATE_CURRENT_NETWORK, this.network)
     },
     async logout () {
       this.$store.dispatch(LOGOUT).then(() => {
@@ -93,7 +113,7 @@ export default {
       })
     },
     fetchNetworks () {
-      this.$store.dispatch(FETCH_NETWORKS, this.currentUser.id)
+      this.$store.dispatch(FETCH_NETWORKS, this.currentUser.ID)
     }
   }
 }
