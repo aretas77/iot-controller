@@ -16,7 +16,7 @@
         <!-- Right aligned nav items -->
         <b-navbar-nav class="ml-auto">
           <!-- Links to the currently active network -->
-          <b-nav-item v-if="activeNetwork.name">
+          <b-nav-item v-if="activeNetwork">
             <router-link
               class="nav-link"
               active-class="active"
@@ -85,7 +85,7 @@ export default {
       }
     },
     currentNetwork () {
-      this.activeNetwork = this.currentNetwork
+      this.refreshActiveNetwork()
     }
   },
   methods: {
