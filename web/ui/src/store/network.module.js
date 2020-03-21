@@ -1,4 +1,5 @@
 import { NetworkService } from '@/common/api.service'
+import NetworkStorageService from '@/common/network.service'
 import {
   FETCH_NETWORK,
   FETCH_NETWORKS,
@@ -13,9 +14,7 @@ import {
 
 const initialState = {
   // This should be a global network for a user
-  network: {
-    name: ''
-  },
+  network: NetworkStorageService.getNetwork(),
   networks: [],
   networksCount: 0,
   isLoadingNetworks: true
@@ -44,7 +43,7 @@ export const actions = {
 
   async [UPDATE_CURRENT_NETWORK] (context, network) {
     console.log('UPDATE_CURRENT_NETWORK start')
-    if (network === undefined || network.name === '') {
+    if (network === null || network === undefined || network.name === '') {
       return null
     }
     context.commit(SET_NETWORK, network)
@@ -61,9 +60,10 @@ export const mutations = {
   [SET_NETWORK] (state, network) {
     console.log('SET_NETWORK')
     state.network = network
+    NetworkStorageService.saveNetwork(network)
   },
   [SET_NETWORKS] (state, networks) {
-    console.log('SET_NETWORKS' + networks)
+    console.log('SET_NETWORKS')
     state.networks = networks
   },
   [PURGE_NETWORK] (state) {
@@ -75,6 +75,9 @@ export const mutations = {
 
 const getters = {
   currentNetwork (state) {
+    if (state.network === null) {
+      return {}
+    }
     return state.network
   },
   networks (state) {
