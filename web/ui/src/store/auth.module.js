@@ -1,5 +1,6 @@
 import ApiService from '@/common/api.service'
 import JwtService from '@/common/jwt.service'
+import NetworkService from '@/common/network.service'
 import {
   LOGIN,
   LOGOUT,
@@ -86,7 +87,10 @@ const mutations = {
     state.isAuthenticated = false
     state.user = {}
     state.errors = {}
+
+    // We don't need to see them - destroy
     JwtService.destroyToken()
+    NetworkService.destroyNetwork()
   },
   [FETCH_CURRENT_USER] (state) {
     console.log('Calling FETCH_CURRENT_USER')

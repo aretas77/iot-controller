@@ -14,7 +14,7 @@
         </b-navbar-nav>
 
         <!-- Right aligned nav items -->
-        <b-navbar-nav class="ml-auto">
+        <b-navbar-nav class="ml-auto" v-if="isAuthenticated">
           <!-- Links to the currently active network -->
           <b-nav-item v-if="activeNetwork">
             <router-link
@@ -30,7 +30,11 @@
           </b-nav-item>
 
           <!-- Links to the currently active user profile -->
-          <b-nav-item v-if="currentUser.username">
+
+          <!-- XXX: this could break if currentUser is null, but we assume
+                that it is not null because we are authenticated and thus there
+                should be a currentUser. -->
+          <b-nav-item v-if="isAuthenticated">
             <router-link
               class="nav-link"
               active-class="active"
