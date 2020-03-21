@@ -1,3 +1,4 @@
+export const UNREGISTERED_NODE_ADD = 'unregisteredNodeAdd'
 export const NODE_ADD = 'addNode'
 export const NODE_REMOVE = 'removeNode'
 export const NODE_UPDATE = 'updateNode'

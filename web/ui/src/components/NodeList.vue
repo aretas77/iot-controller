@@ -10,6 +10,7 @@
     </b-container>
 
     <b-container fluid class="node-list-container" v-else>
+      <!-- Top of container for buttons and various editing -->
       <b-row class="m-3">
         <b-col col class="d-flex align-items-start">
           <router-link
@@ -27,6 +28,7 @@
         </b-col>
       </b-row>
 
+      <!-- Start of NodeList -->
       <b-row>
         <b-col>
           <div v-if="nodes.length === 0" class="node-preview">
@@ -68,7 +70,7 @@ export default {
     itemsPerPage: {
       type: Number,
       required: false,
-      default: 1
+      default: 5
     }
   },
   data () {

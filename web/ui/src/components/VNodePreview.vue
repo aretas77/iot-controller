@@ -10,7 +10,7 @@
       </b-col>
 
       <b-col cols=4>
-        <NodeMeta isPreview :node="node" />
+        <NodeMeta isPreview :node="node" :actions="true" />
       </b-col>
 
     </b-row>

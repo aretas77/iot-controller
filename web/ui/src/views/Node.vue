@@ -1,5 +1,5 @@
 <template>
-  <div class="node-page">
+  <div class="node-page mt-3">
     <div class="banner">
       <div class="container">
         <h1>{{ node.name }}</h1>
@@ -48,7 +48,6 @@ export default {
   },
   // actions
   beforeRouteEnter (to, from, next) {
-    console.log(to.params)
     Promise.all([
       store.dispatch(FETCH_NODE, to.params.slug)
     ]).then(() => {

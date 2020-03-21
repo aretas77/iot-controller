@@ -1,7 +1,7 @@
 <template>
   <!-- Used when User is also owner of the Node or Admin -->
   <span v-if="canModify">
-    <router-link class="btn btn-sm btn-outline-secondary" :to="editNodeLink">
+    <router-link class="btn btn-sm btn-outline-secondary mr-3" :to="editNodeLink">
       <i class="ion-edit"></i> <span>&nbsp;Edit Node</span>
     </router-link>
     <span>&nbsp;&nbsp;</span>

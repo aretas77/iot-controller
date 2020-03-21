@@ -17,7 +17,7 @@
      <IotctlNodeActions
       v-if='actions'
       :node='node'
-      :canModify='isCurrentUser()'
+      :canModify='isCurrentUser() || isSuperAdmin()'
     />
   </b-container>
 </template>
@@ -53,6 +53,11 @@ export default {
       if (this.currentUser.username && this.node.username) {
         return this.currentUser.username === this.node.username
       }
+      return true
+    },
+    isSuperAdmin () {
+      // TODO: how should we check for super admin?
+      // For future projects probably better to use a seperate admin panel.
       return true
     }
   }
