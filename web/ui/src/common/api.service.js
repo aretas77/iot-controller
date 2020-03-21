@@ -77,6 +77,9 @@ export const NodesService = {
   create (params) {
     return ApiService.post('nodes', { node: params })
   },
+  createUnregistered (params) {
+    return ApiService.post('nodes', params)
+  },
   update (slug, params) {
     return ApiService.update('nodes', slug, { node: params })
   },

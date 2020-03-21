@@ -7,6 +7,7 @@ import {
   NODE_EDIT,
   NODE_REMOVE,
   NODE_ADD,
+  UNREGISTERED_NODE_ADD,
   NODE_RESET_STATE
 } from './actions.type'
 import {
@@ -65,6 +66,11 @@ export const actions = {
   [NODE_ADD] ({ state }) {
     console.log('NODE_ADD call')
     return NodesService.create(state.node)
+  },
+  [UNREGISTERED_NODE_ADD] (context, unregisteredNode) {
+    console.log('UNREGISTERED_NODE_ADD call')
+    console.log(unregisteredNode)
+    return NodesService.createUnregistered(unregisteredNode)
   },
   [NODE_EDIT] ({ state }) {
     return NodesService.update(state.node.slug, state.node)

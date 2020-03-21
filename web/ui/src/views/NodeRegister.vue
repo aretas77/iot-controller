@@ -1,26 +1,40 @@
 <template>
   <div class="node-editor">
-    <b-container>
+    <b-container class="border mt-3">
       <b-row>
         <b-col>
           <IotctlListErrors :errors="errors" />
-
-          <b-form @submit.prevent="onPublish(unregisteredNode.slug)">
+          <b-form
+            id="register_node"
+            @submit.prevent="onPublish(unregisteredNode.slug)"
+            >
 
             <fieldset :disabled="inProgress">
-              <fieldset class="form-group">
-                <input
+              <b-form-group
+                id="mac-group"
+                label="Node MAC address"
+                label-for="mac-input"
+                >
+                <b-form-input
+                  id="mac-input"
                   type="text"
                   class="form-control form-control-lg"
                   v-model="unregisteredNode.mac"
-                  placeholder="Node MAC"
+                  :state="validateMAC"
                 />
-              </fieldset>
+                <b-form-invalid-feedback :state="validateMAC">
+                  Invalid MAC. The format is AA:BB:CC:DD:EE:FF.
+                </b-form-invalid-feedback>
+                <b-form-valid-feedback :state="validateMAC">
+                  Looks good.
+                </b-form-valid-feedback>
+              </b-form-group>
 
               <b-form-group>
                 <b-form-select
                   v-model="network"
                   :options="networksOptions"
+                  :state="validateNetwork"
                   >
                   <template v-slot:first v-if="currentNetwork.name">
                     <b-form-select-option
@@ -31,13 +45,16 @@
                     </b-form-select-option>
                   </template>
                 </b-form-select>
+                <b-form-invalid-feedback :state="validateNetwork">
+                  Please select a network.
+                </b-form-invalid-feedback>
               </b-form-group>
             </fieldset>
 
             <!-- Form submit button -->
             <button
-              :disabled="inProgress"
-              class="btn btn-lg pull-xs-right btn-primary"
+              :disabled="!validateMAC || !validateNetwork"
+              class="btn btn-lg pull-xs-right btn-primary m-3"
               type="submit"
             >
               Register Node
@@ -54,7 +71,7 @@ import { mapGetters } from 'vuex'
 import store from '@/store'
 import IotctlListErrors from '@/components/ListErrors'
 import {
-  NODE_ADD,
+  UNREGISTERED_NODE_ADD,
   NODE_RESET_STATE,
   FETCH_NETWORKS
 } from '@/store/actions.type'
@@ -101,21 +118,31 @@ export default {
       errors: {},
       unregisteredNode: {},
       network: null,
-      networksOptions: []
+      networksOptions: [],
+      validated: false
     }
   },
-  computed: {
-    ...mapGetters(['currentUser', 'currentNetwork', 'networks'])
-  },
 
+  computed: {
+    ...mapGetters(['currentUser', 'currentNetwork', 'networks']),
+    validateMAC () {
+      return this.validMAC(this.unregisteredNode.mac)
+    },
+    validateNetwork () {
+      return this.validNetwork()
+    }
+  },
   methods: {
     // Publish the filled up form of Node creation
     onPublish (slug) {
-      const action = NODE_ADD
+      const action = UNREGISTERED_NODE_ADD
       this.inProgress = true
+      console.log(this.network)
       this.$store
-        .dispatch(action)
-        .then(({ data }) => {
+        .dispatch(action, {
+          mac: this.unregisteredNode.mac,
+          network_refer: this.network.ID
+        }).then(({ data }) => {
           this.inProgress = false
           this.$router.push({
             name: 'node',
@@ -128,7 +155,28 @@ export default {
     },
     fetchNetworks () {
       this.$store.dispatch(FETCH_NETWORKS, this.currentUser.ID)
+    },
+    validMAC: function (mac) {
+      var re = /^((([a-fA-F0-9][a-fA-F0-9]+[-]){5}|([a-fA-F0-9][a-fA-F0-9]+[:]){5})([a-fA-F0-9][a-fA-F0-9])$)|(^([a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]+[.]){2}([a-fA-F0-9][a-fA-F0-9][a-fA-F0-9][a-fA-F0-9]))$/
+      return re.test(mac)
+    },
+    validNetwork: function () {
+      if (this.network === null || this.network === undefined) {
+        return false
+      }
+      for (const key of this.networks) {
+        if (this.currentNetwork.name === key.name) {
+          return true
+        }
+      }
+      return false
     }
   }
 }
 </script>
+
+<style lang="scss">
+.register_node {
+  position: relative;
+}
+</style>
