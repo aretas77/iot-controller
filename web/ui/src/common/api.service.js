@@ -95,7 +95,7 @@ export const NetworkService = {
     return ApiService.get('networks', slug)
   },
   getByUser (userId) {
-    return ApiService.get(`user/${userId}/networks`)
+    return ApiService.get(`users/${userId}/networks`)
   },
   create (params) {
     return ApiService.post('networks', { network: params })
