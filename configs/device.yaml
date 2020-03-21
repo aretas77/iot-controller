@@ -10,10 +10,5 @@ devices:
             - bmp180
         interface: "esp32"
         network: "global"
-    device2:
-        name: TempReader2
-        mac: "AA:BB:CC:DD:EE:02"
-        sensors:
-            - bmp180
-        interface: "esp32"
-        network: "global"
+        battery: 2400
+        statistics: "kitchen_1.txt"

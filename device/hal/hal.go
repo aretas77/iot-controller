@@ -19,7 +19,7 @@ type PowerConsumption struct {
 type HAL interface {
 
 	// Initialize will setup and initialize the simulated device.
-	Initialize() error
+	Initialize(statFile string) error
 
 	// GetDeviceName will return the name of the device.
 	GetDeviceName() string
@@ -29,7 +29,8 @@ type HAL interface {
 
 	// GetTemperature will return a temperature value and how much energy was
 	// used by using the sensor.
-	GetTemperature() (float32, float32)
+	// sensor - Name of the sensor from which we will read.
+	GetTemperature(sensor string) (float32, float32)
 
 	// SetPowerMode will set the power mode of the simulation device which
 	// will adjust TX, RX and other peripheral power consumption.
@@ -38,6 +39,6 @@ type HAL interface {
 	// GetPowerMode will return the devices operating mode.
 	GetPowerMode() string
 
-	// GetBatteryPercentage will return the battery left percentage.
-	GetBatteryPercentage() float32
+	// PowerOff should clean up.
+	PowerOff()
 }

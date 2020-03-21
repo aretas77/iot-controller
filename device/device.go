@@ -46,6 +46,13 @@ type NodeDevice struct {
 	Status     string
 	Network    string
 
+	// The battery size of current device.
+	BatteryMah        int
+	BatteryPercentage float32
+
+	// Statistics
+	StatisticsFile string
+
 	LastSentGreeting time.Time
 	ReadInterval     time.Duration
 	SendInterval     time.Duration
@@ -68,10 +75,13 @@ func (n *NodeDevice) Start() {
 	n.ReceivedAck = make(chan struct{})
 	ticker := time.NewTicker(3 * time.Second)
 
-	if err := n.Hal.Initialize(); err != nil {
+	if err := n.Hal.Initialize(n.StatisticsFile); err != nil {
 		logrus.Error(err)
 		return
 	}
+	defer n.Hal.PowerOff()
+
+	n.Hal.GetTemperature("bmp180")
 
 	// will handle the broadcasted messages from main device controller
 	go n.ReceiveLoop()
@@ -159,5 +169,18 @@ func (n *NodeDevice) PublishGreeting() {
 // PublishSensorData prepares sensor data which will be sent for
 // Reinforcement Learning.
 func (n *NodeDevice) PublishSensorData() {
+	payload, _ := json.Marshal(&mqtt.MessageStats{
+		BatteryLeft: n.BatteryMah,
+		Temperature: 0,
+		ReadTime:    "",
+	})
 
+	// Send to the main MQTT send channel
+	n.Send <- Message{
+		Mac:     n.Mac,
+		Topic:   fmt.Sprintf("node/%s/%s/stats", n.Network, n.Mac),
+		QoS:     0,
+		Payload: payload,
+	}
+	return
 }

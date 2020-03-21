@@ -18,7 +18,8 @@ type MessageAck struct {
 }
 
 type MessageStats struct {
-	CPULoad       int     `json:"cpu_load"`
-	ConsumedPower int     `json:"consumed_power"`
-	Temperature   float32 `json:"temperature"`
+	CPULoad     int     `json:"cpu_load"`
+	BatteryLeft int     `json:"battery_left"`
+	Temperature float32 `json:"temperature"`
+	ReadTime    string  `json:"read_time"`
 }

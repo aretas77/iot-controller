@@ -96,14 +96,15 @@ func (d *DeviceController) Start(stop chan bool, devs []DeviceInfo) error {
 	for _, dev := range devs {
 		d.broadcast[dev.MAC] = make(chan Message, 10)
 		tempDevice := &NodeDevice{
-			Name:       dev.Name,
-			Mac:        dev.MAC,
-			Network:    dev.Network,
-			Send:       d.mqttQueue,
-			Receive:    d.broadcast[dev.MAC],
-			Location:   "",
-			IpAddress4: "",
-			Status:     NodeDeviceNew,
+			Name:           dev.Name,
+			Mac:            dev.MAC,
+			Network:        dev.Network,
+			Send:           d.mqttQueue,
+			Receive:        d.broadcast[dev.MAC],
+			Location:       "",
+			IpAddress4:     "",
+			Status:         NodeDeviceNew,
+			StatisticsFile: dev.Statistics,
 
 			// Lets give each NodeDevice a reference to the main WorkGroup and
 			// an exit channel.
@@ -113,6 +114,8 @@ func (d *DeviceController) Start(stop chan bool, devs []DeviceInfo) error {
 			// Values derived from the model and adjustable by S-MQTT.
 			ReadInterval: 0,
 			SendInterval: 0,
+
+			BatteryMah: dev.BatteryMah,
 		}
 
 		// Need to set the Hardware Abstraction Layer interface for the device.
