@@ -1,11 +1,12 @@
 const ACTIVE_NETWORK = 'active_network'
 
 export const getNetwork = () => {
-  return window.localStorage.getItem(ACTIVE_NETWORK)
+  var net = window.localStorage.getItem(ACTIVE_NETWORK)
+  return JSON.parse(net)
 }
 
 export const saveNetwork = network => {
-  window.localStorage.setItem(ACTIVE_NETWORK, network)
+  window.localStorage.setItem(ACTIVE_NETWORK, JSON.stringify(network))
 }
 
 export const destroyNetwork = () => {

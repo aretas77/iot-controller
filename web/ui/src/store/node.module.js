@@ -97,7 +97,6 @@ export const mutations = {
     state.isLoading = false
   },
   [RESET_STATE] () {
-    console.log(state)
     for (const f in state) {
       Vue.set(state, f, initialState[f])
     }

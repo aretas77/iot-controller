@@ -70,12 +70,10 @@ export default {
     }
   },
   async created () {
-    await this.refreshActiveUser()
     await this.refreshActiveNetwork()
   },
   watch: {
     // everytime a route is changed refresh the activeUser
-    $route: 'refreshActiveUser',
     isAuthenticated (newValue, oldValue) {
       console.log(`isAuthenticated changed from ${oldValue} to ${newValue}`)
 
@@ -89,8 +87,6 @@ export default {
     }
   },
   methods: {
-    async refreshActiveUser () {
-    },
     async refreshActiveNetwork () {
       this.activeNetwork = this.currentNetwork
     },
