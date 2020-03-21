@@ -86,15 +86,16 @@ func (app *Iotctl) OnMessageGreeting(client MQTT.Client, msg MQTT.Message) {
 	app.sql.GormDb.Create(&settings)
 
 	node := models.Node{
-		Name:         "AckNode",
-		Mac:          payload.MAC,
-		Location:     "",
-		IpAddress4:   "",
-		IpAddress6:   "NA",
-		LastSentAck:  time.Now(),
-		Status:       models.Registered,
-		SettingsID:   settings.ID,
-		NetworkRefer: tmpNode.NetworkRefer,
+		Name:                "AckNode",
+		Mac:                 payload.MAC,
+		Location:            "",
+		IpAddress4:          payload.IpAddress4,
+		IpAddress6:          "",
+		LastSentAck:         payload.Sent,
+		LastReceivedMessage: time.Now(),
+		Status:              models.Registered,
+		SettingsID:          settings.ID,
+		NetworkRefer:        tmpNode.NetworkRefer,
 	}
 	app.sql.GormDb.Create(&node)
 

@@ -154,6 +154,7 @@ func (n *NodeDevice) PublishGreeting() {
 		MAC:        n.Mac,
 		Name:       n.Name,
 		IpAddress4: "172.16.0.5",
+		Sent:       time.Now(),
 	})
 
 	// Send to the main MQTT send channel
