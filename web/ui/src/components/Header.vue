@@ -16,16 +16,16 @@
         <!-- Right aligned nav items -->
         <b-navbar-nav class="ml-auto">
           <!-- Links to the currently active network -->
-          <b-nav-item v-if="currentNetwork.name">
+          <b-nav-item v-if="activeNetwork.name">
             <router-link
               class="nav-link"
               active-class="active"
               exact :to="{
-                name: 'network',
-                params: { id: currentNetwork.id }
+                name: 'Home',
+                params: { id: activeNetwork.id }
               }"
               >
-              Global
+              {{ activeNetwork.name }}
             </router-link>
           </b-nav-item>
 
@@ -53,7 +53,10 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { LOGOUT } from '@/store/actions.type'
+import {
+  LOGOUT,
+  NODE_RESET_STATE
+} from '@/store/actions.type'
 
 export default {
   name: 'Header',
@@ -62,18 +65,34 @@ export default {
   },
   data () {
     return {
-      activeUser: null
+      activeUser: null,
+      activeNetwork: null
     }
   },
   async created () {
     await this.refreshActiveUser()
+    await this.refreshActiveNetwork()
   },
   watch: {
     // everytime a route is changed refresh the activeUser
-    $route: 'refreshActiveUser'
+    $route: 'refreshActiveUser',
+    isAuthenticated (newValue, oldValue) {
+      console.log(`isAuthenticated changed from ${oldValue} to ${newValue}`)
+
+      if (newValue === false) {
+        this.$store.dispatch(NODE_RESET_STATE)
+        this.$router.push('/login')
+      }
+    },
+    currentNetwork () {
+      this.activeNetwork = this.currentNetwork
+    }
   },
   methods: {
     async refreshActiveUser () {
+    },
+    async refreshActiveNetwork () {
+      this.activeNetwork = this.currentNetwork
     },
     async logout () {
       this.$store.dispatch(LOGOUT).then(() => {

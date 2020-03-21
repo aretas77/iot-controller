@@ -2,9 +2,14 @@ import { NetworkService } from '@/common/api.service'
 import {
   FETCH_NETWORK,
   FETCH_NETWORKS,
-  SET_NETWORK,
-  SET_NETWORKS
+  UPDATE_CURRENT_NETWORK,
+  NETWORK_RESET_STATE
 } from './actions.type'
+import {
+  SET_NETWORKS,
+  SET_NETWORK,
+  PURGE_NETWORK
+} from './mutations.type'
 
 const initialState = {
   // This should be a global network for a user
@@ -35,18 +40,36 @@ export const actions = {
     const { data } = await NetworkService.getByUser(userID)
     context.commit(SET_NETWORKS, data)
     return data
+  },
+
+  async [UPDATE_CURRENT_NETWORK] (context, network) {
+    console.log('UPDATE_CURRENT_NETWORK start')
+    if (network === undefined || network.name === '') {
+      return null
+    }
+    context.commit(SET_NETWORK, network)
+  },
+
+  async [NETWORK_RESET_STATE] (context) {
+    console.log('NETWORK_RESET_STATE start')
+    context.commit(PURGE_NETWORK)
   }
 }
 
 /* eslint no-param-reassign: ["error", { "props": false }] */
 export const mutations = {
   [SET_NETWORK] (state, network) {
-    console.log('SET_NETWORK' + network)
+    console.log('SET_NETWORK')
     state.network = network
   },
   [SET_NETWORKS] (state, networks) {
     console.log('SET_NETWORKS' + networks)
     state.networks = networks
+  },
+  [PURGE_NETWORK] (state) {
+    state.network = {}
+    state.networks = {}
+    state.networksCount = 0
   }
 }
 
