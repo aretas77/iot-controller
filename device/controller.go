@@ -117,6 +117,7 @@ func (d *DeviceController) Start(stop chan bool, devs []DeviceInfo) error {
 			Stop: exit,
 
 			// Values derived from the model and adjustable by S-MQTT.
+			// Should be parsed from the model.
 			ReadInterval: 0,
 			SendInterval: 0,
 		}
@@ -154,6 +155,5 @@ func (d *DeviceController) Start(stop chan bool, devs []DeviceInfo) error {
 	d.wg.Wait()
 
 	logrus.Infof("device controller is ending")
-
 	return nil
 }
