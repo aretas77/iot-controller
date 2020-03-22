@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/aretas77/iot-controller/device/hal"
+	"github.com/aretas77/iot-controller/types/devices"
 	"github.com/aretas77/iot-controller/types/mqtt"
 	"github.com/sirupsen/logrus"
 )
@@ -39,16 +40,12 @@ const (
 //
 // NodeDevice is the main struct for device simulation.
 type NodeDevice struct {
-	Name       string
-	Mac        string
-	Location   string
-	IpAddress4 string
-	Status     string
-	Network    string
+	devices.System
 
 	// The battery size of current device.
-	BatteryMah        int
+	BatteryMah        float32
 	BatteryPercentage float32
+	ConsumedTimeFrame mqtt.ConsumedFrame
 
 	// Statistics
 	StatisticsFile string
@@ -67,15 +64,27 @@ type NodeDevice struct {
 	Receive chan Message
 }
 
+// Initialize will initialize the struct of NodeDevice.
+func (n *NodeDevice) Initialize() error {
+	// If HAL has failed to init - don't bother anymore, just return the error.
+	if err := n.Hal.Initialize(n.StatisticsFile); err != nil {
+		return err
+	}
+
+	n.ReceivedAck = make(chan struct{})
+
+	return nil
+}
+
 // Start is essentially a 'state machine' for single NodeDevice which
 // will transition between states.
 // The NodeDevice will run as a goroutine which will have its own:
 //	- ReceiveLoop
 func (n *NodeDevice) Start() {
-	n.ReceivedAck = make(chan struct{})
 	ticker := time.NewTicker(3 * time.Second)
 
-	if err := n.Hal.Initialize(n.StatisticsFile); err != nil {
+	// Initialize NodeDevice
+	if err := n.Initialize(); err != nil {
 		logrus.Error(err)
 		return
 	}
@@ -112,6 +121,7 @@ init:
 		}
 	}
 
+	logrus.Infof("Device stopped (%s)", n.Mac)
 	return
 }
 
@@ -170,10 +180,13 @@ func (n *NodeDevice) PublishGreeting() {
 // PublishSensorData prepares sensor data which will be sent for
 // Reinforcement Learning.
 func (n *NodeDevice) PublishSensorData() {
+	consumed, temperature := n.Hal.GetTemperature("bmp180")
+	n.BatteryMah -= consumed
+
 	payload, _ := json.Marshal(&mqtt.MessageStats{
-		BatteryLeft: n.BatteryMah,
-		Temperature: 0,
-		ReadTime:    "",
+		BatteryLeft:  n.BatteryMah,
+		Temperature:  temperature,
+		TempReadTime: time.Now(),
 	})
 
 	// Send to the main MQTT send channel

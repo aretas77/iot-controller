@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/aretas77/iot-controller/device/hal"
+	"github.com/aretas77/iot-controller/types/devices"
 	"github.com/aretas77/iot-controller/types/mqtt"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/sirupsen/logrus"
@@ -96,14 +97,18 @@ func (d *DeviceController) Start(stop chan bool, devs []DeviceInfo) error {
 	for _, dev := range devs {
 		d.broadcast[dev.MAC] = make(chan Message, 10)
 		tempDevice := &NodeDevice{
-			Name:           dev.Name,
-			Mac:            dev.MAC,
-			Network:        dev.Network,
+			System: devices.System{
+				Name:              dev.Name,
+				Mac:               dev.MAC,
+				Network:           dev.Network,
+				Location:          "",
+				IpAddress4:        "",
+				Status:            NodeDeviceNew,
+				BatteryMah:        dev.Battery,
+				BatteryPercentage: 100,
+			},
 			Send:           d.mqttQueue,
 			Receive:        d.broadcast[dev.MAC],
-			Location:       "",
-			IpAddress4:     "",
-			Status:         NodeDeviceNew,
 			StatisticsFile: dev.Statistics,
 
 			// Lets give each NodeDevice a reference to the main WorkGroup and
@@ -114,8 +119,6 @@ func (d *DeviceController) Start(stop chan bool, devs []DeviceInfo) error {
 			// Values derived from the model and adjustable by S-MQTT.
 			ReadInterval: 0,
 			SendInterval: 0,
-
-			BatteryMah: dev.BatteryMah,
 		}
 
 		// Need to set the Hardware Abstraction Layer interface for the device.
