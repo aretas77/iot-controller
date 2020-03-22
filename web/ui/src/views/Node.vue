@@ -3,6 +3,7 @@
     <div class="banner">
       <div class="container">
         <h1>{{ node.name }}</h1>
+        <p>{{ node.mac }}</p>
       </div>
     </div>
     <div>

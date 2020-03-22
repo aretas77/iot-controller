@@ -8,7 +8,6 @@
         <b-navbar-nav>
           <b-nav-item to="/">Home</b-nav-item>
           <b-nav-item v-if="isAuthenticated" to="/nodes">Nodes</b-nav-item>
-          <b-nav-item v-if="isAuthenticated" to="/models">Models</b-nav-item>
           <b-nav-item v-if="!isAuthenticated" to="/login">Login</b-nav-item>
           <b-nav-item v-if="isAuthenticated" @click="logout">Logout</b-nav-item>
         </b-navbar-nav>

@@ -46,12 +46,21 @@
         </b-col>
         <b-col>
           <h1 class="text-xs-center mt-4">Network settings</h1>
-          <b-form @submit.prevent="selectNetwork()" class="float-left">
+          <b-form @submit.prevent="selectNetwork()">
             <b-form-group>
               <b-form-select
                 v-model="network"
                 :options="networksOptions"
-                ></b-form-select>
+                >
+                <template v-slot:first v-if="currentNetwork.name">
+                  <b-form-select-option
+                    :value="null"
+                    disabled
+                    >
+                    -- Current network: {{ currentNetwork.name }} --
+                  </b-form-select-option>
+                </template>
+              </b-form-select>
             </b-form-group>
             <button class="btn btn-lg btn-primary pull-xs-right">
               Set network
@@ -78,7 +87,7 @@ export default {
   name: 'Profile',
   data () {
     return {
-      network: {},
+      network: null,
       password: '',
       networksOptions: []
     }
@@ -88,7 +97,6 @@ export default {
   },
   watch: {
     networks (newValue, oldValue) {
-      // Lets build options
       for (const key of newValue) {
         this.networksOptions.push({ text: key.name, value: key })
       }
