@@ -137,16 +137,15 @@ export default {
     onPublish (slug) {
       const action = UNREGISTERED_NODE_ADD
       this.inProgress = true
-      console.log(this.network)
       this.$store
         .dispatch(action, {
           mac: this.unregisteredNode.mac,
-          network_refer: this.network.ID
-        }).then(({ data }) => {
+          network_refer: this.network.ID,
+          username: this.currentUser.name
+        }).then(() => {
           this.inProgress = false
           this.$router.push({
-            name: 'node',
-            params: { slug: data.unregisteredNode.slug }
+            name: 'home-nodes'
           })
         }).catch(({ response }) => {
           this.inProgress = false
@@ -165,7 +164,7 @@ export default {
         return false
       }
       for (const key of this.networks) {
-        if (this.currentNetwork.name === key.name) {
+        if (this.network.name === key.name) {
           return true
         }
       }
