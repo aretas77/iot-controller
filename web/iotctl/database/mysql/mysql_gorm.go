@@ -31,12 +31,14 @@ func (m *MySql) InitializeMigrationGorm() {
 	m.GormDb.Model(&models.Node{}).RemoveForeignKey("network_refer", "networks(id)")
 	m.GormDb.Model(&models.UnregisteredNode{}).RemoveForeignKey("network_refer", "networks(id)")
 	m.GormDb.Model(&models.Network{}).RemoveForeignKey("user_refer", "users(id)")
+	m.GormDb.Model(&models.NodeStatisticsEntry{}).RemoveForeignKey("node_refer", "nodes(id)")
 
 	m.GormDb.DropTableIfExists(&models.Network{}, &models.User{},
-		&models.Node{}, &models.NodeSettings{}, &models.UnregisteredNode{})
+		&models.Node{}, &models.NodeSettings{}, &models.UnregisteredNode{},
+		&models.NodeStatisticsEntry{})
 
 	m.GormDb.CreateTable(&models.User{}, &models.Node{}, &models.NodeSettings{},
-		&models.UnregisteredNode{}, &models.Network{})
+		&models.UnregisteredNode{}, &models.Network{}, &models.NodeStatisticsEntry{})
 
 	m.GormDb.Model(&models.Node{}).AddForeignKey("settings_id",
 		"node_settings(id)", "RESTRICT", "RESTRICT")
@@ -46,6 +48,8 @@ func (m *MySql) InitializeMigrationGorm() {
 		"users(id)", "RESTRICT", "RESTRICT")
 	m.GormDb.Model(&models.UnregisteredNode{}).AddForeignKey("network_refer",
 		"networks(id)", "RESTRICT", "RESTRICT")
+	m.GormDb.Model(&models.NodeStatisticsEntry{}).AddForeignKey("node_refer",
+		"nodes(id)", "RESTRICT", "RESTRICT")
 	//m.GormDb.Model(&models.UnregisteredNode{}).AddForeignKey("mac",
 	//"nodes(mac)", "RESTRICT", "RESTRICT")
 
@@ -70,4 +74,17 @@ func (m *MySql) CheckUserExists(creds *models.Credentials) (*models.User, error)
 	logrus.Debugf("User (name = %s, email = %s) authenticated", user.Username,
 		user.Email)
 	return &user, nil
+}
+
+// CheckNodeExists will check whether a `Node` exists with a given MAC address
+// and return a Node object if it does exist.
+func (m *MySql) CheckNodeExists(mac string) (*models.Node, error) {
+	var node models.Node
+
+	err := m.GormDb.Where("mac = ?", mac).Find(&node).Error
+	if err != nil {
+		return nil, models.ErrNodeNotFound
+	}
+
+	return &node, nil
 }
