@@ -32,7 +32,6 @@ type Node struct {
 	Mac                 string    `json:"mac" gorm:"unique;not null"`
 	Location            string    `json:"location"`
 	IpAddress4          string    `json:"ipv4"`
-	IpAddress6          string    `json:"ipv6"`
 	LastSentAck         time.Time `json:"last_sent_ack"`
 	LastReceivedMessage time.Time `json:"last_received"`
 	Status              Status    `json:"status" sql:"type:ENUM('acknowledged', 'registered')" gorm:"default:'acknowledged'"`

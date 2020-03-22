@@ -62,29 +62,32 @@ func (n *NodeController) migrateNodeGorm() error {
 	}
 
 	node := &models.Node{
-		Name:          "TestNode",
-		Mac:           "AA:BB:CC:DD:EE",
-		Location:      "Kaunas",
-		IpAddress4:    "172.8.0.20",
-		IpAddress6:    "NA",
-		LastSentAck:   time.Now(),
-		Status:        "acknowledged",
-		SettingsID:    settings2.ID,
-		AddedUsername: "admin",
-		NetworkRefer:  1,
+		Name:                "TestNode",
+		Mac:                 "AA:BB:CC:DD:EE",
+		Location:            "Kaunas",
+		IpAddress4:          "172.8.0.20",
+		LastSentAck:         time.Now(),
+		LastReceivedMessage: time.Now(),
+		Status:              "acknowledged",
+		SettingsID:          settings2.ID,
+		AddedUsername:       "admin",
+		NetworkRefer:        1,
+		BatteryMah:          2500,
+		BatteryPercentage:   100,
 	}
 
 	node2 := &models.Node{
-		Name:          "TestNode2",
-		Mac:           "AA:BB:CC:DD:EF",
-		Location:      "Kaunas",
-		IpAddress4:    "172.8.0.21",
-		IpAddress6:    "NA",
-		LastSentAck:   time.Now(),
-		Status:        "acknowledged",
-		SettingsID:    settings.ID,
-		AddedUsername: "admin",
-		NetworkRefer:  1,
+		Name:              "TestNode2",
+		Mac:               "AA:BB:CC:DD:EF",
+		Location:          "Kaunas",
+		IpAddress4:        "172.8.0.21",
+		LastSentAck:       time.Now(),
+		Status:            "acknowledged",
+		SettingsID:        settings.ID,
+		AddedUsername:     "admin",
+		NetworkRefer:      1,
+		BatteryMah:        2400,
+		BatteryPercentage: 100,
 	}
 
 	if n.sql.GormDb.NewRecord(node) {
