@@ -12,7 +12,11 @@
       <b-col cols="2" class="text-left">
         <span class="date">Last active: {{ node.last_received | time }}</span>
         <br />
-        <span class="battery" v-bind:class="activeColor">Battery: {{ node.battery_left_per }}% </span>
+        <span>Location: {{ node.location }}</span>
+        <br />
+        <span class="battery" v-bind:class="activeColor">
+          Battery: {{ node.battery_left_per }}% ({{ node.battery_left_mah }} mAh)
+        </span>
       </b-col>
 
       <b-col offset="6">
@@ -61,11 +65,15 @@ export default {
   },
   watch: {
     node () {
-      if (this.node.battery_left_per >= 80) {
+      if (this.node.battery_left_per >= 70) {
         this.good = true
         this.bad = false
         this.average = false
-      } else if (this.node.battery_left_per < 80) {
+      } else if (this.node.battery_left_per < 70 && this.node.battery_left_per > 40) {
+        this.good = false
+        this.average = true
+        this.bad = false
+      } else {
         this.good = false
         this.average = false
         this.bad = true
