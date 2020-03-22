@@ -11,9 +11,11 @@ type System struct {
 	Status               string               `json:"status"`
 	BatteryPercentage    float32              `json:"battery_left_per"`
 	BatteryMah           float32              `json:"battery_left_mah"`
+	CurrentBatteryMah    float32              `json:"cur_battery_mah"`
 	FreeNetworkScheduler FreeNetworkScheduler `json:"free_net_scheduler"`
 }
 
+// FreeNetworkScheduler ...
 type FreeNetworkScheduler struct {
 	Enabled   bool                      `json:"enabled"`
 	Monday    FreeNetworkSchedulerRange `json:"monday"`

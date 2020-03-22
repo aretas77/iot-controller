@@ -94,6 +94,7 @@ func (d *DeviceController) Start(stop chan bool, devs []DeviceInfo) error {
 	// Channel for controlling when to stop the working nodes.
 	exit := make(chan struct{})
 
+	// Construct NodeDevice with given parameters and run them.
 	for _, dev := range devs {
 		d.broadcast[dev.MAC] = make(chan Message, 10)
 		tempDevice := &NodeDevice{
@@ -102,9 +103,10 @@ func (d *DeviceController) Start(stop chan bool, devs []DeviceInfo) error {
 				Mac:               dev.MAC,
 				Network:           dev.Network,
 				Location:          "",
-				IpAddress4:        "",
+				IpAddress4:        "192.168.1.1",
 				Status:            NodeDeviceNew,
 				BatteryMah:        dev.Battery,
+				CurrentBatteryMah: dev.Battery,
 				BatteryPercentage: 100,
 			},
 			Send:           d.mqttQueue,
