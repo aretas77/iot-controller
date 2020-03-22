@@ -57,7 +57,8 @@ type NodeStatisticsEntry struct {
 	TempReadTime time.Time `json:"temp_read_time"`
 
 	// Refers to UserId to whom it belongs to.
-	UserRefer uint `json:"user_refer"`
+	NodeRefer uint  `json:"node_refer"`
+	Node      *Node `json:"node,omitempty"`
 }
 
 // UnregisteredNode is used to register node - User supplies MAC address of
