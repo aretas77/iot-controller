@@ -28,6 +28,9 @@ case "$1" in
         send_ack "$2"
         ;;
     *)
-        echo "$1"
+        if [ -z "$1" ]; then
+            echo "Empty args, usage: [send_ack]"
+        fi
+        echo "Received argument: $1"
         exit 1
 esac
