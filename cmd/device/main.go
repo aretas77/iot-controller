@@ -95,19 +95,23 @@ func start(c *cli.Context, filename string) error {
 	dev_index := 0
 	for _, dev := range config.Devices {
 		devices = append(devices, device.DeviceInfo{
-			Name:      dev.Name,
-			MAC:       dev.MAC,
-			Sensors:   dev.Sensors,
-			Network:   dev.Network,
-			Interface: dev.Interface,
+			Name:       dev.Name,
+			MAC:        dev.MAC,
+			Sensors:    dev.Sensors,
+			Network:    dev.Network,
+			Interface:  dev.Interface,
+			Battery:    dev.Battery,
+			Statistics: dev.Statistics,
 		})
 
 		logrus.WithFields(logrus.Fields{
-			"name":      devices[dev_index].Name,
-			"MAC":       devices[dev_index].MAC,
-			"sensors":   devices[dev_index].Sensors,
-			"network":   devices[dev_index].Network,
-			"interface": devices[dev_index].Interface,
+			"name":          devices[dev_index].Name,
+			"MAC":           devices[dev_index].MAC,
+			"sensors":       devices[dev_index].Sensors,
+			"network":       devices[dev_index].Network,
+			"interface":     devices[dev_index].Interface,
+			"battery (mah)": devices[dev_index].Battery,
+			"statistics":    devices[dev_index].Statistics,
 		}).Infof("adding a device")
 	}
 
