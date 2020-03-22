@@ -86,6 +86,7 @@ func (app *Iotctl) OnMessageGreeting(client MQTT.Client, msg MQTT.Message) {
 		Status:              models.Registered,
 		SettingsID:          settings.ID,
 		NetworkRefer:        tmpNode.NetworkRefer,
+		AddedUsername:       tmpNode.AddedUsername,
 	}
 	app.sql.GormDb.Create(&node)
 
@@ -124,6 +125,7 @@ func (app *Iotctl) OnMessageStats(client MQTT.Client, msg MQTT.Message) {
 // device status, e.g. its battery level, what HAL is used and etc.
 func (app *Iotctl) OnMessageSystem(client MQTT.Client, msg MQTT.Message) {
 	logrus.Infof("plain got message on: %s", msg.Topic())
+	logrus.Debugf("received system information = %s", msg.Payload())
 	payload := devices.System{}
 
 	if err := json.Unmarshal(msg.Payload(), &payload); err != nil {

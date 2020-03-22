@@ -70,7 +70,8 @@ type NodeStatisticsEntry struct {
 // Once a Node is registered - UnregisteredNode should be removed.
 type UnregisteredNode struct {
 	gorm.Model
-	Mac string `json:"mac" gorm:"not null"`
+	Mac           string `json:"mac" gorm:"not null"`
+	AddedUsername string `json:"username"`
 
 	// a `Has One` relationship. UnregisteredNode 0..* <-> 1 Network.
 	// UnregisteredNode `Has One` Network.
