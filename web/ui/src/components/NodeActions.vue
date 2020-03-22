@@ -33,14 +33,15 @@ export default {
   computed: {
     ...mapGetters(['profile', 'isAuthenticated']),
     editNodeLink () {
-      return { name: 'node-edit', params: { slug: this.node.slug } }
+      // return { name: 'node-edit', params: { slug: this.node.slug } }
+      return { name: 'Home' }
     }
   },
 
   methods: {
     async deleteNode () {
       try {
-        await this.$store.dispatch(NODE_REMOVE, this.node.slug)
+        await this.$store.dispatch(NODE_REMOVE, this.node.ID)
         this.$router.push('/')
       } catch (err) {
         console.error(err)

@@ -54,7 +54,7 @@ const ApiService = {
   },
 
   delete (resource) {
-    return Vue.axios.delete(`${resource}/${resource}`).catch(error => {
+    return Vue.axios.delete(`${resource}`).catch(error => {
       throw new Error(`[Iotctl] ApiService ${error}`)
     })
   }
@@ -84,7 +84,7 @@ export const NodesService = {
     return ApiService.update('nodes', slug, { node: params })
   },
   destroy (slug) {
-    return ApiService.update(`nodes/${slug}`)
+    return ApiService.delete(`nodes/${slug}`)
   }
 }
 
