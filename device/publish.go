@@ -55,10 +55,11 @@ func (n *NodeDevice) PublishSystemData() {
 // Reinforcement Learning.
 func (n *NodeDevice) PublishSensorData() {
 	consumed, temperature := n.Hal.GetTemperature("bmp180")
-	n.System.BatteryMah -= consumed
+	n.System.CurrentBatteryMah -= consumed
+	n.System.BatteryPercentage = n.calculateBatteryPercentage()
 
 	payload, _ := json.Marshal(&mqtt.MessageStats{
-		BatteryLeft:  n.System.BatteryMah,
+		BatteryLeft:  n.System.CurrentBatteryMah,
 		Temperature:  temperature,
 		TempReadTime: time.Now(),
 	})

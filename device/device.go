@@ -34,7 +34,7 @@ const (
 //	library. The model should contain initial values for when to read and send
 //	the statistics. When the model is received, go to the Publish mode.
 //
-// Publish state:
+// Statistics state:
 //	In this state, after the model is received, the device periodically sends
 //	sensor data until the device simulation is closed.
 //
@@ -60,6 +60,10 @@ type NodeDevice struct {
 
 	Send    chan Message
 	Receive chan Message
+}
+
+func (n *NodeDevice) calculateBatteryPercentage() float32 {
+	return (100 * n.System.CurrentBatteryMah) / n.System.BatteryMah
 }
 
 // Initialize will initialize the struct of NodeDevice.
@@ -108,12 +112,32 @@ handshake:
 		}
 	}
 
+	// Won't be receiving anything on this channel.
+	close(n.ReceivedAck)
+
 	// After a handshake is done, we can start tracking the time between sends
 	// and how much energy was consumed during the given timeframe.
+	//
+	// NOTE: Each publish from this point should keep track of consumed
+	// battery and how much time elapsed between various publishe events.
 	n.ConsumedTimeFrame.Duration = time.Since(time.Now())
 
-	// Publish initial system information to verify that its correct.
+	// Publish initial system information to verify that its correct and
+	// don't wait for any response - continue to other state.
 	n.PublishSystemData()
+
+statistics:
+	for {
+		select {
+		case <-ticker.C:
+			// Extract statistic read interval from MQTT lib
+			logrus.Debugf("sending a statistic %s", n.System.Mac)
+			n.PublishSensorData()
+		case <-n.Stop:
+			n.Wg.Done()
+			break statistics
+		}
+	}
 
 init:
 	for {
