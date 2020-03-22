@@ -9,18 +9,18 @@ port=1883
 send_ack() {
     mac=$1
     ackFile="ack.json"
-    
-    if [ -z ${mac} ]; then
+
+    if [ -z "${mac}" ]; then
         echo "empty mac" && exit 1
     fi
 
     ackTopic="control/global/${mac}/ack"
-    
+
 cat > ${ackFile} << EOL
 { "mac": "${mac}", "network": "global" }
 EOL
 
-    mosquitto_pub -u mock -P test -h $server -p $port -t $ackTopic -f ack.json
+    mosquitto_pub -u mock -P test -h "$server" -p "$port" -t "$ackTopic" -f ack.json
 }
 
 case "$1" in
