@@ -2,6 +2,12 @@ package mqtt
 
 import "time"
 
+const (
+	ConsumedStateHandshake  = "handshake"
+	ConsumedStateStatistics = "statistics"
+	ConsumedStateInit       = "init"
+)
+
 // MessageGreeting is used by node devices when they first boot up. They send
 // a so called Greeting/Hello to the server to indicate that they exist.
 // TODO: currently, we need to manually set the Network name on the device,
@@ -35,4 +41,5 @@ type MessageStats struct {
 type ConsumedFrame struct {
 	Duration    time.Duration `json:"duration"`
 	ConsumedMah float32       `json:"consumed_mah"`
+	State       string        `json:"state"`
 }
