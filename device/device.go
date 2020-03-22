@@ -31,8 +31,9 @@ const (
 //	The ReceivedAck message will transfer the device into another state.
 //
 // Initial model download state: (skip for now)
-//  After Handshake is done, the device will wait for a model for its MQTT
-//	library. When the model is sent go to the Publish mode.
+//	After Handshake is done, the device will wait for a model for its MQTT
+//	library. The model should contain initial values for when to read and send
+//	the statistics. When the model is received, go to the Publish mode.
 //
 // Publish state:
 //	In this state, after the model is received, the device periodically sends
@@ -42,9 +43,7 @@ const (
 type NodeDevice struct {
 	devices.System
 
-	// The battery size of current device.
-	BatteryMah        float32
-	BatteryPercentage float32
+	// How much energy was consumed in the given time frame.
 	ConsumedTimeFrame mqtt.ConsumedFrame
 
 	// Statistics
@@ -72,7 +71,6 @@ func (n *NodeDevice) Initialize() error {
 	}
 
 	n.ReceivedAck = make(chan struct{})
-
 	return nil
 }
 
@@ -90,20 +88,19 @@ func (n *NodeDevice) Start() {
 	}
 	defer n.Hal.PowerOff()
 
-	n.Hal.GetTemperature("bmp180")
-
 	// will handle the broadcasted messages from main device controller
 	go n.ReceiveLoop()
 
+	// Send a greeting every N seconds defined by the ticker.
 handshake:
 	for {
 		select {
 		case <-n.ReceivedAck:
-			logrus.Infof("received ACK %s", n.Mac)
+			logrus.Infof("received ACK %s", n.System.Mac)
 			break handshake
 		case <-ticker.C:
 			// publish a greeting
-			logrus.Infof("sending a greeting %s", n.Mac)
+			logrus.Infof("sending a greeting %s", n.System.Mac)
 			n.PublishGreeting()
 		case <-n.Stop:
 			ticker.Stop()
@@ -111,6 +108,10 @@ handshake:
 			return
 		}
 	}
+
+	// After a handshake is done, we can start tracking the time between sends
+	// and how much energy was consumed during the given timeframe.
+	n.ConsumedTimeFrame.Duration = time.Since(time.Now())
 
 init:
 	for {
@@ -121,12 +122,12 @@ init:
 		}
 	}
 
-	logrus.Infof("Device stopped (%s)", n.Mac)
+	logrus.Infof("Device stopped (%s)", n.System.Mac)
 	return
 }
 
 func (n *NodeDevice) ReceiveLoop() {
-	logrus.Debugf("receive loop running for %s", n.Mac)
+	logrus.Debugf("receive loop running for %s", n.System.Mac)
 	for {
 		select {
 		case msg := <-n.Receive:
@@ -142,14 +143,15 @@ func (n *NodeDevice) ReceiveLoop() {
 
 				// We now know that the device is acknowledged by the server
 				// as existing.
-				n.Status = NodeDeviceRegistered
-				n.Network = ack.Network
-				logrus.Infof("Device (%s) status (%s) -> (%s)", n.Mac,
-					NodeDeviceNew, n.Status)
+				n.System.Status = NodeDeviceRegistered
+				n.System.Network = ack.Network
+				logrus.Infof("Device (%s) status (%s) -> (%s)", n.System.Mac,
+					NodeDeviceNew, n.System.Status)
 
 				n.ReceivedAck <- struct{}{}
 			} else {
-				logrus.Infof("%s <- %s. Payload:\n%s", n.Mac, msg.Topic, msg.Payload)
+				logrus.Infof("%s <- %s. Payload:\n%s", n.System.Mac,
+					msg.Topic, msg.Payload)
 			}
 		case <-n.Stop:
 			return
@@ -161,16 +163,16 @@ func (n *NodeDevice) ReceiveLoop() {
 // IoT controller which will add it as an `acknowledged` Node.
 func (n *NodeDevice) PublishGreeting() {
 	payload, _ := json.Marshal(&mqtt.MessageGreeting{
-		MAC:        n.Mac,
-		Name:       n.Name,
+		MAC:        n.System.Mac,
+		Name:       n.System.Name,
 		IpAddress4: "172.16.0.5",
 		Sent:       time.Now(),
 	})
 
 	// Send to the main MQTT send channel
 	n.Send <- Message{
-		Mac:     n.Mac,
-		Topic:   fmt.Sprintf("control/%s/%s/greeting", n.Network, n.Mac),
+		Mac:     n.System.Mac,
+		Topic:   fmt.Sprintf("control/%s/%s/greeting", n.System.Network, n.System.Mac),
 		QoS:     0,
 		Payload: payload,
 	}
@@ -181,18 +183,18 @@ func (n *NodeDevice) PublishGreeting() {
 // Reinforcement Learning.
 func (n *NodeDevice) PublishSensorData() {
 	consumed, temperature := n.Hal.GetTemperature("bmp180")
-	n.BatteryMah -= consumed
+	n.System.BatteryMah -= consumed
 
 	payload, _ := json.Marshal(&mqtt.MessageStats{
-		BatteryLeft:  n.BatteryMah,
+		BatteryLeft:  n.System.BatteryMah,
 		Temperature:  temperature,
 		TempReadTime: time.Now(),
 	})
 
 	// Send to the main MQTT send channel
 	n.Send <- Message{
-		Mac:     n.Mac,
-		Topic:   fmt.Sprintf("node/%s/%s/stats", n.Network, n.Mac),
+		Mac:     n.System.Mac,
+		Topic:   fmt.Sprintf("node/%s/%s/stats", n.System.Network, n.System.Mac),
 		QoS:     0,
 		Payload: payload,
 	}
