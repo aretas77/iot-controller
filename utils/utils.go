@@ -9,3 +9,8 @@ func StripBearerPrefixFromTokenString(tok string) (string, error) {
 	}
 	return tok, nil
 }
+
+func SplitTopic4(topic string) (string, string, string, string) {
+	tok := strings.Split(topic, "/")
+	return tok[0], tok[1], tok[2], tok[3]
+}
