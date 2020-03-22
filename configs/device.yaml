@@ -12,3 +12,4 @@ devices:
         network: "global"
         battery: 2400.00
         statistics: "kitchen_1.txt"
+        ipaddress4: "172.16.0.5"

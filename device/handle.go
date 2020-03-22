@@ -11,6 +11,9 @@ import (
 // HandleAck will handle server Acknowledge message. It will parse the message
 // and get the MAC address from it so it would know to which device to send
 // the Ack.
+//
+// After pre-processing is done - pass the message to the device indicated
+// by a MAC address.
 func (d *DeviceController) HandleAck(client MQTT.Client, msg MQTT.Message) {
 	logrus.Infof("plain got message on: %s", msg.Topic())
 	payload := mqtt.MessageAck{}

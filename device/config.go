@@ -10,6 +10,7 @@ type DeviceInfo struct {
 	Battery    float32
 	Interface  string
 	Statistics string
+	Ipaddress4 string
 }
 
 type Config struct {
