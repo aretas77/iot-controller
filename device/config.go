@@ -7,7 +7,7 @@ type DeviceInfo struct {
 	MAC        string
 	Sensors    []string
 	Network    string
-	BatteryMah float32 `yaml:battery`
+	Battery    float32
 	Interface  string
 	Statistics string
 }
