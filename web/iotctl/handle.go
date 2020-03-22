@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/aretas77/iot-controller/types/devices"
 	"github.com/aretas77/iot-controller/types/mqtt"
 	"github.com/aretas77/iot-controller/web/iotctl/database/models"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
@@ -18,6 +19,7 @@ func (app *Iotctl) OnMessagePswRequest(client MQTT.Client, msg MQTT.Message) {
 	logrus.Infof("plain message got on: %s", msg.Topic())
 }
 
+// OnMessageGreeting ...
 func (app *Iotctl) OnMessageGreeting(client MQTT.Client, msg MQTT.Message) {
 	logrus.Infof("plain got message on: %s", msg.Topic())
 	payload := mqtt.MessageGreeting{}
@@ -38,7 +40,7 @@ func (app *Iotctl) OnMessageGreeting(client MQTT.Client, msg MQTT.Message) {
 	//		greeting.
 	//	2. `UnregisteredNode` with MAC exists - we know that the user has
 	//		requested for this Node - we can send the ACK to the device and
-	//		create a `Node` with fields: MAC and Network.
+	//		create a `Node` with fields: MAC.
 
 	tmpNode := models.UnregisteredNode{}
 	err := app.sql.GormDb.Where("mac = ?", payload.MAC).Find(&tmpNode).Error
@@ -54,17 +56,6 @@ func (app *Iotctl) OnMessageGreeting(client MQTT.Client, msg MQTT.Message) {
 	// At this point we know that some user is waiting for this device to
 	// connect - delete the current `UnregisteredNode` entry and update an
 	// existing `Node` or create a new `Node` with state 'Registered'.
-
-	// Maybe a Node with such MAC already exists?
-	// TODO: don't allow such inconsistencies.
-	/*
-		node := models.Node{}
-		err = app.sql.GormDb.Where("mac = ?", tmpNode.Mac).Find(&node).Error
-		if err != nil && !gorm.IsRecordNotFoundError(err) {
-			logrus.Error(err)
-			return
-		}
-	*/
 
 	// First check if such network still exists as it could be that the user
 	// has deleted it.
@@ -108,25 +99,87 @@ func (app *Iotctl) OnMessageGreeting(client MQTT.Client, msg MQTT.Message) {
 	//	1. An `UnregisteredNode` existed for this particular device node.
 	//	2. We have created a new `Node` for this device with its status
 	//	   as 'Registered'.
-	app.PublishAck(network.Name, payload.MAC)
+	app.PublishAck(network.Name, payload.MAC, node.Location)
 	return
+}
 
-	/*
-		// `Node` exists.
-		if node.Status == models.Registered {
-			logrus.Infof("Node (%s) is already registered - skip", node.Mac)
-			return
-		}
+// OnMessageStats ...
+func (app *Iotctl) OnMessageStats(client MQTT.Client, msg MQTT.Message) {
+	logrus.Infof("plain got message on: %s", msg.Topic())
+	payload := mqtt.MessageStats{}
 
-		err = app.sql.GormDb.Model(&node).Update("status", models.Registered).Error
-		if err != nil {
-			logrus.Error(err)
-			return
-		}
-		logrus.Infof("Update Node (MAC = %s) status to %s", node.Mac,
-			models.Registered)
+	// check if a valid network ID is provided
+	if err := json.Unmarshal(msg.Payload(), &payload); err != nil {
+		logrus.WithError(err).WithFields(logrus.Fields{
+			"topic": msg.Topic,
+			"msg":   msg.Payload,
+		}).Error("failed to unmarshal stats message")
+		return
+	}
 
-		// if valid, add into the unregistered Node db and send ack
-		app.PublishAck(network.Name, payload.MAC)
-	*/
+	// Check if such Node exists, and if it exists - update the statistics.
+
+}
+
+// OnMessageSystem will handle the received messages about a currently running
+// device status, e.g. its battery level, what HAL is used and etc.
+func (app *Iotctl) OnMessageSystem(client MQTT.Client, msg MQTT.Message) {
+	logrus.Infof("plain got message on: %s", msg.Topic())
+	payload := devices.System{}
+
+	if err := json.Unmarshal(msg.Payload(), &payload); err != nil {
+		logrus.WithError(err).WithFields(logrus.Fields{
+			"topic": msg.Topic,
+			"msg":   msg.Payload,
+		}).Error("failed to unmarshal stats message")
+		return
+	}
+
+	node := models.Node{}
+	err := app.sql.GormDb.Where("mac = ?", payload.Mac).Find(&node).Error
+	if gorm.IsRecordNotFoundError(err) || err != nil {
+		logrus.Error(err)
+		// No such Node exists - skip it
+		return
+	}
+
+	// We need to make sure that the Node is registered - greeting and ack done.
+	if node.Status != models.Registered || payload.Status != models.Registered {
+		logrus.Debugf("node (%s) is not registered - skip", payload.Mac)
+		return
+	}
+
+	network := models.Network{}
+	err = app.sql.GormDb.Where("id = ?", node.NetworkRefer).Find(&network).Error
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+
+	// Are networks the same?
+	if network.Name != payload.Network {
+		logrus.Debugf("node (%s) network is wrong - %s != %s", node.Mac,
+			network.Name, payload.Network)
+		return
+	}
+
+	// We arrive here if:
+	//	1. `Node` with MAC exists in the DB.
+	//	2. `Node` status is 'Registered' both in DB and on the device.
+	//	3. `Node` networks are the same.
+	// So now we can update the Nodes fields.
+	node.LastReceivedMessage = time.Now()
+	node.BatteryMah = payload.BatteryMah
+	node.BatteryPercentage = payload.BatteryPercentage
+
+	// Need to update IP address in case something has changed.
+	node.IpAddress4 = payload.IpAddress4
+
+	// Update `Node` in the Database with new values.
+	if err := app.sql.GormDb.Save(&node).Error; err != nil {
+		logrus.Error(err)
+		return
+	}
+
+	return
 }

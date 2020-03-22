@@ -37,6 +37,8 @@ type Node struct {
 	LastReceivedMessage time.Time `json:"last_received"`
 	Status              Status    `json:"status" sql:"type:ENUM('acknowledged', 'registered')" gorm:"default:'acknowledged'"`
 	AddedUsername       string    `json:"username"`
+	BatteryMah          float32   `json:"battery_left_mah"`
+	BatteryPercentage   float32   `json:"battery_left_per"`
 
 	// a `Has One` relationship. Node 1 <-> 1 NodeSettings.
 	// Node `Has One` Settings.
@@ -46,6 +48,17 @@ type Node struct {
 	// Belongs to only one Network and its ID is kept in `NetworkRefer`.
 	NetworkRefer uint     `json:"-"`
 	Network      *Network `json:"network,omitempty"`
+}
+
+// NodeStatisticsEntry is used to track various statistics of Node devices.
+type NodeStatisticsEntry struct {
+	ID           uint      `gorm:"primary_key"`
+	CPULoad      int       `json:"cpu_load"`
+	Temperature  float32   `json:"temperature"`
+	TempReadTime time.Time `json:"temp_read_time"`
+
+	// Refers to UserId to whom it belongs to.
+	UserRefer uint `json:"user_refer"`
 }
 
 // UnregisteredNode is used to register node - User supplies MAC address of
