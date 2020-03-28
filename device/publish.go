@@ -3,6 +3,7 @@ package device
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/aretas77/iot-controller/types/devices"
@@ -58,10 +59,15 @@ func (n *NodeDevice) PublishSensorData() {
 	n.System.CurrentBatteryMah -= consumed
 	n.System.BatteryPercentage = n.calculateBatteryPercentage()
 
+	//n.ConsumedTimeFrame.ConsumedMah += consumed
+	//n.ConsumedTimeFrame.Duration = time.Since(n.Time)
+
 	payload, _ := json.Marshal(&mqtt.MessageStats{
+		CPULoad:      rand.Intn(100),
 		BatteryLeft:  n.System.CurrentBatteryMah,
 		Temperature:  temperature,
 		TempReadTime: time.Now(),
+		Consumed:     n.ConsumedTimeFrame,
 	})
 
 	// Send to the main MQTT send channel
@@ -71,5 +77,6 @@ func (n *NodeDevice) PublishSensorData() {
 		QoS:     0,
 		Payload: payload,
 	}
+
 	return
 }

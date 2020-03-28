@@ -44,6 +44,7 @@ type NodeDevice struct {
 
 	// How much energy was consumed in the given time frame.
 	ConsumedTimeFrame mqtt.ConsumedFrame
+	Time              time.Time
 
 	// Statistics
 	StatisticsFile string
@@ -120,7 +121,8 @@ handshake:
 	//
 	// NOTE: Each publish from this point should keep track of consumed
 	// battery and how much time elapsed between various publishe events.
-	n.ConsumedTimeFrame.Duration = time.Since(time.Now())
+	n.Time = time.Now()
+	n.ConsumedTimeFrame.State = mqtt.ConsumedStateStatistics
 
 	// Publish initial system information to verify that its correct and
 	// don't wait for any response - continue to other state.
@@ -133,6 +135,8 @@ statistics:
 			// Extract statistic read interval from MQTT lib
 			logrus.Debugf("sending a statistic %s", n.System.Mac)
 			n.PublishSensorData()
+
+			n.Time = time.Now()
 		case <-n.Stop:
 			n.Wg.Done()
 			break statistics

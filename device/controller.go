@@ -7,26 +7,20 @@ import (
 
 	"github.com/aretas77/iot-controller/device/hal"
 	"github.com/aretas77/iot-controller/types/devices"
-	"github.com/aretas77/iot-controller/types/mqtt"
-	MQTT "github.com/eclipse/paho.mqtt.golang"
+	typesMQTT "github.com/aretas77/iot-controller/types/mqtt"
 	"github.com/sirupsen/logrus"
 )
 
 // DeviceController is the main struct for managing whole simulation.
 type DeviceController struct {
-	NoTLSBroker string
-	ListHAL     []string
+	ListHAL []string
 
 	// MQTT connections.
-	Plain  mqtt.MQTTConnection
-	Secure mqtt.MQTTConnection
+	PlainConnection typesMQTT.MQTTClient
 
 	// MQTT topics.
-	PlainTopics  []mqtt.TopicHandler
-	SecureTopics []mqtt.TopicHandler
-
-	// MQTT secret for authentication.
-	mqttSecret string
+	PlainTopics  []typesMQTT.TopicHandler
+	SecureTopics []typesMQTT.TopicHandler
 
 	// Is used for sending out messages to all devices
 	broadcast map[string]chan Message
@@ -53,40 +47,40 @@ func (d *DeviceController) PublishLoop(stop chan bool) {
 			return
 		case packet := <-d.mqttQueue:
 			logrus.Infof("%s -> %s (len:%d)", packet.Mac, packet.Topic, len(packet.Payload))
-			d.Plain.Client.Publish(packet.Topic, packet.QoS, false, packet.Payload)
+			d.PlainConnection.Publish(packet.Topic, packet.QoS, packet.Payload)
 		}
 	}
 }
 
-func (d *DeviceController) Init(host string) error {
+func (d *DeviceController) Init(broker typesMQTT.Broker) error {
 	d.mqttQueue = make(chan Message, 10)
 	d.broadcast = make(map[string]chan Message)
 	d.wg = sync.WaitGroup{}
 
-	// Initialize HALs
-	//d.ListHAL = append(d.ListHAL, "esp32")
-
-	d.Plain.Options = &MQTT.ClientOptions{}
-	d.Plain.Options.SetProtocolVersion(3)
-	d.Plain.Options.SetClientID("device-simulator")
-	d.Plain.Options.SetCleanSession(true)
-	d.Plain.Options.SetOrderMatters(true)
-	d.Plain.Options.SetAutoReconnect(true)
-	d.Plain.Options.SetUsername("devices")
-	d.Plain.Options.SetPassword("test")
-	d.Plain.Options.AddBroker(host)
-	d.Plain.Client = MQTT.NewClient(d.Plain.Options)
-	token := d.Plain.Client.Connect()
-	if token.Wait() && token.Error() != nil {
-		return token.Error()
+	if err := d.PlainConnection.Connect(); err != nil {
+		return errors.New("failed to connect plain connection")
 	}
 
 	if err := d.subscribeDevicePlainTopics(); err != nil {
-		return errors.New("Failed to subscribe plain device topics")
+		return errors.New("failed to subscribe plain device topics")
 	}
 
 	return nil
 }
+
+/*
+func (d *DeviceController) initHermisMqtt(broker Broker) error {
+	hermes.WARN = log.New(os.Stdout, "", 0)
+
+	d.PlainHermes.Client = hermes.NewClient(d.PlainHermes.Options)
+	token := d.PlainHermes.Client.Connect()
+	if token.Wait() && token.Error() != nil {
+		return token.Error()
+	}
+
+	return nil
+}
+*/
 
 func (d *DeviceController) Start(stop chan bool, devs []DeviceInfo) error {
 	logrus.Info("starting device simulation")
@@ -94,7 +88,7 @@ func (d *DeviceController) Start(stop chan bool, devs []DeviceInfo) error {
 	// Channel for controlling when to stop the working nodes.
 	exit := make(chan struct{})
 
-	// Construct NodeDevice with given parameters and run them.
+	// Construct NodeDevice with given and default parameters and run.
 	for _, dev := range devs {
 		d.broadcast[dev.MAC] = make(chan Message, 10)
 		tempDevice := &NodeDevice{

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/aretas77/iot-controller/device"
+	"github.com/aretas77/iot-controller/types"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
@@ -90,6 +91,13 @@ func start(c *cli.Context, filename string) error {
 		logrus.Fatal("Failed to parse yaml config")
 	}
 
+	// TODO: validate config
+
+	client, err := types.NewMqttClient(config.Broker)
+	if err != nil {
+		return err
+	}
+
 	// Need to map devices from map to list - we don't need a map.
 	devices := []device.DeviceInfo{}
 	dev_index := 0
@@ -115,8 +123,12 @@ func start(c *cli.Context, filename string) error {
 		}).Infof("adding a device")
 	}
 
-	controller := &device.DeviceController{}
-	if err := controller.Init(config.Broker.Server); err != nil {
+	controller := &device.DeviceController{
+		PlainConnection: client,
+		ListHAL:         nil,
+	}
+
+	if err := controller.Init(config.Broker); err != nil {
 		return err
 	}
 

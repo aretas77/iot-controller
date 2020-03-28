@@ -1,8 +1,6 @@
 package device
 
 import (
-	"time"
-
 	"github.com/aretas77/iot-controller/types/mqtt"
 	"github.com/sirupsen/logrus"
 )
@@ -14,10 +12,7 @@ func (d *DeviceController) subscribeDevicePlainTopics() error {
 	}
 
 	for _, t := range d.PlainTopics {
-		token := d.Plain.Client.Subscribe(t.Topic, 0, t.Handler)
-		if token.WaitTimeout(3 * time.Second); token.Error() != nil {
-			return token.Error()
-		}
+		d.PlainConnection.Subscribe(t.Topic, 0, t.Handler)
 		logrus.Debugf("plain subscribed topic %s", t.Topic)
 	}
 
@@ -25,12 +20,12 @@ func (d *DeviceController) subscribeDevicePlainTopics() error {
 }
 
 func (d *DeviceController) unsubscribeDevicePlainTopics() {
-	if !d.Plain.Client.IsConnected() {
+	if !d.PlainConnection.IsConnected() {
 		return
 	}
 
 	for _, t := range d.PlainTopics {
-		d.Plain.Client.Unsubscribe(t.Topic)
+		d.PlainConnection.Unsubscribe(t.Topic)
 		logrus.Debugf("plain unsubscribing: %s", t.Topic)
 	}
 }
