@@ -1,5 +1,7 @@
 package device
 
+import "github.com/aretas77/iot-controller/types/mqtt"
+
 // DeviceInfo will define a device components from which it will
 // be built.
 type DeviceInfo struct {
@@ -14,11 +16,6 @@ type DeviceInfo struct {
 }
 
 type Config struct {
-	Broker struct {
-		Server   string
-		Username string
-		Password string
-	}
-
+	Broker  mqtt.Broker
 	Devices map[string]DeviceInfo `yaml:devices,omitempty`
 }
