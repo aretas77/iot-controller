@@ -1,6 +1,7 @@
 package hermes
 
 import (
+	"log"
 	"time"
 
 	typesMQTT "github.com/aretas77/iot-controller/types/mqtt"
@@ -103,6 +104,21 @@ func (c *MQTTClient) Unsubscribe(topic string) error {
 	}
 	c.client.Unsubscribe(topic)
 	return nil
+}
+
+// SetErrorLog will set the output of the ERROR logger in MQTT.
+func (c *MQTTClient) SetErrorLog(logger *log.Logger) {
+	mqtt.ERROR = logger
+}
+
+// SetWarnLog will set the output of the WARN logger in MQTT.
+func (c *MQTTClient) SetWarnLog(logger *log.Logger) {
+	hermesmq.WARN = logger
+}
+
+// SetDebugLog will set the output of the WARN logger in MQTT.
+func (c *MQTTClient) SetDebugLog(logger *log.Logger) {
+	mqtt.DEBUG = logger
 }
 
 // DefaultClientCreator returns a default function for creating MQTT client.

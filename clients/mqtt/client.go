@@ -1,6 +1,7 @@
 package mqtt
 
 import (
+	"log"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -104,6 +105,21 @@ func (c *MQTTClient) Unsubscribe(topic string) error {
 	}
 	c.client.Unsubscribe(topic)
 	return nil
+}
+
+// SetErrorLog will set the output of the ERROR logger in MQTT.
+func (c *MQTTClient) SetErrorLog(logger *log.Logger) {
+	mqtt.ERROR = logger
+}
+
+// SetWarnLog will set the output of the WARN logger in MQTT.
+func (c *MQTTClient) SetWarnLog(logger *log.Logger) {
+	mqtt.WARN = logger
+}
+
+// SetWarnLog will set the output of the WARN logger in MQTT.
+func (c *MQTTClient) SetDebugLog(logger *log.Logger) {
+	mqtt.DEBUG = logger
 }
 
 // DefaultClientCreator returns a default function for creating MQTT client.

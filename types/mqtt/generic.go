@@ -1,6 +1,8 @@
 package mqtt
 
 import (
+	"log"
+
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
@@ -54,4 +56,13 @@ type MQTTClient interface {
 
 	// Unsubscribe should unsubscribe from the given topic.
 	Unsubscribe(topic string) error
+
+	// SetWarnLog sets the WARN log output to the given Logger.
+	SetWarnLog(logger *log.Logger)
+
+	// SetErrorLog sets the ERROR log output to the given Logger.
+	SetErrorLog(logger *log.Logger)
+
+	// SetDebugLog sets the DEBUG log output to the given Logger.
+	SetDebugLog(logger *log.Logger)
 }
