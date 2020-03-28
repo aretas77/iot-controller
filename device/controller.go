@@ -17,9 +17,10 @@ type DeviceController struct {
 
 	// MQTT connections.
 	PlainConnection typesMQTT.MQTTClient
+	Type            string
 
 	// MQTT topics.
-	PlainTopics  []typesMQTT.TopicHandler
+	PlainTopics  []typesMQTT.TopicHandlerDevice
 	SecureTopics []typesMQTT.TopicHandler
 
 	// Is used for sending out messages to all devices

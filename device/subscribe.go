@@ -1,12 +1,12 @@
 package device
 
 import (
-	"github.com/aretas77/iot-controller/types/mqtt"
+	typesMQTT "github.com/aretas77/iot-controller/types/mqtt"
 	"github.com/sirupsen/logrus"
 )
 
 func (d *DeviceController) subscribeDevicePlainTopics() error {
-	d.PlainTopics = []mqtt.TopicHandler{
+	d.PlainTopics = []typesMQTT.TopicHandlerDevice{
 		{"control/+/+/ack", d.HandleAck},
 		{"test", d.HandleBroadcast},
 	}

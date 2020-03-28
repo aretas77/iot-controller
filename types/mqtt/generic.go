@@ -15,8 +15,24 @@ type TopicHandler struct {
 	Handler func(c mqtt.Client, msg mqtt.Message)
 }
 
-// MessageHandler acts as an overlay to the MessageHandler of any mqtt lib.
-type MessageHandler func(c mqtt.Client, msg mqtt.Message)
+// TopicHandlerDevice is used by Device service to make handlers support
+// different MQTT client libraries.
+type TopicHandlerDevice struct {
+	Topic   string
+	Handler func(msg MessageDevice)
+}
+
+// MessageDevice is used as a custom message struct for abstraction layer
+// of MQTT client libraries.
+type MessageDevice struct {
+	Topic   string
+	QoS     byte
+	Payload []byte
+}
+
+// CustomMessageHandler is used as a MessageHandler definition for client
+// libraries.
+type CustomMessageHandler func(msg MessageDevice)
 
 // MQTTClient interface represents an underlying MQTT client implementation
 // without regard to the used MQTT client library.
@@ -34,7 +50,7 @@ type MQTTClient interface {
 	Publish(topic string, qos uint8, payload interface{}) error
 
 	// Subscribe should subscribe to the given topic with a given QoS and message handler.
-	Subscribe(topic string, qos uint8, callback MessageHandler) error
+	Subscribe(topic string, qos uint8, callback CustomMessageHandler) error
 
 	// Unsubscribe should unsubscribe from the given topic.
 	Unsubscribe(topic string) error

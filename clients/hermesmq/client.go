@@ -1,27 +1,26 @@
-package mqtt
+package hermes
 
 import (
 	"time"
 
+	typesMQTT "github.com/aretas77/iot-controller/types/mqtt"
+	hermesmq "github.com/aretas77/paho.mqtt.golang"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/sirupsen/logrus"
-
-	typesMQTT "github.com/aretas77/iot-controller/types/mqtt"
 )
 
 // ClientCreator defines the function for creating an MQTT client.
-type ClientCreator func(options typesMQTT.Broker) (mqtt.Client, error)
+type ClientCreator func(options typesMQTT.Broker) (hermesmq.Client, error)
 
 // MQTTClient is an implementation of the interface MQTTClient which uses
 // underlying Eclipse Paho library.
 type MQTTClient struct {
 	clientID string
 	log      *logrus.Logger
-	client   mqtt.Client
+	client   hermesmq.Client
 }
 
-// NewMqttClient will create a new paho.mqtt client with given broker options.
-func NewMqttClient(options typesMQTT.Broker) (typesMQTT.MQTTClient, error) {
+func NewHermesMQClient(options typesMQTT.Broker) (typesMQTT.MQTTClient, error) {
 	mqttClient, err := DefaultClientCreator()(options)
 	if err != nil {
 		return &MQTTClient{}, err
@@ -44,7 +43,7 @@ func (c *MQTTClient) IsConnected() bool {
 
 // Connect ...
 func (c *MQTTClient) Connect() error {
-	logrus.Info("connecting with pahoMQTT")
+	logrus.Info("connecting with HermesMQ")
 
 	token := c.client.Connect()
 	if token.Wait() && token.Error() != nil {
@@ -73,13 +72,13 @@ func (c *MQTTClient) Publish(topic string, qos uint8, payload interface{}) error
 	return nil
 }
 
-// SubscribePaho ...
+// Subscribe ...
 func (c *MQTTClient) Subscribe(topic string, qos uint8, callback typesMQTT.CustomMessageHandler) error {
 	if !c.IsConnected() {
-		return mqtt.ErrNotConnected
+		return hermesmq.ErrNotConnected
 	}
 
-	handler := func(client mqtt.Client, message mqtt.Message) {
+	handler := func(cl hermesmq.Client, message hermesmq.Message) {
 		if callback != nil {
 			callback(typesMQTT.MessageDevice{
 				Payload: message.Payload(),
@@ -108,12 +107,12 @@ func (c *MQTTClient) Unsubscribe(topic string) error {
 
 // DefaultClientCreator returns a default function for creating MQTT client.
 func DefaultClientCreator() ClientCreator {
-	return func(options typesMQTT.Broker) (mqtt.Client, error) {
-		clientOptions, err := CreateMQTTClientConfiguration(options)
+	return func(options typesMQTT.Broker) (hermesmq.Client, error) {
+		clientOptions, err := CreateHermesMQConfiguration(options)
 		if err != nil {
 			return nil, err
 		}
 
-		return mqtt.NewClient(clientOptions), nil
+		return hermesmq.NewClient(clientOptions), nil
 	}
 }

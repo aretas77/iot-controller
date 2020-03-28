@@ -3,8 +3,7 @@ package device
 import (
 	"encoding/json"
 
-	"github.com/aretas77/iot-controller/types/mqtt"
-	MQTT "github.com/eclipse/paho.mqtt.golang"
+	typesMQTT "github.com/aretas77/iot-controller/types/mqtt"
 	"github.com/sirupsen/logrus"
 )
 
@@ -14,11 +13,11 @@ import (
 //
 // After pre-processing is done - pass the message to the device indicated
 // by a MAC address.
-func (d *DeviceController) HandleAck(client MQTT.Client, msg MQTT.Message) {
-	logrus.Infof("plain got message on: %s", msg.Topic())
-	payload := mqtt.MessageAck{}
+func (d *DeviceController) HandleAck(msg typesMQTT.MessageDevice) {
+	logrus.Infof("plain got message on: %s", msg.Topic)
+	payload := typesMQTT.MessageAck{}
 
-	if err := json.Unmarshal(msg.Payload(), &payload); err != nil {
+	if err := json.Unmarshal(msg.Payload, &payload); err != nil {
 		logrus.WithError(err).WithFields(logrus.Fields{
 			"topic": msg.Topic,
 			"msg":   msg.Payload,
@@ -30,18 +29,18 @@ func (d *DeviceController) HandleAck(client MQTT.Client, msg MQTT.Message) {
 	// via channel.
 	d.broadcast[payload.MAC] <- Message{
 		Topic:   "ack",
-		Payload: msg.Payload(),
+		Payload: msg.Payload,
 	}
 }
 
 // MessageHandler will handle the MQTT messages. When a message is received,
 // the handler will broadcast the message to all Nodes.
 // Nodes should only process their own messages.
-func (d *DeviceController) HandleBroadcast(c MQTT.Client, msg MQTT.Message) {
+func (d *DeviceController) HandleBroadcast(msg typesMQTT.MessageDevice) {
 	for _, v := range d.broadcast {
 		v <- Message{
-			Topic:   msg.Topic(),
-			Payload: msg.Payload(),
+			Topic:   msg.Topic,
+			Payload: msg.Payload,
 		}
 	}
 }

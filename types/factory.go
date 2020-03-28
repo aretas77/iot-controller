@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	mqtt "github.com/aretas77/iot-controller/clients/mqtt"
+	hermesClient "github.com/aretas77/iot-controller/clients/hermesmq"
+	mqttClient "github.com/aretas77/iot-controller/clients/mqtt"
 	typesMQTT "github.com/aretas77/iot-controller/types/mqtt"
 	"github.com/sirupsen/logrus"
 )
@@ -24,9 +25,9 @@ func NewMqttClient(config typesMQTT.Broker) (typesMQTT.MQTTClient, error) {
 
 	switch lowerType := strings.ToLower(config.Type); lowerType {
 	case MQTT:
-		return mqtt.NewMqttClient(config)
+		return mqttClient.NewMqttClient(config)
 	case HermesMQ:
-		return nil, nil
+		return hermesClient.NewHermesMQClient(config)
 	default:
 		return nil, errors.New(fmt.Sprintf("unknown client type '%s' requested",
 			config.Type))
