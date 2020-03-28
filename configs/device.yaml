@@ -1,7 +1,10 @@
 broker: 
+    type: "mqtt"
+    clientid: "device-simulator"
     server: "tcp://172.18.0.3:1883"
-    username: "device-sim"
+    username: "devices"
     password: "test"
+    protocolver: 3
 devices:
     device1:
         name: TempReader1
