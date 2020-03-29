@@ -2,6 +2,8 @@ package device
 
 import (
 	"errors"
+	"log"
+	"os"
 	"runtime"
 	"sync"
 
@@ -11,10 +13,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	dataLines = 59084
+)
+
 // DeviceController is the main struct for managing whole simulation.
 type DeviceController struct {
-	ListHAL []string
-
 	// MQTT connections.
 	PlainConnection typesMQTT.MQTTClient
 	Type            string
@@ -58,6 +62,10 @@ func (d *DeviceController) Init(broker typesMQTT.Broker) error {
 	d.broadcast = make(map[string]chan Message)
 	d.wg = sync.WaitGroup{}
 
+	d.PlainConnection.SetWarnLog(log.New(os.Stdout, "", 0))
+	d.PlainConnection.SetErrorLog(log.New(os.Stdout, "", 0))
+	//d.PlainConnection.SetDebugLog(log.New(os.Stdout, "", 0))
+
 	if err := d.PlainConnection.Connect(); err != nil {
 		return errors.New("failed to connect plain connection")
 	}
@@ -69,28 +77,19 @@ func (d *DeviceController) Init(broker typesMQTT.Broker) error {
 	return nil
 }
 
-/*
-func (d *DeviceController) initHermisMqtt(broker Broker) error {
-	hermes.WARN = log.New(os.Stdout, "", 0)
-
-	d.PlainHermes.Client = hermes.NewClient(d.PlainHermes.Options)
-	token := d.PlainHermes.Client.Connect()
-	if token.Wait() && token.Error() != nil {
-		return token.Error()
-	}
-
-	return nil
-}
-*/
-
+// Start will start all passed in devices and run a common publish loop.
 func (d *DeviceController) Start(stop chan bool, devs []DeviceInfo) error {
+	var statisticsBlockSize, statisticsFrom, statisticsTo int
+
 	logrus.Info("starting device simulation")
+	//statisticsBlockSize = dataLines / len(devs)
+	statisticsBlockSize = dataLines / 2
 
 	// Channel for controlling when to stop the working nodes.
 	exit := make(chan struct{})
 
 	// Construct NodeDevice with given and default parameters and run.
-	for _, dev := range devs {
+	for i, dev := range devs {
 		d.broadcast[dev.MAC] = make(chan Message, 10)
 		tempDevice := &NodeDevice{
 			System: devices.System{
@@ -119,13 +118,26 @@ func (d *DeviceController) Start(stop chan bool, devs []DeviceInfo) error {
 			SendInterval: 0,
 		}
 
+		if statisticsBlockSize == dataLines {
+			statisticsFrom = 0
+			statisticsTo = dataLines
+		} else {
+			statisticsFrom = i * statisticsBlockSize
+			statisticsTo = (i * statisticsBlockSize) + statisticsBlockSize
+		}
+
 		// Need to set the Hardware Abstraction Layer interface for the device.
 		// TODO: make this better, somehow.
 		switch dev.Interface {
 		case "esp32":
 			logrus.Infof("setting interface (%s) for device (%s)",
 				dev.Interface, dev.Name)
-			tempDevice.Hal = &hal.ESP32{}
+
+			tempDevice.Hal = &hal.ESP32{
+				StatisticsFileName: dev.Statistics,
+				StatisticsFrom:     statisticsFrom,
+				StatisticsTo:       statisticsTo,
+			}
 			break
 		default:
 			logrus.Infof("interface not found (%s) for device (%s)",

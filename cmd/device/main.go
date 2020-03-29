@@ -125,7 +125,6 @@ func start(c *cli.Context, filename string) error {
 
 	controller := &device.DeviceController{
 		PlainConnection: client,
-		ListHAL:         nil,
 		Type:            config.Broker.Type,
 	}
 

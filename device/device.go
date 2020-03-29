@@ -70,7 +70,7 @@ func (n *NodeDevice) calculateBatteryPercentage() float32 {
 // Initialize will initialize the struct of NodeDevice.
 func (n *NodeDevice) Initialize() error {
 	// If HAL has failed to init - don't bother anymore, just return the error.
-	if err := n.Hal.Initialize(n.StatisticsFile); err != nil {
+	if err := n.Hal.Initialize(); err != nil {
 		return err
 	}
 

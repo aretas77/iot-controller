@@ -19,10 +19,7 @@ type PowerConsumption struct {
 type HAL interface {
 
 	// Initialize will setup and initialize the simulated device.
-	Initialize(statFile string) error
-
-	// GetDeviceName will return the name of the device.
-	GetDeviceName() string
+	Initialize() error
 
 	// GetInterface will return the name of the interface e.g. esp32.
 	GetInterface() string

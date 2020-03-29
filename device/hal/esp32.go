@@ -5,20 +5,18 @@ import (
 	"errors"
 	"os"
 
+	"github.com/aretas77/iot-controller/utils"
 	"github.com/sirupsen/logrus"
 )
 
 const (
 	// Radio chip is on. The chip can receive, transmit or listen.
 	ActiveMode = "active"
-
 	// The CPU is operational and the clock is configurable. WiFi/Bluetooth
 	// are disabled.
 	ModemSleepMode = "modemSleep"
-
 	// The CPU is paused. Any wake-up event will wake the device.
 	LightSleepMode = "lightSleep"
-
 	//
 	DeepSleepMode = "deepSleep"
 )
@@ -34,15 +32,17 @@ type ESP32 struct {
 	Interface       string // Name of this struct
 	Power           *PowerConsumption
 	Mode            string
-	Statistics      string
 	TemperatureLine int
 
 	StatisticsFileDesc *os.File
-	StatisticsScanner  *bufio.Reader
+	StatisticsScanner  *bufio.Scanner
+	StatisticsFrom     int
+	StatisticsTo       int
+	StatisticsFileName string
 }
 
-func (e *ESP32) Initialize(statFile string) error {
-	f, err := os.Open("./cmd/data/" + statFile)
+func (e *ESP32) Initialize() error {
+	f, err := os.Open("./cmd/data/" + e.StatisticsFileName)
 	if err != nil {
 		panic(err)
 	}
@@ -59,18 +59,29 @@ func (e *ESP32) Initialize(statFile string) error {
 	}
 	e.Mode = ActiveMode
 	e.Interface = "esp32"
-	e.Statistics = statFile
 
 	// Alright then, keep your file struct
 	e.StatisticsFileDesc = f
-	e.StatisticsScanner = bufio.NewReader(e.StatisticsFileDesc)
+	e.StatisticsScanner = bufio.NewScanner(e.StatisticsFileDesc)
+
+	// Need to put the Scanner into correct place
+	if e.StatisticsFrom != 0 {
+		i := 1
+		for e.StatisticsScanner.Scan() {
+			if i >= e.StatisticsFrom && i < e.StatisticsTo {
+				//logrus.Info(e.StatisticsScanner.Text())
+				break
+			}
+			i++
+		}
+
+		if err := e.StatisticsScanner.Err(); err != nil {
+			logrus.Error(err)
+		}
+	}
 
 	logrus.Debugf("initialized ESP32 HAL")
 	return nil
-}
-
-func (e *ESP32) GetDeviceName() string {
-	return ""
 }
 
 func (e *ESP32) GetInterface() string {
@@ -79,7 +90,7 @@ func (e *ESP32) GetInterface() string {
 
 // GetTemperature will read from a sensor of a given name.
 func (e *ESP32) GetTemperature(sensor string) (float32, float32) {
-	var consumed, temperature float32
+	var consumed float32
 
 	switch sensor {
 	case "bmp180":
@@ -87,19 +98,14 @@ func (e *ESP32) GetTemperature(sensor string) (float32, float32) {
 	default:
 	}
 
-	if e.StatisticsScanner == nil {
-		logrus.Info("nil")
-	}
-
-	line, err := e.StatisticsScanner.ReadBytes('\n')
+	// Simulate Temperature reading - read from a file
+	e.StatisticsScanner.Scan()
+	err, _, temp, _, _ := utils.SplitDataReadLine(e.StatisticsScanner.Text())
 	if err != nil {
-		panic(err)
+		logrus.Error(err)
 	}
-	logrus.Info(string(line))
 
-	temperature = 10
-
-	return consumed, temperature
+	return consumed, float32(temp)
 }
 
 func (e *ESP32) SetPowerMode(mode string) error {
