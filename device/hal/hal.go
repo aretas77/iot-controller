@@ -26,11 +26,20 @@ type HAL interface {
 
 	// GetTemperature will return a temperature value and how much energy was
 	// used by using the sensor.
-	// sensor - Name of the sensor from which we will read.
+	//
+	// @sensor - name of the sensor from which we will read.
 	GetTemperature(sensor string) (float32, float32)
+
+	// GetPressureTemperature will return a pressure and a temperature value
+	// and how much energy was consumed by using the sensor.
+	//
+	// @sensor - name of the sensor from which we will read.
+	GetPressureTemperature(sensor string) (float32, float32, float32)
 
 	// SetPowerMode will set the power mode of the simulation device which
 	// will adjust TX, RX and other peripheral power consumption.
+	//
+	// @mode - the mode in which the device operates in.
 	SetPowerMode(mode string) error
 
 	// GetPowerMode will return the devices operating mode.

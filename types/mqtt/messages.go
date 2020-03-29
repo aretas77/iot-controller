@@ -32,6 +32,7 @@ type MessageStats struct {
 	CPULoad      int           `json:"cpu_load"`
 	BatteryLeft  float32       `json:"battery_left"`
 	Temperature  float32       `json:"temperature"`
+	Pressure     float32       `json:"pressure"`
 	TempReadTime time.Time     `json:"temp_read_time"`
 	Consumed     ConsumedFrame `json:"consumed_battery"`
 }

@@ -16,7 +16,7 @@ func (n *NodeDevice) PublishGreeting() {
 	payload, _ := json.Marshal(&mqtt.MessageGreeting{
 		MAC:        n.System.Mac,
 		Name:       n.System.Name,
-		IpAddress4: "172.16.0.5",
+		IpAddress4: n.System.IpAddress4,
 		Sent:       time.Now(),
 	})
 
@@ -55,7 +55,8 @@ func (n *NodeDevice) PublishSystemData() {
 // PublishSensorData prepares sensor data which will be sent for
 // Reinforcement Learning.
 func (n *NodeDevice) PublishSensorData() {
-	consumed, temperature := n.Hal.GetTemperature("bmp180")
+	//consumed, temperature := n.Hal.GetTemperature("bmp180")
+	consumed, temperature, pressure := n.Hal.GetPressureTemperature("bmp180")
 	n.System.CurrentBatteryMah -= consumed
 	n.System.BatteryPercentage = n.calculateBatteryPercentage()
 
@@ -66,6 +67,7 @@ func (n *NodeDevice) PublishSensorData() {
 		CPULoad:      rand.Intn(100),
 		BatteryLeft:  n.System.CurrentBatteryMah,
 		Temperature:  temperature,
+		Pressure:     pressure,
 		TempReadTime: time.Now(),
 		Consumed:     n.ConsumedTimeFrame,
 	})

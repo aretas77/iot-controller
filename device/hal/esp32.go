@@ -10,15 +10,17 @@ import (
 )
 
 const (
-	// Radio chip is on. The chip can receive, transmit or listen.
+	// ActiveMode means radio chip is on. The chip can receive, transmit or listen.
 	ActiveMode = "active"
-	// The CPU is operational and the clock is configurable. WiFi/Bluetooth
-	// are disabled.
+	// ModemSleepMode means the CPU is operational and the clock is configurable.
+	// WiFi/Bluetooth are disabled.
 	ModemSleepMode = "modemSleep"
-	// The CPU is paused. Any wake-up event will wake the device.
+	// LightSleepMode means the CPU is paused. Any wake-up event will wake the device.
 	LightSleepMode = "lightSleep"
-	//
+	// DeepSleepMode ...
 	DeepSleepMode = "deepSleep"
+
+	dataPath = "./cmd/data"
 )
 
 var (
@@ -42,7 +44,7 @@ type ESP32 struct {
 }
 
 func (e *ESP32) Initialize() error {
-	f, err := os.Open("./cmd/data/" + e.StatisticsFileName)
+	f, err := os.Open(dataPath + e.StatisticsFileName)
 	if err != nil {
 		panic(err)
 	}
@@ -64,7 +66,8 @@ func (e *ESP32) Initialize() error {
 	e.StatisticsFileDesc = f
 	e.StatisticsScanner = bufio.NewScanner(e.StatisticsFileDesc)
 
-	// Need to put the Scanner into correct place
+	// Need to put the Scanner into correct place, if scanner starts from
+	// the first line - we are already good to go.
 	if e.StatisticsFrom != 0 {
 		i := 1
 		for e.StatisticsScanner.Scan() {
@@ -80,10 +83,11 @@ func (e *ESP32) Initialize() error {
 		}
 	}
 
-	logrus.Debugf("initialized ESP32 HAL")
+	logrus.Debug("initialized ESP32 HAL")
 	return nil
 }
 
+// GetInterface will return the name of the underlying interface.
 func (e *ESP32) GetInterface() string {
 	return e.Interface
 }
@@ -106,6 +110,26 @@ func (e *ESP32) GetTemperature(sensor string) (float32, float32) {
 	}
 
 	return consumed, float32(temp)
+}
+
+// GetPressureTemperature will read from the sensor
+func (e *ESP32) GetPressureTemperature(sensor string) (float32, float32, float32) {
+	var consumed float32
+
+	switch sensor {
+	case "bmp180":
+		consumed += 0.007 // 7 micro Amperes for one reading, high res mode
+	default:
+	}
+
+	// Simulate Temperature reading - read from a file
+	e.StatisticsScanner.Scan()
+	err, _, temp, press, _ := utils.SplitDataReadLine(e.StatisticsScanner.Text())
+	if err != nil {
+		logrus.Error(err)
+	}
+
+	return consumed, float32(temp), float32(press)
 }
 
 func (e *ESP32) SetPowerMode(mode string) error {
