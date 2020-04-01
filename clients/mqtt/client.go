@@ -117,7 +117,7 @@ func (c *MQTTClient) SetWarnLog(logger *log.Logger) {
 	mqtt.WARN = logger
 }
 
-// SetWarnLog will set the output of the WARN logger in MQTT.
+// SetDebugLog will set the output of the WARN logger in MQTT.
 func (c *MQTTClient) SetDebugLog(logger *log.Logger) {
 	mqtt.DEBUG = logger
 }

@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/aretas77/iot-controller/types/mqtt"
+	typesMQTT "github.com/aretas77/iot-controller/types/mqtt"
 	"github.com/sirupsen/logrus"
 )
 
 func (app *Iotctl) PublishAck(network string, mac string, location string) error {
-	payload := mqtt.MessageAck{}
+	payload := typesMQTT.MessageAck{}
 
 	payload.Network = network
 	payload.MAC = mac
@@ -36,6 +36,32 @@ func (app *Iotctl) PublishAck(network string, mac string, location string) error
 			"location": location,
 		}).Error("failed to publish ack")
 		return token.Error()
+	}
+
+	return nil
+}
+
+// PublishStatsHades will send the given statistics to the Hades service.
+func (app *Iotctl) PublishStatsHades(network string, mac string, stats typesMQTT.MessageStats) error {
+	resp, err := json.Marshal(stats)
+	if err != nil {
+		logrus.WithError(err).WithFields(logrus.Fields{
+			"mac":     mac,
+			"network": network,
+		}).Error("failed to generate payload stats for hades")
+		return err
+	}
+
+	publishTopic := fmt.Sprintf("node/%s/%s/hades/statistics", network, mac)
+	logrus.Infof("publish stats on %s", publishTopic)
+	logrus.Debugf("stats payload = %s", string(resp))
+	token := app.Plain.Client.Publish(publishTopic, 0, false, resp)
+	if token.Error() != nil {
+		logrus.WithError(err).WithFields(logrus.Fields{
+			"mac":     mac,
+			"network": network,
+		}).Error("failed to publish payload stats for hades")
+		return err
 	}
 
 	return nil

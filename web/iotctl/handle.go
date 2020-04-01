@@ -6,6 +6,7 @@ import (
 
 	"github.com/aretas77/iot-controller/types/devices"
 	"github.com/aretas77/iot-controller/types/mqtt"
+	"github.com/aretas77/iot-controller/utils"
 	"github.com/aretas77/iot-controller/web/iotctl/database/models"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/jinzhu/gorm"
@@ -103,7 +104,11 @@ func (app *Iotctl) OnMessageGreeting(client MQTT.Client, msg MQTT.Message) {
 	return
 }
 
-// OnMessageStats ...
+// OnMessageStats will handle a received sensor data from the device. When a
+// message is received, it should check whether a node for this sensor data
+// exists and if it does - add to the database and forward the sensor data to
+// the IoT Hades service for processing.
+// Topic: node/+/+/stats
 func (app *Iotctl) OnMessageStats(client MQTT.Client, msg MQTT.Message) {
 	logrus.Infof("plain got message on: %s", msg.Topic())
 	payload := mqtt.MessageStats{}
@@ -117,8 +122,30 @@ func (app *Iotctl) OnMessageStats(client MQTT.Client, msg MQTT.Message) {
 		return
 	}
 
-	// Check if such Node exists, and if it exists - update the statistics.
+	_, _, mac, _ := utils.SplitTopic4(msg.Topic())
 
+	// Check if such Node exists, and if it exists - update the statistics.
+	node, err := app.sql.CheckNodeExists(mac)
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+
+	entry := &models.NodeStatisticsEntry{
+		CPULoad:      payload.CPULoad,
+		Pressure:     payload.Pressure,
+		Temperature:  payload.Temperature,
+		TempReadTime: payload.TempReadTime,
+		Consumed:     payload.Consumed,
+		NodeRefer:    node.ID,
+	}
+
+	if err := app.sql.GormDb.Create(&entry).Error; err != nil {
+		logrus.Error(err)
+		return
+	}
+
+	return
 }
 
 // OnMessageSystem will handle the received messages about a currently running
@@ -136,11 +163,9 @@ func (app *Iotctl) OnMessageSystem(client MQTT.Client, msg MQTT.Message) {
 		return
 	}
 
-	node := models.Node{}
-	err := app.sql.GormDb.Where("mac = ?", payload.Mac).Find(&node).Error
-	if gorm.IsRecordNotFoundError(err) || err != nil {
+	node, err := app.sql.CheckNodeExists(payload.Mac)
+	if err != nil {
 		logrus.Error(err)
-		// No such Node exists - skip it
 		return
 	}
 

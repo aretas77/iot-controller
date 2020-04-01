@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	typesMQTT "github.com/aretas77/iot-controller/types/mqtt"
 	"github.com/jinzhu/gorm"
 )
 
@@ -51,10 +52,12 @@ type Node struct {
 
 // NodeStatisticsEntry is used to track various statistics of Node devices.
 type NodeStatisticsEntry struct {
-	ID           uint      `gorm:"primary_key"`
-	CPULoad      int       `json:"cpu_load"`
-	Temperature  float32   `json:"temperature"`
-	TempReadTime time.Time `json:"temp_read_time"`
+	ID           uint                    `gorm:"primary_key"`
+	CPULoad      int                     `json:"cpu_load"`
+	Pressure     float32                 `json:"pressure"`
+	Temperature  float32                 `json:"temperature"`
+	TempReadTime time.Time               `json:"temp_read_time"`
+	Consumed     typesMQTT.ConsumedFrame `json:"consumed_battery"`
 
 	// Refers to UserId to whom it belongs to.
 	NodeRefer uint  `json:"node_refer"`
