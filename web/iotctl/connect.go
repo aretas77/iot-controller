@@ -26,6 +26,8 @@ func (app *Iotctl) ConnectPlain() error {
 	app.Plain.Options.SetAutoReconnect(true)
 	app.Plain.Options.SetOnConnectHandler(app.onConnectPlain)
 	app.Plain.Options.SetConnectionLostHandler(app.onDisconnectPlain)
+	app.Plain.Options.SetUsername("iotctl")
+	app.Plain.Options.SetPassword("iotctlsecretkey321")
 
 	app.Plain.Client = MQTT.NewClient(app.Plain.Options)
 	token := app.Plain.Client.Connect()
