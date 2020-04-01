@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	typesMQTT "github.com/aretas77/iot-controller/types/mqtt"
 	db "github.com/aretas77/iot-controller/web/iotctl/database"
 	"github.com/aretas77/iot-controller/web/iotctl/database/models"
 	mysql "github.com/aretas77/iot-controller/web/iotctl/database/mysql"
@@ -21,7 +22,8 @@ type NodeController struct {
 
 	// Nodes will be saved at MySQL database so just keep a pointer into
 	// MySql struct for easier access.
-	sql *mysql.MySql
+	sql   *mysql.MySql
+	plain *typesMQTT.MQTTConnection
 }
 
 func (n *NodeController) Init() (err error) {
@@ -111,6 +113,7 @@ func (n *NodeController) setupHeader(w *http.ResponseWriter) {
 }
 
 // GetNode should return a Node by its ID.
+// Endpoint: GET /nodes/{id}
 func (n *NodeController) GetNode(w http.ResponseWriter, r *http.Request,
 	next http.HandlerFunc) {
 	n.setupHeader(&w)
@@ -133,6 +136,7 @@ func (n *NodeController) GetNode(w http.ResponseWriter, r *http.Request,
 }
 
 // GetNodes should return all registered Nodes.
+// Endpoint: GET /nodes
 func (n *NodeController) GetNodes(w http.ResponseWriter, r *http.Request,
 	next http.HandlerFunc) {
 	n.setupHeader(&w)
@@ -169,6 +173,7 @@ func (n *NodeController) GetNodes(w http.ResponseWriter, r *http.Request,
 //
 // Otherwise, the `UnregisteredNode` will be added to the database and will point
 // to the `Network` it was created and won't point to any of the `Node`s.
+// Endpoint: POST /nodes
 func (n *NodeController) RegisterNode(w http.ResponseWriter, r *http.Request,
 	next http.HandlerFunc) {
 
@@ -248,7 +253,22 @@ func (n *NodeController) RegisterNode(w http.ResponseWriter, r *http.Request,
 }
 
 // UnRegisterNode should remove the Node from our network.
+// Endpoint: DELETE /nodes/{id}
 func (n *NodeController) UnregisterNode(w http.ResponseWriter, r *http.Request,
 	next http.HandlerFunc) {
+	n.setupHeader(&w)
 
+	vars := mux.Vars(r)
+	node := models.Node{}
+	if err := n.sql.GormDb.First(&node, vars["id"]).Error; err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	if err := n.sql.GormDb.Delete(&node).Error; err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }

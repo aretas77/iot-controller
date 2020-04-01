@@ -27,6 +27,13 @@ type MessageAck struct {
 	Location string `json:"location"`
 }
 
+// MessageUnregister is sent by the server when a user wants to unregister the
+// given `Node` from its network.
+type MessageUnregister struct {
+	MAC     string `json:"mac"`
+	Network string `json:"network"`
+}
+
 // MessageStats is used for sending out various stats to the server.
 type MessageStats struct {
 	CPULoad      int           `json:"cpu_load"`

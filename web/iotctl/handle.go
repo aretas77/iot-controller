@@ -137,7 +137,7 @@ func (app *Iotctl) OnMessageStats(client MQTT.Client, msg MQTT.Message) {
 		Temperature:  payload.Temperature,
 		TempReadTime: payload.TempReadTime,
 		Consumed:     payload.Consumed,
-		NodeRefer:    node.ID,
+		NodeRefer:    node.Mac,
 	}
 
 	if err := app.sql.GormDb.Create(&entry).Error; err != nil {
@@ -197,6 +197,11 @@ func (app *Iotctl) OnMessageSystem(client MQTT.Client, msg MQTT.Message) {
 	node.LastReceivedMessage = time.Now()
 	node.BatteryMah = payload.BatteryMah
 	node.BatteryPercentage = payload.BatteryPercentage
+
+	// Assume that the first received battery size is the full battery size
+	if node.BatteryMahTotal == 0 && node.BatteryPercentage > 95 {
+		node.BatteryMahTotal = payload.BatteryMah
+	}
 
 	// Need to update IP address in case something has changed.
 	node.IpAddress4 = payload.IpAddress4

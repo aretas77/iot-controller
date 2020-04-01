@@ -38,6 +38,7 @@ type Node struct {
 	Status              Status    `json:"status" sql:"type:ENUM('acknowledged', 'registered')" gorm:"default:'acknowledged'"`
 	AddedUsername       string    `json:"username"`
 	BatteryMah          float32   `json:"battery_left_mah"`
+	BatteryMahTotal     float32   `json:"battery_total_mah"`
 	BatteryPercentage   float32   `json:"battery_left_per"`
 
 	// a `Has One` relationship. Node 1 <-> 1 NodeSettings.
@@ -59,9 +60,9 @@ type NodeStatisticsEntry struct {
 	TempReadTime time.Time               `json:"temp_read_time"`
 	Consumed     typesMQTT.ConsumedFrame `json:"consumed_battery"`
 
-	// Refers to UserId to whom it belongs to.
-	NodeRefer uint  `json:"node_refer"`
-	Node      *Node `json:"node,omitempty"`
+	// Refers to `Nodes` MAC address to whom it belongs to.
+	NodeRefer string `json:"node_refer"`
+	Node      *Node  `json:"node,omitempty"`
 }
 
 // UnregisteredNode is used to register node - User supplies MAC address of

@@ -19,7 +19,8 @@ const (
 	HermesMQ = "hermes"
 )
 
-// NewMqttClient will return
+// NewMqttClient will return an MQTT client based on what is provided in the
+// config file.
 func NewMqttClient(config typesMQTT.Broker) (typesMQTT.MQTTClient, error) {
 	logrus.Infof("attaching MQTT client type='%s'", config.Type)
 

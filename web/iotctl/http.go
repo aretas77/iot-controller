@@ -107,6 +107,14 @@ func (app *Iotctl) setupNode() {
 		)).Methods("GET")
 
 	app.Router.Handle(
+		"/nodes/{id}",
+		negroni.New(
+			negroni.HandlerFunc(app.userAuthBearer),
+			negroni.HandlerFunc(app.PublishUnregister),
+			negroni.HandlerFunc(app.Controller.NodeCtl.UnregisterNode),
+		)).Methods("DELETE")
+
+	app.Router.Handle(
 		"/nodes",
 		negroni.New(
 			negroni.HandlerFunc(app.Controller.NodeCtl.RegisterNode),
