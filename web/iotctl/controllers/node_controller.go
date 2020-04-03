@@ -75,6 +75,7 @@ func (n *NodeController) migrateNodeGorm() error {
 		AddedUsername:       "admin",
 		NetworkRefer:        1,
 		BatteryMah:          2500,
+		BatteryMahTotal:     2500,
 		BatteryPercentage:   100,
 	}
 
@@ -89,6 +90,7 @@ func (n *NodeController) migrateNodeGorm() error {
 		AddedUsername:     "admin",
 		NetworkRefer:      1,
 		BatteryMah:        2400,
+		BatteryMahTotal:   2400,
 		BatteryPercentage: 100,
 	}
 
