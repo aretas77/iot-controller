@@ -1,9 +1,10 @@
 import Vue from 'vue'
-import { NodesService } from '@/common/api.service'
+import { NodesService, StatisticsService } from '@/common/api.service'
 import {
   NODE_GET_ALL,
   FETCH_NODE,
   FETCH_NODES,
+  FETCH_NODE_STATS,
   NODE_EDIT,
   NODE_REMOVE,
   NODE_ADD,
@@ -13,6 +14,8 @@ import {
 import {
   SET_NODE,
   SET_NODES,
+  FETCH_STATS_START,
+  FETCH_STATS_END,
   FETCH_START,
   FETCH_END,
   RESET_STATE
@@ -25,7 +28,10 @@ const initialState = {
   },
   nodes: [],
   nodesCount: 0,
-  isLoading: true
+  isLoading: true,
+  isLoadingStats: true,
+  statsEntries: [],
+  statsEntriesCount: 0
 }
 
 export const state = { ...initialState }
@@ -41,6 +47,19 @@ export const actions = {
     const { data } = await NodesService.get(nodeSlug)
     context.commit(SET_NODE, data)
     return data
+  },
+
+  // FETCH_NODE_STATS should get the statistics entries of the given node.
+  async [FETCH_NODE_STATS] (context, nodeSlug) {
+    console.log('FETCH_NODE_STATS start')
+    context.commit(FETCH_STATS_START)
+    await StatisticsService.getByNode(nodeSlug)
+      .then(({ data }) => {
+        context.commit(FETCH_STATS_END, data)
+      })
+      .catch(error => {
+        throw new Error(error)
+      })
   },
 
   // NODE_GET_ALL fetches all Node devices.
@@ -94,6 +113,14 @@ export const mutations = {
   [SET_NODES] (state, nodes) {
     state.nodes = nodes
   },
+  [FETCH_STATS_START] (state) {
+    state.isLoadingStats = true
+  },
+  [FETCH_STATS_END] (state, { entries }) {
+    state.statsEntries = entries
+    state.statsEntriesCount = entries.length
+    state.isLoadingStats = false
+  },
   [FETCH_START] (state) {
     state.isLoading = true
   },
@@ -119,8 +146,17 @@ const getters = {
   nodesCount (state) {
     return state.nodesCount
   },
+  statsEntries (state) {
+    return state.statsEntries
+  },
+  statsEntriesCount (state) {
+    return state.statsEntriesCount
+  },
   isLoading (state) {
     return state.isLoading
+  },
+  isLoadingStats (state) {
+    return state.isLoadingStats
   }
 }
 

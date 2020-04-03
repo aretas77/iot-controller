@@ -107,3 +107,9 @@ export const NetworkService = {
     return ApiService.update('networks', slug, { network: params })
   }
 }
+
+export const StatisticsService = {
+  getByNode (nodeId) {
+    return ApiService.get(`nodes/${nodeId}/statistics`)
+  }
+}
