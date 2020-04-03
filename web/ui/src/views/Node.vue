@@ -7,15 +7,26 @@
       </div>
     </div>
     <div>
-      <b-tabs content-class="mt-3">
-        <b-tab title="Statistics" active>
-          <div class="container page">
-            <div class="row node-content">
-            </div>
-          </div>
+      <b-tabs content-class="mt-3" @input="onChangedTab">
+        <b-tab title="Statistics" active lazy>
+          <b-container v-if="isLoadingStats">
+            Loading..
+          </b-container>
+
+          <b-container fluid class="w-100 p-3" v-else>
+            <b-row align-h="between" class="m-4">
+              <b-col cols="5">
+                <TemperatureChart />
+              </b-col>
+              <b-col cols="5">
+                <SensorReadingsFreq />
+              </b-col>
+            </b-row>
+          </b-container>
+
         </b-tab>
 
-        <b-tab title="Models">
+        <b-tab title="Models" lazy>
 
         </b-tab>
 
@@ -34,18 +45,27 @@ import { mapGetters } from 'vuex'
 import store from '@/store'
 import marked from 'marked'
 import NodeMeta from '@/components/NodeMeta'
-import { FETCH_NODE } from '@/store/actions.type'
+import TemperatureChart from '@/components/TemperatureChart'
+import SensorReadingsFreq from '@/components/SensorReadingsFreq'
+import { FETCH_NODE, FETCH_NODE_STATS } from '@/store/actions.type'
 
 export default {
   name: 'iotctl-node',
+  components: {
+    NodeMeta,
+    TemperatureChart,
+    SensorReadingsFreq
+  },
   props: {
     slug: {
       type: [Number, String],
       required: true
     }
   },
-  components: {
-    NodeMeta
+  data () {
+    return {
+      activeTab: 0
+    }
   },
   // actions
   beforeRouteEnter (to, from, next) {
@@ -56,12 +76,32 @@ export default {
     })
   },
   computed: {
-    ...mapGetters(['node', 'currentUser', 'isAuthenticated'])
+    ...mapGetters(['node', 'currentUser', 'isAuthenticated', 'isLoadingStats',
+      'statsEntries'])
   },
   methods: {
     parseMarkdown (content) {
       return marked(content)
+    },
+    fetchNodeStatistics () {
+      this.$store.dispatch(FETCH_NODE_STATS, this.node.ID)
+    },
+    onChangedTab (tabIndex) {
+      if (tabIndex === 0) {
+        // refresh statistics
+        // TODO: could probably just check with the server if there are new
+        // updates
+        this.$store.dispatch(FETCH_NODE_STATS, this.node.ID)
+      }
     }
+  },
+  watch: {
+    activeTab () {
+      console.log(this.activeTab)
+    }
+  },
+  mounted () {
+    this.fetchNodeStatistics()
   }
 }
 </script>

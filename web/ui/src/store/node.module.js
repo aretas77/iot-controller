@@ -107,7 +107,6 @@ export const actions = {
 /* eslint no-param-reassign: ["error", { "props": false }] */
 export const mutations = {
   [SET_NODE] (state, node) {
-    console.log('SET_NODE' + node)
     state.node = node
   },
   [SET_NODES] (state, nodes) {
