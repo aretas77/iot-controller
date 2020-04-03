@@ -44,3 +44,27 @@ func (d *DeviceController) HandleBroadcast(msg typesMQTT.MessageDevice) {
 		}
 	}
 }
+
+// HandleUnregister will handle the unregister messages sent by the server.
+// When such message is received, the device should stop its current state
+// and return to the `Greeting` state.
+func (d *DeviceController) HandleUnregister(msg typesMQTT.MessageDevice) {
+	logrus.Infof("plain got message on: %s", msg.Topic)
+	payload := typesMQTT.MessageUnregister{}
+
+	if err := json.Unmarshal(msg.Payload, &payload); err != nil {
+		logrus.WithError(err).WithFields(logrus.Fields{
+			"topic": msg.Topic,
+			"msg":   msg.Payload,
+		}).Error("failed to unmarshal ack message")
+		return
+	}
+
+	// We know to which device the Unregister was sent to - send the Unregister
+	// to the device via channel.
+	d.broadcast[payload.MAC] <- Message{
+		Topic:   "unregister",
+		Payload: msg.Payload,
+	}
+
+}
