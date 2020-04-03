@@ -61,6 +61,7 @@ func (u *UserController) setupHeader(w *http.ResponseWriter) {
 		"Accept, Content-Type, Content-Length, Accept-Encoding, Authorization, Access-Control-Allow-Origin")
 }
 
+// Index is used for any endpoint that processes OPTIONS call
 func (u *UserController) Index(w http.ResponseWriter, r *http.Request,
 	next http.HandlerFunc) {
 	u.setupHeader(&w)

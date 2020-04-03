@@ -73,6 +73,8 @@ func (app *Iotctl) PublishStatsHades(network string, mac string, stats typesMQTT
 // PublishUnregister will send a message to the device that it has been
 // removed from the network and should return to sending 'Grettings' instead
 // of its normal operation - sending statistics, etc.
+// TODO: should probably add a Middleware for unregistering a `Node` and the
+// middleware would call a publish method and await for response from the device.
 func (app *Iotctl) PublishUnregister(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	setupHeader(&w)
 
