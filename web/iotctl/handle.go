@@ -131,12 +131,12 @@ func (app *Iotctl) OnMessageStats(client MQTT.Client, msg MQTT.Message) {
 		return
 	}
 
-	entry := &models.NodeStatisticsEntry{
+	entry := models.NodeStatisticsEntry{
 		CPULoad:      payload.CPULoad,
 		Pressure:     payload.Pressure,
 		Temperature:  payload.Temperature,
 		TempReadTime: payload.TempReadTime,
-		Consumed:     payload.Consumed,
+		Consumed:     &payload.Consumed,
 		NodeRefer:    node.Mac,
 	}
 

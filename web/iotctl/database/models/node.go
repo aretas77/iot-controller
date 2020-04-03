@@ -52,13 +52,17 @@ type Node struct {
 }
 
 // NodeStatisticsEntry is used to track various statistics of Node devices.
+//
+// CPULoad		- is measured in percentages (0;100]%
+// Pressure		- is measured in Pa.
+// Temperature	- is measured in Celsius.
 type NodeStatisticsEntry struct {
-	ID           uint                    `gorm:"primary_key"`
-	CPULoad      int                     `json:"cpu_load"`
-	Pressure     float32                 `json:"pressure"`
-	Temperature  float32                 `json:"temperature"`
-	TempReadTime time.Time               `json:"temp_read_time"`
-	Consumed     typesMQTT.ConsumedFrame `json:"consumed_battery"`
+	ID           uint                     `gorm:"primary_key"`
+	CPULoad      int                      `json:"cpu_load"`
+	Pressure     float32                  `json:"pressure"`
+	Temperature  float32                  `json:"temperature"`
+	TempReadTime time.Time                `json:"temp_read_time"`
+	Consumed     *typesMQTT.ConsumedFrame `json:"consumed_battery,omitempty"`
 
 	// Refers to `Nodes` MAC address to whom it belongs to.
 	NodeRefer string `json:"node_refer"`

@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
+	"math/rand"
 	"net/http"
 	"strings"
 	"time"
@@ -42,6 +43,8 @@ func (n *NodeController) Init() (err error) {
 }
 
 func (n *NodeController) migrateNodeGorm() error {
+	entryCount := 20
+
 	// Create a Node with additional settings
 	settings := &models.NodeSettings{
 		ReadInterval: 10,
@@ -94,12 +97,31 @@ func (n *NodeController) migrateNodeGorm() error {
 		BatteryPercentage: 100,
 	}
 
+	// Make the same output every run
+	rand.Seed(50)
+
+	// Add some entries for node
+	entries := []models.NodeStatisticsEntry{}
+	for i := 0; i < entryCount; i++ {
+		entries = append(entries, models.NodeStatisticsEntry{
+			CPULoad:      rand.Intn(99) + 1,
+			Pressure:     float32(rand.Intn(1000)) + 99000,
+			Temperature:  float32(rand.Intn(6) + 20),
+			TempReadTime: time.Now(),
+			NodeRefer:    node.Mac,
+		})
+	}
+
 	if n.sql.GormDb.NewRecord(node) {
 		n.sql.GormDb.Create(&node)
 	}
 
 	if n.sql.GormDb.NewRecord(node2) {
 		n.sql.GormDb.Create(&node2)
+	}
+
+	for i := 0; i < entryCount; i++ {
+		n.sql.GormDb.Create(&entries[i])
 	}
 
 	return nil
@@ -254,7 +276,7 @@ func (n *NodeController) RegisterNode(w http.ResponseWriter, r *http.Request,
 	w.WriteHeader(http.StatusCreated)
 }
 
-// UnRegisterNode should remove the Node from our network.
+// UnregisterNode should remove the Node from our network.
 // Endpoint: DELETE /nodes/{id}
 func (n *NodeController) UnregisterNode(w http.ResponseWriter, r *http.Request,
 	next http.HandlerFunc) {
@@ -273,4 +295,36 @@ func (n *NodeController) UnregisterNode(w http.ResponseWriter, r *http.Request,
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+// GetEntries should return all statistics entries related to the given ID which
+// is then mapped to the corresponding MAC of the `Node`.
+// Endpoint: GET /nodes/{id}/statistics
+func (n *NodeController) GetEntries(w http.ResponseWriter, r *http.Request,
+	next http.HandlerFunc) {
+	n.setupHeader(&w)
+
+	vars := mux.Vars(r)
+
+	node := models.Node{}
+	if err := n.sql.GormDb.First(&node, vars["id"]).Error; err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	entries := []models.NodeStatisticsEntry{}
+
+	// `NodeStatisticsEntry`.`NodeRefer` refers to the MAC of the `Node` and not
+	// to the ID of it.
+	err := n.sql.GormDb.Where("node_refer = ?", node.Mac).Find(&entries).Error
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	mapEntries := map[string][]models.NodeStatisticsEntry{}
+	mapEntries["entries"] = entries
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(mapEntries)
 }
