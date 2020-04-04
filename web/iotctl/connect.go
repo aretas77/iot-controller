@@ -7,6 +7,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// TODO: should probably make use of clients/* factory for mqtt client.
+
 // onConnectPlain should be triggered when a plain connection is made.
 // Should subscribe to plain MQTT topics.
 func (app *Iotctl) onConnectPlain(client MQTT.Client) {
