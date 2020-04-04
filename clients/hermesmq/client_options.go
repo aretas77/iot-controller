@@ -17,6 +17,7 @@ func CreateHermesMQConfiguration(options typesMQTT.Broker) (*hermesmq.ClientOpti
 	opts.SetUsername(options.Username)
 	opts.SetPassword(options.Password)
 	opts.AddBroker(options.Server)
+	opts.SetUseHermes(true)
 
 	return opts, nil
 }
