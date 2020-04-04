@@ -35,10 +35,11 @@ func (m *MySql) InitializeMigrationGorm() {
 
 	m.GormDb.DropTableIfExists(&models.Network{}, &models.User{},
 		&models.Node{}, &models.NodeSettings{}, &models.UnregisteredNode{},
-		&models.NodeStatisticsEntry{})
+		&models.NodeStatisticsEntry{}, &models.Event{})
 
 	m.GormDb.CreateTable(&models.User{}, &models.Node{}, &models.NodeSettings{},
-		&models.UnregisteredNode{}, &models.Network{}, &models.NodeStatisticsEntry{})
+		&models.UnregisteredNode{}, &models.Network{}, &models.NodeStatisticsEntry{},
+		&models.Event{})
 
 	m.GormDb.Model(&models.Node{}).AddForeignKey("settings_id",
 		"node_settings(id)", "RESTRICT", "RESTRICT")

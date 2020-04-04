@@ -17,6 +17,7 @@ type ApiController struct {
 	NodeCtl    *NodeController
 	UserCtl    *UserController
 	NetworkCtl *NetworkController
+	EventCtl   *EventController
 }
 
 // Init should prepare and initialize all usable controllers with
@@ -32,6 +33,7 @@ func (api *ApiController) Init(database *db.Database) error {
 	api.UserCtl.Database = database
 	api.NetworkCtl.Database = database
 	api.AuthCtl.Database = database
+	api.EventCtl.Database = database
 
 	if err := api.UserCtl.Init(); err != nil {
 		logrus.Error("Failed to initialize User Controller")
@@ -50,6 +52,11 @@ func (api *ApiController) Init(database *db.Database) error {
 
 	if err := api.AuthCtl.Init(); err != nil {
 		logrus.Error("Failed to initialize Auth Controller")
+		return err
+	}
+
+	if err := api.EventCtl.Init(); err != nil {
+		logrus.Error("Failed to initialize Event Controller")
 		return err
 	}
 

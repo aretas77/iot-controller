@@ -34,6 +34,13 @@ type MessageUnregister struct {
 	Network string `json:"network"`
 }
 
+// MessageEventSent is sent by the Hades daemone to the server to notify about
+// a sent model to the device.
+type MessageEventSent struct {
+	Model    string `json:"model"`
+	TimeSent string `json:"time_sent"`
+}
+
 // MessageStats is used for sending out various stats to the server.
 type MessageStats struct {
 	CPULoad      int           `json:"cpu_load"`

@@ -15,6 +15,7 @@ func (app *Iotctl) subscribePlainTopics() error {
 		{"control/+/+/greeting", app.OnMessageGreeting},
 		{"node/+/+/stats", app.OnMessageStats},
 		{"node/+/+/system", app.OnMessageSystem},
+		{"node/+/+/hades/event/+", app.OnMessageEvent},
 	}
 
 	if !app.Plain.Client.IsConnected() {

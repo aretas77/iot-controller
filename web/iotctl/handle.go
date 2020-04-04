@@ -214,3 +214,32 @@ func (app *Iotctl) OnMessageSystem(client MQTT.Client, msg MQTT.Message) {
 
 	return
 }
+
+// OnMessageEvent will handle the events receveived by Hades daemon.
+func (app *Iotctl) OnMessageEvent(client MQTT.Client, msg MQTT.Message) {
+	logrus.Infof("plain message got on: %s", msg.Topic())
+	payload := mqtt.MessageEventSent{}
+
+	if err := json.Unmarshal(msg.Payload(), &payload); err != nil {
+		logrus.WithError(err).WithFields(logrus.Fields{
+			"topic": msg.Topic,
+			"msg":   msg.Payload,
+		}).Error("failed to unmarshal greeting message")
+		return
+	}
+
+	_, _, mac, _ := utils.SplitTopic4(msg.Topic())
+
+	event := models.Event{
+		Mac:      mac,
+		Model:    payload.Model,
+		TimeSent: payload.TimeSent,
+	}
+
+	if err := app.sql.GormDb.Create(&event).Error; err != nil {
+		logrus.Error(err)
+		return
+	}
+
+	return
+}

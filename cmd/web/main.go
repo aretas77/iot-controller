@@ -92,6 +92,10 @@ func start(c *cli.Context) (err error) {
 				TableName: "users",
 				Database:  MySqlDb,
 			},
+			EventCtl: &controllers.EventController{
+				TableName: "events",
+				Database:  MySqlDb,
+			},
 		},
 		Debug: &iotctl.DebugInfo{
 			Level:        logrus.DebugLevel,
