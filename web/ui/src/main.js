@@ -12,7 +12,13 @@ import DateFilter from './common/date.filter'
 import TimeFilter from './common/time.filter'
 import ErrorFilter from './common/error.filter'
 
+const moment = require('moment')
+// require('moment/locale/lt')
+
 Vue.use(BootstrapVue)
+Vue.use(require('vue-moment'), {
+  moment
+})
 
 Vue.config.productionTip = false
 Vue.filter('date', DateFilter)
