@@ -20,7 +20,7 @@ const (
 	// DeepSleepMode ...
 	DeepSleepMode = "deepSleep"
 
-	dataPath = "./cmd/data"
+	dataPath = "./cmd/data/"
 )
 
 var (

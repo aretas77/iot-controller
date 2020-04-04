@@ -1,9 +1,9 @@
 broker: 
-    type: "mqtt"
+    type: "hermes"
     clientid: "device-simulator"
     server: "tcp://172.18.0.3:1883"
     username: "devices"
-    password: "test"
+    password: "secretkey987"
     protocolver: 3
 devices:
     device1:
@@ -14,5 +14,15 @@ devices:
         interface: "esp32"
         network: "global"
         battery: 2400.00
-        statistics: "kitchen_1.txt"
+        statistics: "data.txt"
         ipaddress4: "172.16.0.5"
+    device2:
+        name: TempReader2
+        mac: "AA:BB:CC:DD:EE:02"
+        sensors:
+            - bmp180
+        interface: "esp32"
+        network: "global"
+        battery: 2400.00
+        statistics: "data.txt"
+        ipaddress4: "172.16.0.6"

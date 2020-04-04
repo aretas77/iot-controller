@@ -57,6 +57,7 @@ type NodeDevice struct {
 	Hal hal.HAL // What Hardware Abstraction Layer is used
 
 	ReceivedAck chan struct{}
+	Unregister  chan struct{}
 	Stop        chan struct{}
 
 	Send    chan Message
@@ -75,6 +76,7 @@ func (n *NodeDevice) Initialize() error {
 	}
 
 	n.ReceivedAck = make(chan struct{})
+	n.Unregister = make(chan struct{})
 	return nil
 }
 
@@ -182,6 +184,23 @@ func (n *NodeDevice) ReceiveLoop() {
 					NodeDeviceNew, n.System.Status)
 
 				n.ReceivedAck <- struct{}{}
+			} else if msg.Topic == "unregister" {
+				unregister := mqtt.MessageUnregister{}
+				if err := json.Unmarshal(msg.Payload, &unregister); err != nil {
+					logrus.WithError(err).WithFields(logrus.Fields{
+						"topic": msg.Topic,
+						"msg":   msg.Payload,
+					}).Error("failed to unmarshal unregister message")
+				}
+
+				logrus.Infof("Device (%s) status (%s) -> (%s)", n.System.Mac,
+					n.System.Status, NodeDeviceNew)
+
+				n.System.Status = NodeDeviceNew
+				n.System.Network = ""
+				n.System.Location = ""
+
+				n.Unregister <- struct{}{}
 			} else {
 				logrus.Infof("%s <- %s. Payload:\n%s", n.System.Mac,
 					msg.Topic, msg.Payload)
