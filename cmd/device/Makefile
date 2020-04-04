@@ -4,4 +4,4 @@ clean:
 	rm -f $(BUILD_DIR)/device
 
 build:
-	go build $(LDFLAGS) -gcflags "all=-trimpath=${GOPATH}" -o $(BUILD_DIR)/device main.go
+	CGO_ENABLED=1 go build $(LDFLAGS) -gcflags "all=-trimpath=${GOPATH}" -o $(BUILD_DIR)/device main.go
