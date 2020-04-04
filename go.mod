@@ -3,6 +3,7 @@ module github.com/aretas77/iot-controller
 go 1.13
 
 require (
+	github.com/DataDog/go-python3 v0.0.0-20191126174558-6ed25e33b3c4 // indirect
 	github.com/aretas77/paho.mqtt.golang v1.2.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/eclipse/paho.mqtt.golang v1.2.0
