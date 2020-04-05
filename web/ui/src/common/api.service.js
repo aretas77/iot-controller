@@ -108,6 +108,12 @@ export const NetworkService = {
   }
 }
 
+export const EventsService = {
+  getByNode (nodeId) {
+    return ApiService.get(`nodes/${nodeId}/events`)
+  }
+}
+
 export const StatisticsService = {
   getByNode (nodeId) {
     return ApiService.get(`nodes/${nodeId}/statistics`)
