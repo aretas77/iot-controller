@@ -107,7 +107,7 @@ func (n *NodeController) migrateNodeGorm() error {
 			CPULoad:      rand.Intn(99) + 1,
 			Pressure:     float32(rand.Intn(1000)) + 99000,
 			Temperature:  float32(rand.Intn(6) + 20),
-			TempReadTime: time.Now().Add(time.Hour * 3).Add(time.Minute * time.Duration(i)),
+			TempReadTime: time.Now().Add(time.Minute * time.Duration(i)),
 			NodeRefer:    node.Mac,
 		})
 	}

@@ -44,6 +44,22 @@ func (app *Iotctl) setupRoutes() {
 	app.setupNode()
 	app.setupUser()
 	app.setupNetwork()
+	app.setupEvents()
+}
+
+// setupEvents will setup `Event` related routes.
+func (app *Iotctl) setupEvents() {
+	app.Router.Handle(
+		"/nodes/{id}/events",
+		negroni.New(
+			negroni.HandlerFunc(app.Controller.UserCtl.Index),
+		)).Methods("OPTIONS")
+
+	app.Router.Handle(
+		"/nodes/{id}/events",
+		negroni.New(
+			negroni.HandlerFunc(app.Controller.EventCtl.GetEventsByNode),
+		)).Methods("GET")
 }
 
 // setupNetwork will setup `Network` related routes.

@@ -1,12 +1,16 @@
 package controllers
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 
 	typesMQTT "github.com/aretas77/iot-controller/types/mqtt"
 	db "github.com/aretas77/iot-controller/web/iotctl/database"
+	models "github.com/aretas77/iot-controller/web/iotctl/database/models"
 	mysql "github.com/aretas77/iot-controller/web/iotctl/database/mysql"
+	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 )
 
@@ -46,4 +50,33 @@ func (n *EventController) setupHeader(w *http.ResponseWriter) {
 		"POST, GET, OPTIONS, DELETE, PATCH")
 	(*w).Header().Set("Access-Control-Allow-Headers",
 		"Accept, Content-Type, Content-Length, Accept-Encoding, Authorization, Access-Control-Allow-Origin")
+}
+
+// GetEventsByNode should return all events related to the `Node` by its ID.
+// Endpoint: GET /nodes/{id}/events
+func (e *EventController) GetEventsByNode(w http.ResponseWriter, r *http.Request,
+	next http.HandlerFunc) {
+	e.setupHeader(&w)
+
+	vars := mux.Vars(r)
+
+	node := models.Node{}
+	if err := e.sql.GormDb.First(&node, vars["id"]).Error; err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	events := []models.Event{}
+
+	err := e.sql.GormDb.Where("mac = ?", node.Mac).Find(&events).Error
+	if err != nil && !gorm.IsRecordNotFoundError(err) {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	mapEvents := map[string][]models.Event{}
+	mapEvents["events"] = events
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(mapEvents)
 }
