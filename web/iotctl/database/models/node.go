@@ -93,10 +93,13 @@ type UnregisteredNode struct {
 
 // NodeSettings describes the settings that are used by the Node device.
 type NodeSettings struct {
-	ID           uint `gorm:"primary_key"`
-	NodeID       uint `json:"-"`
-	ReadInterval int  `json:"read_interval"`
-	SendInterval int  `json:"send_interval"`
+	ID           uint   `gorm:"primary_key"`
+	NodeID       uint   `json:"-"`
+	ReadInterval int    `json:"read_interval"`
+	SendInterval int    `json:"send_interval"`
+	DataFileName string `json:"-"`
+	DataLineFrom int    `json:"-"`
+	DataLineTo   int    `json:"-"`
 }
 
 type NodeService interface {

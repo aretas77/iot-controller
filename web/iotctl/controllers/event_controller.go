@@ -57,7 +57,6 @@ func (n *EventController) setupHeader(w *http.ResponseWriter) {
 func (e *EventController) GetEventsByNode(w http.ResponseWriter, r *http.Request,
 	next http.HandlerFunc) {
 	e.setupHeader(&w)
-
 	vars := mux.Vars(r)
 
 	node := models.Node{}
