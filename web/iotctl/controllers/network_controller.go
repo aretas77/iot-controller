@@ -99,8 +99,39 @@ func (n *NetworkController) RemoveNetwork(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusOK)
 }
 
+// GetUnregisteredNodesByNetwork ...
+// Endpoint: GET /networks/{network_name}/unregistered
+func (n *NetworkController) GetUnregisteredNodesByNetwork(w http.ResponseWriter, r *http.Request,
+	next http.HandlerFunc) {
+	n.setupHeader(&w)
+
+	vars := mux.Vars(r)
+	network := models.Network{}
+	err := n.sql.GormDb.Where("name = ?", vars["network_name"]).First(&network).Error
+	if err != nil {
+		logrus.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	unregisteredNodes := []models.UnregisteredNode{}
+	err = n.sql.GormDb.Where("network_refer = ?", network.ID).Find(&unregisteredNodes).Error
+	if err != nil {
+		logrus.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	mapNodes := map[string][]models.UnregisteredNode{}
+	mapNodes["unregistered"] = unregisteredNodes
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(mapNodes)
+}
+
 // GetNetworkByUser will return Network list which belong to the user of
 // specified ID.
+// Endpoint: GET /users/{user_id}/networks
 func (n *NetworkController) GetNetworkByUser(w http.ResponseWriter, r *http.Request,
 	next http.HandlerFunc) {
 	n.setupHeader(&w)

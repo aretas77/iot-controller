@@ -79,6 +79,13 @@ func (app *Iotctl) setupNetwork() {
 			negroni.HandlerFunc(app.userAuthBearer),
 			negroni.HandlerFunc(app.Controller.NetworkCtl.GetNetworkByUser),
 		)).Methods(http.MethodGet, http.MethodOptions)
+
+	app.Router.Handle(
+		"/networks/{network_name}/unregistered",
+		negroni.New(
+			negroni.HandlerFunc(app.userAuthBearer),
+			negroni.HandlerFunc(app.Controller.NetworkCtl.GetUnregisteredNodesByNetwork),
+		)).Methods(http.MethodGet, http.MethodOptions)
 }
 
 func (app *Iotctl) setupNode() {
