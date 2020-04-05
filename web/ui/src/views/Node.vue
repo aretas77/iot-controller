@@ -29,10 +29,12 @@
 
         <b-tab title="Models" lazy>
           <b-container v-if="isLoadingEvents" fluid class="w-100 p-3">
-            <NodeEvents :events='events' :busy='isLoadingEvents'></NodeEvents>
+            <NodeEvents :events='events' :busy='isLoadingEvents' :eventsLen='eventsCount'>
+            </NodeEvents>
           </b-container>
           <b-container fluid class="w-100 p-3" v-else>
-            <NodeEvents :events='events' :busy='isLoadingEvents'></NodeEvents>
+            <NodeEvents :events='events' :busy='isLoadingEvents' :eventsLen='eventsCount'>
+            </NodeEvents>
           </b-container>
         </b-tab>
 
@@ -89,7 +91,7 @@ export default {
   },
   computed: {
     ...mapGetters(['node', 'currentUser', 'isAuthenticated', 'isLoadingStats',
-      'statsEntries', 'events', 'isLoadingEvents'])
+      'statsEntries', 'events', 'isLoadingEvents', 'eventsCount'])
   },
   methods: {
     parseMarkdown (content) {
