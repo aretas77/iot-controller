@@ -48,6 +48,7 @@ func (n *NodeDevice) PublishSystemData() {
 			Filename:     filename,
 			DataLineFrom: from,
 			DataLineTo:   to,
+			DataCount:    n.Hal.GetStatisticsCurrentLine(),
 		},
 	})
 
@@ -71,12 +72,13 @@ func (n *NodeDevice) PublishSensorData() {
 	//n.ConsumedTimeFrame.Duration = time.Since(n.Time)
 
 	payload, _ := json.Marshal(&mqtt.MessageStats{
-		CPULoad:      rand.Intn(100),
-		BatteryLeft:  n.System.CurrentBatteryMah,
-		Temperature:  temperature,
-		Pressure:     pressure,
-		TempReadTime: time.Now(),
-		Consumed:     n.ConsumedTimeFrame,
+		CPULoad:           rand.Intn(100),
+		BatteryLeft:       n.System.CurrentBatteryMah,
+		BatteryPercentage: n.System.BatteryPercentage,
+		Temperature:       temperature,
+		Pressure:          pressure,
+		TempReadTime:      time.Now(),
+		Consumed:          n.ConsumedTimeFrame,
 	})
 
 	// Send to the main MQTT send channel
