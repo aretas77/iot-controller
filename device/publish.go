@@ -79,6 +79,7 @@ func (n *NodeDevice) PublishSensorData() {
 		Pressure:          pressure,
 		TempReadTime:      time.Now(),
 		Consumed:          n.ConsumedTimeFrame,
+		StatisticsCount:   n.Hal.GetStatisticsCurrentLine(),
 	})
 
 	// Send to the main MQTT send channel

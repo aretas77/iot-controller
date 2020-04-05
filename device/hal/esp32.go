@@ -36,10 +36,15 @@ type ESP32 struct {
 	Mode            string
 	TemperatureLine int
 
+	// Statistics simulation file related stuff.
+	// Device should read from the file every 5 minutes as minimum, even if the
+	// stats are not sent - this way the scanner will be incremented and
+	// synchronized with values in iotctl service.
 	StatisticsFileDesc *os.File
 	StatisticsScanner  *bufio.Scanner
 	StatisticsFrom     int
 	StatisticsTo       int
+	StatisticsCount    int
 	StatisticsFileName string
 }
 
@@ -65,23 +70,26 @@ func (e *ESP32) Initialize() error {
 	// Alright then, keep your file struct
 	e.StatisticsFileDesc = f
 	e.StatisticsScanner = bufio.NewScanner(e.StatisticsFileDesc)
+	e.StatisticsCount = 0
 
 	// Need to put the Scanner into correct place, if scanner starts from
 	// the first line - we are already good to go.
-	if e.StatisticsFrom != 0 {
-		i := 1
-		for e.StatisticsScanner.Scan() {
-			if i >= e.StatisticsFrom && i < e.StatisticsTo {
-				//logrus.Info(e.StatisticsScanner.Text())
-				break
+	go func() {
+		if e.StatisticsFrom != 0 {
+			i := 1
+			for e.StatisticsScanner.Scan() {
+				e.StatisticsCount++
+				if i >= e.StatisticsFrom && i < e.StatisticsTo {
+					//logrus.Info(e.StatisticsScanner.Text())
+					break
+				}
+				i++
 			}
-			i++
+			if err := e.StatisticsScanner.Err(); err != nil {
+				logrus.Error(err)
+			}
 		}
-
-		if err := e.StatisticsScanner.Err(); err != nil {
-			logrus.Error(err)
-		}
-	}
+	}()
 
 	logrus.Debug("initialized ESP32 HAL")
 	return nil
@@ -118,11 +126,13 @@ func (e *ESP32) GetPressureTemperature(sensor string) (float32, float32, float32
 
 	switch sensor {
 	case "bmp180":
-		consumed += 0.007 // 7 micro Amperes for one reading, high res mode
+		//consumed += 0.007 // 7 micro Amperes for one reading, high res mode
+		consumed += 1
 	default:
 	}
 
 	// Simulate Temperature reading - read from a file
+	e.StatisticsCount++
 	e.StatisticsScanner.Scan()
 	err, _, temp, press, _ := utils.SplitDataReadLine(e.StatisticsScanner.Text())
 	if err != nil {
@@ -160,4 +170,10 @@ func (e *ESP32) PowerOff() {
 
 func (e *ESP32) GetStatisticsInterval() (string, int, int) {
 	return e.StatisticsFileName, e.StatisticsFrom, e.StatisticsTo
+}
+
+// GetStatisticsCurrentLine will return the line of the statistics file which
+// was sent to the
+func (e *ESP32) GetStatisticsCurrentLine() int {
+	return e.StatisticsCount
 }
