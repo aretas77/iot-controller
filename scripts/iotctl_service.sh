@@ -54,10 +54,10 @@ send_model_request() {
         echo "empty mac" && exit 1
     fi
 
-    reqTopic="node/global/${mac}/hades/request"
+    reqTopic="hades/global/${mac}/model/request"
 
 cat > ${tmp}/${requestFile} << EOL
-{ }
+{ "mac": ${mac}" }
 EOL
 
 	mosquitto_pub -u mock -P test -h "$server" -p "$port" -t "$reqTopic" -f "$tmp"/"$requestFile"
