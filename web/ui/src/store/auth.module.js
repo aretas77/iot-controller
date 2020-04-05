@@ -33,7 +33,8 @@ const actions = {
   [LOGIN] (context, credentials) {
     const email = credentials.email
     const password = credentials.password
-
+    // clear state
+    context.commit(PURGE_AUTH)
     return new Promise(resolve => {
       ApiService.post('login', { email, password })
         .then(({ data }) => {

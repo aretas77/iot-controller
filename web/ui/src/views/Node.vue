@@ -28,7 +28,12 @@
         </b-tab>
 
         <b-tab title="Models" lazy>
-
+          <b-container v-if="isLoadingEvents" fluid class="w-100 p-3">
+            <NodeEvents :events='events' :busy='isLoadingEvents'></NodeEvents>
+          </b-container>
+          <b-container fluid class="w-100 p-3" v-else>
+            <NodeEvents :events='events' :busy='isLoadingEvents'></NodeEvents>
+          </b-container>
         </b-tab>
 
         <b-tab title="Information">
@@ -48,14 +53,20 @@ import marked from 'marked'
 import NodeMeta from '@/components/NodeMeta'
 import TemperatureChart from '@/components/TemperatureChart'
 import SensorReadingsFreq from '@/components/SensorReadingsFreq'
-import { FETCH_NODE, FETCH_NODE_STATS } from '@/store/actions.type'
+import NodeEvents from '@/components/Events'
+import {
+  FETCH_NODE,
+  FETCH_NODE_STATS,
+  FETCH_NODE_EVENTS
+} from '@/store/actions.type'
 
 export default {
   name: 'iotctl-node',
   components: {
     NodeMeta,
     TemperatureChart,
-    SensorReadingsFreq
+    SensorReadingsFreq,
+    NodeEvents
   },
   props: {
     slug: {
@@ -78,7 +89,7 @@ export default {
   },
   computed: {
     ...mapGetters(['node', 'currentUser', 'isAuthenticated', 'isLoadingStats',
-      'statsEntries'])
+      'statsEntries', 'events', 'isLoadingEvents'])
   },
   methods: {
     parseMarkdown (content) {
@@ -87,17 +98,23 @@ export default {
     fetchNodeStatistics () {
       this.$store.dispatch(FETCH_NODE_STATS, this.node.ID)
     },
+    fetchNodeEvents () {
+      this.$store.dispatch(FETCH_NODE_EVENTS, this.node.ID)
+    },
     onChangedTab (tabIndex) {
       if (tabIndex === 0) {
         // refresh statistics
         // TODO: could probably just check with the server if there are new
         // updates
-        this.$store.dispatch(FETCH_NODE_STATS, this.node.ID)
+        this.fetchNodeStatistics()
+      } else if (tabIndex === 1) {
+        this.fetchNodeEvents()
       }
     }
   },
   mounted () {
     this.fetchNodeStatistics()
+    this.fetchNodeEvents()
   }
 }
 </script>

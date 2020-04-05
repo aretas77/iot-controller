@@ -11,7 +11,7 @@ const initialState = {
   node: 0,
   events: [],
   eventsCount: 0,
-  isLoadingEvents: false
+  isLoadingEvents: true
 }
 
 export const state = { ...initialState }
@@ -50,6 +50,9 @@ const getters = {
   },
   eventsCount (state) {
     return state.eventsCount
+  },
+  isLoadingEvents (state) {
+    return state.isLoadingEvents
   }
 }
 
