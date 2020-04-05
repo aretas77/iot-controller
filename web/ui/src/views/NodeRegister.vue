@@ -199,7 +199,7 @@ export default {
     },
     validLocation: function (location) {
       console.log(location)
-      if (location === '') {
+      if (location === undefined || location === '') {
         return false
       }
       return true

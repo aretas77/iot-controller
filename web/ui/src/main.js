@@ -11,6 +11,7 @@ import ApiService from './common/api.service'
 import DateFilter from './common/date.filter'
 import TimeFilter from './common/time.filter'
 import ErrorFilter from './common/error.filter'
+import PercentageFilter from './common/percentage.filter'
 
 const moment = require('moment')
 // require('moment/locale/lt')
@@ -24,6 +25,7 @@ Vue.config.productionTip = false
 Vue.filter('date', DateFilter)
 Vue.filter('error', ErrorFilter)
 Vue.filter('time', TimeFilter)
+Vue.filter('percentage', PercentageFilter)
 
 ApiService.init()
 
