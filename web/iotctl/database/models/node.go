@@ -80,7 +80,8 @@ type NodeStatisticsEntry struct {
 type UnregisteredNode struct {
 	gorm.Model
 	Mac           string `json:"mac" gorm:"not null"`
-	AddedUsername string `json:"username"`
+	AddedUsername string `json:"username" gorm:"not null"`
+	Location      string `json:"location"`
 
 	// a `Has One` relationship. UnregisteredNode 0..* <-> 1 Network.
 	// UnregisteredNode `Has One` Network.

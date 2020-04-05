@@ -46,7 +46,9 @@ func (app *Iotctl) OnMessageGreeting(client MQTT.Client, msg MQTT.Message) {
 	tmpNode := models.UnregisteredNode{}
 	err := app.sql.GormDb.Where("mac = ?", payload.MAC).Find(&tmpNode).Error
 	if gorm.IsRecordNotFoundError(err) || err != nil {
-		logrus.Error(err)
+		if !gorm.IsRecordNotFoundError(err) {
+			logrus.Error(err)
+		}
 
 		// Error or `UnregisteredNode` not found - ignore this Greeting.
 		logrus.Infof("greeting for %s but there is no entry for it - skip",
@@ -71,16 +73,16 @@ func (app *Iotctl) OnMessageGreeting(client MQTT.Client, msg MQTT.Message) {
 
 	// `Node` doesn't exist and `Network` exists, lets create a `Node` in
 	// a given `Network`.
-	settings := models.NodeSettings{
-		ReadInterval: 10,
-		SendInterval: 10,
+
+	settings := models.NodeSettings{}
+	if err = app.sql.GormDb.Create(&settings).Error; err != nil {
+		panic(err)
 	}
-	app.sql.GormDb.Create(&settings)
 
 	node := models.Node{
-		Name:                "AckNode",
+		Name:                payload.Name,
 		Mac:                 payload.MAC,
-		Location:            "",
+		Location:            "Kaunas",
 		IpAddress4:          payload.IpAddress4,
 		LastSentAck:         payload.Sent,
 		LastReceivedMessage: time.Now(),
@@ -91,8 +93,12 @@ func (app *Iotctl) OnMessageGreeting(client MQTT.Client, msg MQTT.Message) {
 	}
 	app.sql.GormDb.Create(&node)
 
-	app.sql.GormDb.Model(&settings).Update("node_refer", node.ID)
-	app.sql.GormDb.Delete(&tmpNode)
+	app.sql.GormDb.Model(&settings).Update("node_id", node.ID)
+
+	// Delete permanently
+	if err = app.sql.GormDb.Unscoped().Delete(&tmpNode).Error; err != nil {
+		panic(err)
+	}
 
 	logrus.Infof("Created a new Node (ID = %d, MAC = %s)", node.ID, node.Mac)
 
@@ -189,6 +195,18 @@ func (app *Iotctl) OnMessageSystem(client MQTT.Client, msg MQTT.Message) {
 		return
 	}
 
+	// Get the `NodeSettings` of the particular `Node`. Such entry should exist.
+	nodeSettings := models.NodeSettings{}
+	err = app.sql.GormDb.Where("node_id = ?", node.ID).Find(&nodeSettings).Error
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+
+	nodeSettings.DataFileName = payload.DataFileInfo.Filename
+	nodeSettings.DataLineFrom = payload.DataFileInfo.DataLineFrom
+	nodeSettings.DataLineTo = payload.DataFileInfo.DataLineTo
+
 	// We arrive here if:
 	//	1. `Node` with MAC exists in the DB.
 	//	2. `Node` status is 'Registered' both in DB and on the device.
@@ -208,6 +226,12 @@ func (app *Iotctl) OnMessageSystem(client MQTT.Client, msg MQTT.Message) {
 
 	// Update `Node` in the Database with new values.
 	if err := app.sql.GormDb.Save(&node).Error; err != nil {
+		logrus.Error(err)
+		return
+	}
+
+	// Update `NodeSettings` in the Database with new values.
+	if err := app.sql.GormDb.Save(&nodeSettings).Error; err != nil {
 		logrus.Error(err)
 		return
 	}
