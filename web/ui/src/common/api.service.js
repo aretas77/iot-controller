@@ -74,6 +74,9 @@ export const NodesService = {
   get (slug) {
     return ApiService.get('nodes', slug)
   },
+  getUnregistered (networkId) {
+    return ApiService.get(`networks/${networkId}/pending`)
+  },
   create (params) {
     return ApiService.post('nodes', { node: params })
   },

@@ -5,6 +5,7 @@ import {
   FETCH_NODE,
   FETCH_NODES,
   FETCH_NODE_STATS,
+  FETCH_UNREG_NODES,
   NODE_EDIT,
   NODE_REMOVE,
   NODE_ADD,
@@ -14,6 +15,8 @@ import {
 import {
   SET_NODE,
   SET_NODES,
+  FETCH_UNREGISTER_START,
+  FETCH_UNREGISTER_END,
   FETCH_STATS_START,
   FETCH_STATS_END,
   FETCH_START,
@@ -30,13 +33,28 @@ const initialState = {
   nodesCount: 0,
   isLoading: true,
   isLoadingStats: true,
+  isLoadingUnregistered: true,
   statsEntries: [],
-  statsEntriesCount: 0
+  statsEntriesCount: 0,
+  unregisteredNodes: [],
+  unregisteredNodesCount: 0
 }
 
 export const state = { ...initialState }
 
 export const actions = {
+  async [FETCH_UNREG_NODES] (context, networkName) {
+    console.log('FETCH_UNRE_NODES start')
+    context.commit(FETCH_UNREGISTER_START)
+    await NodesService.getUnregistered(networkName)
+      .then(({ data }) => {
+        context.commit(FETCH_UNREGISTER_END, data)
+      })
+      .catch(error => {
+        throw new Error(error)
+      })
+  },
+
   // FETCH_NODE get node by its ID.
   async [FETCH_NODE] (context, nodeSlug, prevNode) {
     console.log('FETCH_NODE start')
@@ -120,6 +138,14 @@ export const mutations = {
     state.statsEntriesCount = entries.length
     state.isLoadingStats = false
   },
+  [FETCH_UNREGISTER_START] (state) {
+    state.isLoadingUnregistered = true
+  },
+  [FETCH_UNREGISTER_END] (state, { nodes }) {
+    state.unregisteredNodes = nodes
+    state.unregisteredNodesCount = nodes.length
+    state.isLoadingUnregistered = false
+  },
   [FETCH_START] (state) {
     state.isLoading = true
   },
@@ -151,11 +177,20 @@ const getters = {
   statsEntriesCount (state) {
     return state.statsEntriesCount
   },
+  unregisteredNodes (state) {
+    return state.unregisteredNodes
+  },
+  unregisteredNodesCount (state) {
+    return state.unregisteredNodesCount
+  },
   isLoading (state) {
     return state.isLoading
   },
   isLoadingStats (state) {
     return state.isLoadingStats
+  },
+  isLoadingUnregistered (state) {
+    return state.isLoadingUnregistered
   }
 }
 

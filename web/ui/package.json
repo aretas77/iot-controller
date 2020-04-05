@@ -12,7 +12,7 @@
     "axios": "^0.19.2",
     "bootstrap": "^4.4.1",
     "bootstrap-material-design": "^4.1.2",
-    "bootstrap-vue": "^2.4.1",
+    "bootstrap-vue": "^2.10.1",
     "chart.js": "^2.9.3",
     "core-js": "^3.6.4",
     "jquery": "^3.4.1",
