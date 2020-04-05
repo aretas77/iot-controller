@@ -9,17 +9,19 @@
         </router-link>
       </b-col>
 
-      <b-col cols="2" class="text-left">
+      <b-col cols="3" class="text-left">
         <span class="date">Last active: {{ node.last_received | time }}</span>
         <br />
         <span>Location: {{ node.location }}</span>
+        <br />
+        <span>IP Address: {{ node.ipv4 }}</span>
         <br />
         <span class="battery" v-bind:class="activeColor">
           Battery: {{ node.battery_left_per }}% ({{ node.battery_left_mah }} / {{ node.battery_total_mah }} mAh)
         </span>
       </b-col>
 
-      <b-col offset="6">
+      <b-col offset="4" class="">
         <NodeMeta isPreview :node="node" :actions="true" />
       </b-col>
 
