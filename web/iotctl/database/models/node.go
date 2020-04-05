@@ -51,18 +51,24 @@ type Node struct {
 	Network      *Network `json:"network,omitempty"`
 }
 
-// NodeStatisticsEntry is used to track various statistics of Node devices.
+// NodeStatisticsEntry is used to track various statistics of `Node` devices
+// at a given point of time.
 //
 // CPULoad		- is measured in percentages (0;100]%
 // Pressure		- is measured in Pa.
 // Temperature	- is measured in Celsius.
+// BatteryMah	- is measured in mAh.
 type NodeStatisticsEntry struct {
-	ID           uint                     `gorm:"primary_key"`
-	CPULoad      int                      `json:"cpu_load"`
-	Pressure     float32                  `json:"pressure"`
-	Temperature  float32                  `json:"temperature"`
-	TempReadTime time.Time                `json:"temp_read_time"`
-	Consumed     *typesMQTT.ConsumedFrame `json:"consumed_battery,omitempty"`
+	ID                uint      `gorm:"primary_key"`
+	CPULoad           int       `json:"cpu_load"`
+	Pressure          float32   `json:"pressure"`
+	Temperature       float32   `json:"temperature"`
+	TempReadTime      time.Time `json:"temp_read_time"`
+	BatteryMah        float32   `json:"battery_left_mah"`
+	BatteryPercentage float32   `json:"battery_left_per"`
+
+	// Not used
+	Consumed *typesMQTT.ConsumedFrame `json:"consumed_battery,omitempty"`
 
 	// Refers to `Nodes` MAC address to whom it belongs to.
 	NodeRefer string `json:"node_refer"`
@@ -101,6 +107,7 @@ type NodeSettings struct {
 	DataFileName string `json:"-"`
 	DataLineFrom int    `json:"-"`
 	DataLineTo   int    `json:"-"`
+	DataCount    int    `json:"-"`
 }
 
 type NodeService interface {

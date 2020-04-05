@@ -1,7 +1,9 @@
 package iotctl
 
 import (
+	"bufio"
 	"encoding/json"
+	"os"
 	"time"
 
 	"github.com/aretas77/iot-controller/types/devices"
@@ -138,15 +140,25 @@ func (app *Iotctl) OnMessageStats(client MQTT.Client, msg MQTT.Message) {
 	}
 
 	entry := models.NodeStatisticsEntry{
-		CPULoad:      payload.CPULoad,
-		Pressure:     payload.Pressure,
-		Temperature:  payload.Temperature,
-		TempReadTime: payload.TempReadTime,
-		Consumed:     &payload.Consumed,
-		NodeRefer:    node.Mac,
+		CPULoad:           payload.CPULoad,
+		Pressure:          payload.Pressure,
+		Temperature:       payload.Temperature,
+		TempReadTime:      payload.TempReadTime,
+		Consumed:          &payload.Consumed,
+		NodeRefer:         node.Mac,
+		BatteryMah:        payload.BatteryLeft,
+		BatteryPercentage: payload.BatteryPercentage,
 	}
 
 	if err := app.sql.GormDb.Create(&entry).Error; err != nil {
+		logrus.Error(err)
+		return
+	}
+
+	// update node values
+	node.BatteryPercentage = payload.BatteryPercentage
+	node.BatteryMah = payload.BatteryLeft
+	if err := app.sql.GormDb.Update(&node).Error; err != nil {
 		logrus.Error(err)
 		return
 	}
@@ -203,9 +215,23 @@ func (app *Iotctl) OnMessageSystem(client MQTT.Client, msg MQTT.Message) {
 		return
 	}
 
+	app.StatisticsFileName = payload.DataFileInfo.Filename
 	nodeSettings.DataFileName = payload.DataFileInfo.Filename
 	nodeSettings.DataLineFrom = payload.DataFileInfo.DataLineFrom
 	nodeSettings.DataLineTo = payload.DataFileInfo.DataLineTo
+	nodeSettings.DataCount = payload.DataFileInfo.DataCount
+
+	// Setup the data file
+	logrus.Infof("os.Open %s", DataPath+app.StatisticsFileName)
+	f, err := os.Open(DataPath + app.StatisticsFileName)
+	if err != nil {
+		panic(err)
+	}
+
+	app.StatisticsFileDesc = f
+	app.StatisticsScanner = bufio.NewScanner(app.StatisticsFileDesc)
+	app.StatisticsScanner.Scan()
+	logrus.Info(app.StatisticsScanner.Text())
 
 	// We arrive here if:
 	//	1. `Node` with MAC exists in the DB.
