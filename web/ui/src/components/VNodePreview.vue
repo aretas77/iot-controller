@@ -17,7 +17,7 @@
         <span>IP Address: {{ node.ipv4 }}</span>
         <br />
         <span class="battery" v-bind:class="activeColor">
-          Battery: {{ node.battery_left_per }}% ({{ node.battery_left_mah }} / {{ node.battery_total_mah }} mAh)
+          Battery: {{ node.battery_left_per | percentage }}% ({{ node.battery_left_mah }} / {{ node.battery_total_mah }} mAh)
         </span>
       </b-col>
 

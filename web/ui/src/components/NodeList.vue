@@ -127,7 +127,8 @@ export default {
     type () {
       this.resetPagination()
       this.fetchNodes()
-    }
+    },
+    $route: 'fetchNodes'
   },
   mounted () {
     this.value = 0
