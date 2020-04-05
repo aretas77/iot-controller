@@ -33,6 +33,8 @@ func (n *NodeDevice) PublishGreeting() {
 // PublishSystemData prepares system information and sends to the server
 // to verify it.
 func (n *NodeDevice) PublishSystemData() {
+	filename, from, to := n.Hal.GetStatisticsInterval()
+
 	payload, _ := json.Marshal(&devices.System{
 		Mac:               n.System.Mac,
 		Name:              n.System.Name,
@@ -42,6 +44,11 @@ func (n *NodeDevice) PublishSystemData() {
 		Status:            n.System.Status,
 		BatteryMah:        n.System.BatteryMah,
 		BatteryPercentage: n.System.BatteryPercentage,
+		DataFileInfo: devices.DataFileInfo{
+			Filename:     filename,
+			DataLineFrom: from,
+			DataLineTo:   to,
+		},
 	})
 
 	n.Send <- Message{

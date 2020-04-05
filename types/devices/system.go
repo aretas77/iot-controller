@@ -13,6 +13,13 @@ type System struct {
 	BatteryMah           float32              `json:"battery_left_mah"`
 	CurrentBatteryMah    float32              `json:"cur_battery_mah"`
 	FreeNetworkScheduler FreeNetworkScheduler `json:"free_net_scheduler"`
+	DataFileInfo         DataFileInfo         `json:"data_file_info"`
+}
+
+type DataFileInfo struct {
+	Filename     string `json:"filename"`
+	DataLineFrom int    `json:"from"`
+	DataLineTo   int    `json:"to"`
 }
 
 // FreeNetworkScheduler ...

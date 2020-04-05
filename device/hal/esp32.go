@@ -153,6 +153,11 @@ func (e *ESP32) GetPowerMode() string {
 	return e.Mode
 }
 
+// PowerOff imitates device turn off - cleans data.
 func (e *ESP32) PowerOff() {
 	e.StatisticsFileDesc.Close()
+}
+
+func (e *ESP32) GetStatisticsInterval() (string, int, int) {
+	return e.StatisticsFileName, e.StatisticsFrom, e.StatisticsTo
 }

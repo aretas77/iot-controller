@@ -47,4 +47,8 @@ type HAL interface {
 
 	// PowerOff should clean up.
 	PowerOff()
+
+	// GetStatisticsInterval will return the filename and the interval on which
+	// the device operates by reading the data.
+	GetStatisticsInterval() (string, int, int)
 }
