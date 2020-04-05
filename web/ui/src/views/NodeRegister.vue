@@ -21,7 +21,7 @@
                   class="form-control form-control-lg"
                   v-model="unregisteredNode.mac"
                   :state="validateMAC"
-                />
+                  />
                 <b-form-invalid-feedback :state="validateMAC">
                   Invalid MAC. The format is AA:BB:CC:DD:EE:FF.
                 </b-form-invalid-feedback>
@@ -30,8 +30,31 @@
                 </b-form-valid-feedback>
               </b-form-group>
 
-              <b-form-group>
+              <b-form-group
+                label="Node Location"
+                label-for="node-input"
+                >
+                <b-form-input
+                  id="node-input"
+                  type="text"
+                  class="form-control form-control-lg"
+                  v-model="unregisteredNode.location"
+                  :state="validateLocation"
+                  />
+                  <b-form-invalid-feedback :state="validateLocation">
+                    Empty location!
+                  </b-form-invalid-feedback>
+                  <b-form-valid-feedback :state="validateLocation">
+                    Looks good.
+                  </b-form-valid-feedback>
+              </b-form-group>
+
+              <b-form-group
+                label="Network"
+                label-for="network-input"
+                >
                 <b-form-select
+                  id="network-input"
                   v-model="network"
                   :options="networksOptions"
                   :state="validateNetwork"
@@ -49,6 +72,7 @@
                   Please select a network.
                 </b-form-invalid-feedback>
               </b-form-group>
+
             </fieldset>
 
             <!-- Form submit button -->
@@ -130,6 +154,9 @@ export default {
     },
     validateNetwork () {
       return this.validNetwork()
+    },
+    validateLocation () {
+      return this.validLocation(this.unregisteredNode.location)
     }
   },
   methods: {
@@ -141,7 +168,7 @@ export default {
         .dispatch(action, {
           mac: this.unregisteredNode.mac,
           network_refer: this.network.ID,
-          username: this.currentUser.name
+          username: this.currentUser.username
         }).then(() => {
           this.inProgress = false
           this.$router.push({
@@ -169,6 +196,13 @@ export default {
         }
       }
       return false
+    },
+    validLocation: function (location) {
+      console.log(location)
+      if (location === '') {
+        return false
+      }
+      return true
     }
   }
 }

@@ -1,9 +1,11 @@
 <template>
   <div class="node-page mt-3">
     <div class="banner">
-      <div class="container">
-        <h1>{{ node.name }}</h1>
-        <p>{{ node.mac }}</p>
+      <div class="banner-info">
+        <div class="py-4">
+          <h1>{{ node.name }}</h1>
+          <p class="mb-0">{{ node.mac }}</p>
+        </div>
       </div>
     </div>
     <div>
@@ -59,7 +61,8 @@ import NodeEvents from '@/components/Events'
 import {
   FETCH_NODE,
   FETCH_NODE_STATS,
-  FETCH_NODE_EVENTS
+  FETCH_NODE_EVENTS,
+  CHECK_AUTH
 } from '@/store/actions.type'
 
 export default {
@@ -104,6 +107,8 @@ export default {
       this.$store.dispatch(FETCH_NODE_EVENTS, this.node.ID)
     },
     onChangedTab (tabIndex) {
+      this.$store.dispatch(CHECK_AUTH)
+
       if (tabIndex === 0) {
         // refresh statistics
         // TODO: could probably just check with the server if there are new
@@ -120,3 +125,18 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+.banner {
+  background: #5cb85c;
+  box-shadow: inset 0 8px 8px -8px rgba(0,0,0,.3),inset 0 -8px 8px -8px rgba(0,0,0,.3);
+  color: #fff;
+  margin-bottom: 1rem;
+  margin-top: 1rem;
+}
+.banner-info {
+  text-shadow: 0 1px 3px rgba(0,0,0,.3);
+  font-weight: 700 !important;
+
+}
+</style>
