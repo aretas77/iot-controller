@@ -67,6 +67,10 @@ type NodeStatisticsEntry struct {
 	BatteryMah        float32   `json:"battery_left_mah"`
 	BatteryPercentage float32   `json:"battery_left_per"`
 
+	// Which line from data file was sent last by the device. Used for stats
+	// comparison building.
+	BatteryStatsLine int `json"-"`
+
 	// Not used
 	Consumed *typesMQTT.ConsumedFrame `json:"consumed_battery,omitempty"`
 
@@ -107,24 +111,4 @@ type NodeSettings struct {
 	DataFileName string `json:"-"`
 	DataLineFrom int    `json:"-"`
 	DataLineTo   int    `json:"-"`
-	DataCount    int    `json:"-"`
-}
-
-type NodeService interface {
-
-	// Init will be used to initialize all needed information and migration
-	// data.
-	Init() error
-
-	// Create should create a Node device in the specified Database.
-	Create(n *Node) (*Node, error)
-
-	// Get should return a Node by given ID.
-	Get(nodeID string) (*Node, error)
-
-	// All should return all Nodes.
-	All() ([]Node, error)
-
-	// Update should update the given Node with given values.
-	Update(n *Node) (*Node, error)
 }

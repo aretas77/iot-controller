@@ -31,22 +31,3 @@ type Network struct {
 	// Network `Has Many` UnregisteredNodes.
 	UnregisteredNodes []UnregisteredNode `json:"unregistered_nodes,omitempty" gorm:"foreignkey:NetworkRefer"`
 }
-
-type NetworkService interface {
-
-	// Create should create a new network which belongs to some User -
-	// should be specified in `UserRefer`.
-	Create(net *Network) (*Network, error)
-
-	// AddNode should add a given node into a specified network.
-	AddNode(node *Node, networkId string) error
-
-	// Get should return the Network of given ID.
-	Get(networkId string) (*Network, error)
-
-	// All should return all Networks.
-	All() ([]Network, error)
-
-	// Update ...
-	Update(net *Network) (*Network, error)
-}
