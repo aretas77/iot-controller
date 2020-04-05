@@ -94,7 +94,6 @@ func (app *Iotctl) OnMessageGreeting(client MQTT.Client, msg MQTT.Message) {
 		AddedUsername:       tmpNode.AddedUsername,
 	}
 	app.sql.GormDb.Create(&node)
-
 	app.sql.GormDb.Model(&settings).Update("node_id", node.ID)
 
 	// Delete permanently
@@ -148,6 +147,7 @@ func (app *Iotctl) OnMessageStats(client MQTT.Client, msg MQTT.Message) {
 		NodeRefer:         node.Mac,
 		BatteryMah:        payload.BatteryLeft,
 		BatteryPercentage: payload.BatteryPercentage,
+		BatteryStatsLine:  payload.StatisticsCount,
 	}
 
 	if err := app.sql.GormDb.Create(&entry).Error; err != nil {
@@ -156,9 +156,10 @@ func (app *Iotctl) OnMessageStats(client MQTT.Client, msg MQTT.Message) {
 	}
 
 	// update node values
-	node.BatteryPercentage = payload.BatteryPercentage
-	node.BatteryMah = payload.BatteryLeft
-	if err := app.sql.GormDb.Update(&node).Error; err != nil {
+	if err := app.sql.GormDb.Model(&node).Update(models.Node{
+		BatteryMah:        payload.BatteryLeft,
+		BatteryPercentage: payload.BatteryPercentage,
+	}).Error; err != nil {
 		logrus.Error(err)
 		return
 	}
@@ -219,7 +220,6 @@ func (app *Iotctl) OnMessageSystem(client MQTT.Client, msg MQTT.Message) {
 	nodeSettings.DataFileName = payload.DataFileInfo.Filename
 	nodeSettings.DataLineFrom = payload.DataFileInfo.DataLineFrom
 	nodeSettings.DataLineTo = payload.DataFileInfo.DataLineTo
-	nodeSettings.DataCount = payload.DataFileInfo.DataCount
 
 	// Setup the data file
 	logrus.Infof("os.Open %s", DataPath+app.StatisticsFileName)
