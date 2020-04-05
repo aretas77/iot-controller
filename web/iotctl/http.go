@@ -52,80 +52,49 @@ func (app *Iotctl) setupEvents() {
 	app.Router.Handle(
 		"/nodes/{id}/events",
 		negroni.New(
-			negroni.HandlerFunc(app.Controller.UserCtl.Index),
-		)).Methods("OPTIONS")
-
-	app.Router.Handle(
-		"/nodes/{id}/events",
-		negroni.New(
+			negroni.HandlerFunc(app.userAuthBearer),
 			negroni.HandlerFunc(app.Controller.EventCtl.GetEventsByNode),
-		)).Methods("GET")
+		)).Methods(http.MethodGet, http.MethodOptions)
 }
 
 // setupNetwork will setup `Network` related routes.
 func (app *Iotctl) setupNetwork() {
 	app.Router.Handle(
-		"/users/{user_id}/networks",
-		negroni.New(
-			negroni.HandlerFunc(app.Controller.UserCtl.Index),
-		)).Methods("OPTIONS")
-
-	app.Router.Handle(
-		"/networks/{id}",
-		negroni.New(
-			negroni.HandlerFunc(app.Controller.UserCtl.Index),
-		)).Methods("OPTIONS")
-
-	app.Router.Handle(
 		"/networks",
 		negroni.New(
+			negroni.HandlerFunc(app.userAuthBearer),
 			negroni.HandlerFunc(app.Controller.NetworkCtl.CreateNetwork),
-		)).Methods("POST")
+		)).Methods(http.MethodPost, http.MethodOptions)
 
 	app.Router.Handle(
 		"/networks/{id}",
 		negroni.New(
+			negroni.HandlerFunc(app.userAuthBearer),
 			negroni.HandlerFunc(app.Controller.NetworkCtl.GetNetwork),
-		)).Methods("GET")
+		)).Methods(http.MethodGet, http.MethodOptions)
 
 	app.Router.Handle(
 		"/users/{user_id}/networks",
 		negroni.New(
 			negroni.HandlerFunc(app.userAuthBearer),
 			negroni.HandlerFunc(app.Controller.NetworkCtl.GetNetworkByUser),
-		)).Methods("GET")
+		)).Methods(http.MethodGet, http.MethodOptions)
 }
 
 func (app *Iotctl) setupNode() {
 	app.Router.Handle(
 		"/nodes",
 		negroni.New(
-			negroni.HandlerFunc(app.Controller.UserCtl.Index),
-		)).Methods("OPTIONS")
-	app.Router.Handle(
-		"/nodes/{id}",
-		negroni.New(
-			negroni.HandlerFunc(app.Controller.UserCtl.Index),
-		)).Methods("OPTIONS")
-	app.Router.Handle(
-		"/nodes/{id}/statistics",
-		negroni.New(
-			negroni.HandlerFunc(app.Controller.UserCtl.Index),
-		)).Methods("OPTIONS")
-
-	app.Router.Handle(
-		"/nodes",
-		negroni.New(
 			negroni.HandlerFunc(app.userAuthBearer),
 			negroni.HandlerFunc(app.Controller.NodeCtl.GetNodes),
-		)).Methods("GET")
+		)).Methods(http.MethodGet, http.MethodOptions)
 
 	app.Router.Handle(
 		"/nodes/{id}",
 		negroni.New(
 			negroni.HandlerFunc(app.userAuthBearer),
 			negroni.HandlerFunc(app.Controller.NodeCtl.GetNode),
-		)).Methods("GET")
+		)).Methods(http.MethodGet)
 
 	app.Router.Handle(
 		"/nodes/{id}",
@@ -133,71 +102,54 @@ func (app *Iotctl) setupNode() {
 			negroni.HandlerFunc(app.userAuthBearer),
 			negroni.HandlerFunc(app.PublishUnregister),
 			negroni.HandlerFunc(app.Controller.NodeCtl.UnregisterNode),
-		)).Methods("DELETE")
+		)).Methods(http.MethodDelete, http.MethodOptions)
 
 	app.Router.Handle(
 		"/nodes/{id}/statistics",
 		negroni.New(
 			negroni.HandlerFunc(app.userAuthBearer),
 			negroni.HandlerFunc(app.Controller.NodeCtl.GetEntries),
-		)).Methods("GET")
+		)).Methods(http.MethodGet, http.MethodOptions)
 
 	app.Router.Handle(
 		"/nodes",
 		negroni.New(
+			negroni.HandlerFunc(app.userAuthBearer),
 			negroni.HandlerFunc(app.Controller.NodeCtl.RegisterNode),
-		)).Methods("POST")
+		)).Methods(http.MethodPost, http.MethodOptions)
 }
 
 func (app *Iotctl) setupUser() {
-	// Routes for OPTIONS method
-	app.Router.Handle(
-		"/login",
-		negroni.New(
-			negroni.HandlerFunc(app.Controller.UserCtl.Index),
-		)).Methods("OPTIONS")
-	app.Router.Handle(
-		"/users",
-		negroni.New(
-			negroni.HandlerFunc(app.Controller.UserCtl.Index),
-		)).Methods("OPTIONS")
-	app.Router.Handle(
-		"/users/check",
-		negroni.New(
-			negroni.HandlerFunc(app.Controller.UserCtl.Index),
-		)).Methods("OPTIONS")
-
-	// Other routes
 	app.Router.Handle(
 		"/users/check",
 		negroni.New(
 			negroni.HandlerFunc(app.userAuthBearer),
 			negroni.HandlerFunc(app.Controller.AuthCtl.CheckUsersToken),
-		)).Methods("GET")
+		)).Methods(http.MethodGet, http.MethodOptions)
 
 	app.Router.Handle(
 		"/login",
 		negroni.New(
 			negroni.HandlerFunc(app.Controller.AuthCtl.Login),
-		)).Methods("POST")
+		)).Methods(http.MethodPost, http.MethodOptions)
 
 	app.Router.Handle(
 		"/logout",
 		negroni.New(
 			negroni.HandlerFunc(app.userAuthBearer),
 			negroni.HandlerFunc(app.Controller.AuthCtl.Logout),
-		)).Methods("POST")
+		)).Methods(http.MethodPost, http.MethodOptions)
 
 	app.Router.Handle(
 		"/users",
 		negroni.New(
 			negroni.HandlerFunc(app.Controller.UserCtl.GetUsers),
-		)).Methods("GET")
+		)).Methods(http.MethodGet, http.MethodOptions)
 
 	app.Router.Handle(
 		"/users/{id}",
 		negroni.New(
 			negroni.HandlerFunc(app.userAuthBearer),
 			negroni.HandlerFunc(app.Controller.UserCtl.GetUserById),
-		)).Methods("GET")
+		)).Methods(http.MethodGet, http.MethodOptions)
 }

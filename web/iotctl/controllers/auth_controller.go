@@ -114,6 +114,10 @@ func (a *AuthController) loginBearer(user *models.User, w *http.ResponseWriter) 
 func (a *AuthController) Login(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	a.setupHeader(&w)
 
+	if r.Method == http.MethodOptions {
+		return
+	}
+
 	// Decode the request JSON into our Credentials struct
 	var creds models.Credentials
 	if err := json.NewDecoder(r.Body).Decode(&creds); err != nil {

@@ -21,6 +21,11 @@ func setupHeader(w *http.ResponseWriter) {
 // header. If the JWT is invalid - stop the request chain.
 func (app *Iotctl) userAuthBearer(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	setupHeader(&w)
+
+	if isOptionsRequest(r) {
+		return
+	}
+
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
 		logrus.Debug("No Authorization header")
@@ -47,4 +52,8 @@ func (app *Iotctl) userAuthBearer(w http.ResponseWriter, r *http.Request, next h
 
 	logrus.Info("Authenticated")
 	next(w, r)
+}
+
+func isOptionsRequest(r *http.Request) bool {
+	return r.Method == http.MethodOptions
 }
