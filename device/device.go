@@ -85,7 +85,7 @@ func (n *NodeDevice) Initialize() error {
 // The NodeDevice will run as a goroutine which will have its own:
 //	- ReceiveLoop
 func (n *NodeDevice) Start() {
-	ticker := time.NewTicker(3 * time.Second)
+	ticker := time.NewTicker(5 * time.Second)
 
 	// Initialize NodeDevice
 	if err := n.Initialize(); err != nil {
@@ -96,6 +96,7 @@ func (n *NodeDevice) Start() {
 
 	// will handle the broadcasted messages from main device controller
 	go n.ReceiveLoop()
+	go n.MonitorDeviceLoop()
 
 	// Send a greeting every N seconds defined by the ticker.
 handshake:
@@ -116,7 +117,7 @@ handshake:
 	}
 
 	// Won't be receiving anything on this channel.
-	close(n.ReceivedAck)
+	// close(n.ReceivedAck)
 
 	// After a handshake is done, we can start tracking the time between sends
 	// and how much energy was consumed during the given timeframe.
@@ -130,15 +131,19 @@ handshake:
 	// don't wait for any response - continue to other state.
 	n.PublishSystemData()
 
+	statsTicker := time.NewTicker(20 * time.Second)
+
 statistics:
 	for {
 		select {
-		case <-ticker.C:
+		case <-statsTicker.C:
 			// Extract statistic read interval from MQTT lib
 			logrus.Debugf("sending a statistic %s", n.System.Mac)
 			n.PublishSensorData()
 
 			n.Time = time.Now()
+		case <-n.Unregister:
+			goto handshake
 		case <-n.Stop:
 			n.Wg.Done()
 			break statistics
@@ -156,6 +161,9 @@ init:
 
 	logrus.Infof("Device stopped (%s)", n.System.Mac)
 	return
+}
+
+func (n *NodeDevice) RebootDevice() {
 }
 
 // ReceiveLoop is individual for each of the device and will handle messages
@@ -197,7 +205,7 @@ func (n *NodeDevice) ReceiveLoop() {
 					n.System.Status, NodeDeviceNew)
 
 				n.System.Status = NodeDeviceNew
-				n.System.Network = ""
+				n.System.Network = "global"
 				n.System.Location = ""
 
 				n.Unregister <- struct{}{}
@@ -207,6 +215,25 @@ func (n *NodeDevice) ReceiveLoop() {
 			}
 		case <-n.Stop:
 			return
+		}
+	}
+}
+
+// MonitorDeviceLoop will monitor the device battery levels and if it reaches
+// 1 or less mAh - the device is stopped.
+func (n *NodeDevice) MonitorDeviceLoop() {
+	logrus.Debugf("monitor loop running for %s", n.System.Mac)
+	ticker := time.NewTicker(time.Minute * 1)
+
+	for {
+		select {
+		case <-ticker.C:
+			if n.System.BatteryMah <= 1 {
+				logrus.Infof("device battery level low (%s) - stop", n.System.Mac)
+				n.Stop <- struct{}{}
+			}
+		case <-n.Stop:
+			n.Wg.Done()
 		}
 	}
 }

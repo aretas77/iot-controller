@@ -8,6 +8,7 @@ import (
 func (d *DeviceController) subscribeDevicePlainTopics() error {
 	d.PlainTopics = []typesMQTT.TopicHandlerDevice{
 		{"control/+/+/ack", d.HandleAck},
+		{"control/+/+/unregister", d.HandleUnregister},
 		{"test", d.HandleBroadcast},
 	}
 
