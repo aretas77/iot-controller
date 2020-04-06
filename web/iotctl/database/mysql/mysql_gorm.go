@@ -15,7 +15,7 @@ func (m *MySql) ConnectGorm() (err error) {
 		panic(err.Error())
 	}
 
-	m.GormDb.LogMode(true)
+	//m.GormDb.LogMode(true)
 
 	// Get the generic database object sql.DB to use its functions
 	m.Db = m.GormDb.DB()

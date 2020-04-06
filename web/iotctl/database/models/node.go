@@ -69,7 +69,7 @@ type NodeStatisticsEntry struct {
 
 	// Which line from data file was sent last by the device. Used for stats
 	// comparison building.
-	BatteryStatsLine int `json"-"`
+	DataStatsLine int `json"-"`
 
 	// Not used
 	Consumed *typesMQTT.ConsumedFrame `json:"consumed_battery,omitempty"`

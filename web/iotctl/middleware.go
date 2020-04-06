@@ -50,7 +50,6 @@ func (app *Iotctl) userAuthBearer(w http.ResponseWriter, r *http.Request, next h
 		}
 	}
 
-	logrus.Info("Authenticated")
 	next(w, r)
 }
 

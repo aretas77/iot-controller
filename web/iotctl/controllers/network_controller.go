@@ -116,7 +116,7 @@ func (n *NetworkController) GetUnregisteredNodesByNetwork(w http.ResponseWriter,
 
 	unregisteredNodes := []models.UnregisteredNode{}
 	err = n.sql.GormDb.Where("network_refer = ?", network.ID).Find(&unregisteredNodes).Error
-	if err != nil {
+	if err != nil && !gorm.IsRecordNotFoundError(err) {
 		logrus.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
