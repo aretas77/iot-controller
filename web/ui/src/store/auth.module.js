@@ -41,12 +41,13 @@ const actions = {
           context.commit(SET_AUTH, data)
           resolve(data)
         })
-        .catch(({ response }) => {
-          context.commit(SET_ERROR, response.data.errors)
+        .catch(({ errors }) => {
+          context.commit(SET_ERROR, errors)
         })
     })
   },
   [LOGOUT] (context) {
+    console.log('Calling LOGOUT')
     context.commit(PURGE_AUTH)
   },
 
@@ -59,7 +60,7 @@ const actions = {
       ApiService.setHeader()
       ApiService.get('users/check')
         .then(({ data }) => {
-          context.commit(SET_AUTH, data)
+          context.commit(SET_AUTH, { user: data })
         })
         .catch(({ error }) => {
           context.commit(SET_ERROR, error)
@@ -76,12 +77,16 @@ const mutations = {
     console.log('Setting SET_ERROR: ' + error)
     state.errors = error
   },
-  [SET_AUTH] (state, user) {
+  [SET_AUTH] (state, { user, network }) {
     console.log('Setting SET_AUTH')
     state.isAuthenticated = true
     state.user = user
     state.errors = {}
     JwtService.saveToken(state.user.token)
+
+    if (network !== undefined) {
+      NetworkService.saveNetwork(network)
+    }
   },
   [PURGE_AUTH] (state) {
     console.log('Calling PURGE_AUTH')
@@ -92,6 +97,7 @@ const mutations = {
     // We don't need to see them - destroy
     JwtService.destroyToken()
     NetworkService.destroyNetwork()
+    console.log('Done PURGE_AUTH')
   },
   [FETCH_CURRENT_USER] (state) {
     console.log('Calling FETCH_CURRENT_USER')

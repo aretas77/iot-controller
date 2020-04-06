@@ -141,9 +141,9 @@ export const mutations = {
   [FETCH_UNREGISTER_START] (state) {
     state.isLoadingUnregistered = true
   },
-  [FETCH_UNREGISTER_END] (state, { nodes }) {
-    state.unregisteredNodes = nodes
-    state.unregisteredNodesCount = nodes.length
+  [FETCH_UNREGISTER_END] (state, { unregistered }) {
+    state.unregisteredNodes = unregistered
+    state.unregisteredNodesCount = unregistered.length
     state.isLoadingUnregistered = false
   },
   [FETCH_START] (state) {

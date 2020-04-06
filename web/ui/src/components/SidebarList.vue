@@ -1,18 +1,20 @@
 <template>
   <b-container>
-    <b-button v-b-toggle.sidebar-right>&laquo;</b-button>
+    <b-button v-b-toggle.sidebar-right @click="fetchUnregisteredNodes">&laquo;</b-button>
     <b-sidebar
       id="sidebar-right"
       title="Pending nodes"
-      header-class=""
+      header-class="header-nodes2"
       right shadow
       >
       <hr />
-      <UnregisteredNodePreview
-        v-for="(unode, index) in unregisteredNodes"
-        :key="unode.mac + index"
-        :unregNode="unode"
-      />
+      <b-list-group>
+        <UnregisteredNodePreview
+          v-for="(unode, index) in unregisteredNodes"
+          :key="unode.mac + index"
+          :unregNode="unode"
+          />
+      </b-list-group>
     </b-sidebar>
   </b-container>
 </template>
@@ -26,6 +28,9 @@ export default {
   name: 'SidebarList',
   components: {
     UnregisteredNodePreview
+  },
+  data () {
+    return { }
   },
   props: {
     networkName: {
@@ -49,10 +54,13 @@ export default {
 </script>
 
 <style lang="scss">
-.header-nodes {
+.header-nodes1 {
   background: #5cb85c;
   box-shadow: inset 0 8px 8px -8px rgba(0,0,0,.3),inset 0 -8px 8px -8px rgba(0,0,0,.3);
   color: #fff;
   margin-top: 1rem;
+}
+.header-nodes2 {
+  color: #5cb85c;
 }
 </style>

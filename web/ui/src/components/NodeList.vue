@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-container v-if="isLoading" class="mh-100">
+    <b-container v-if="isLoading" class="mh-100 mt-3">
       <b-progress-bar
         label="Loading nodes..."
         :value="value"

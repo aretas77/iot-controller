@@ -47,7 +47,9 @@
 
           </b-nav-item>
           <b-nav-item v-if="isAuthenticated">
-            <SidebarList :networkName="currentNetwork.name" />
+            <SidebarList
+              :networkName="currentNetwork.name"
+              />
           </b-nav-item>
           <!-- Right aligned nav items end -->
         </b-navbar-nav>

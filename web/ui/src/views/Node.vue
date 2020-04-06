@@ -9,7 +9,7 @@
       </div>
     </div>
     <div>
-      <b-tabs content-class="mt-3" @input="onChangedTab">
+      <b-tabs content-class="mt-3" class="m-2" @input="onChangedTab">
 
         <b-tab title="Statistics" active lazy>
           <b-container v-if="isLoadingStats">
