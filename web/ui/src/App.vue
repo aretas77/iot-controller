@@ -28,4 +28,8 @@ export default {
   color: #2c3e50;
   position: relative;
 }
+
+.green-text {
+  color: #5cb85c;
+}
 </style>
