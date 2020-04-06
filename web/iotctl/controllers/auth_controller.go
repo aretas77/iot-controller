@@ -11,6 +11,7 @@ import (
 	models "github.com/aretas77/iot-controller/web/iotctl/database/models"
 	mysql "github.com/aretas77/iot-controller/web/iotctl/database/mysql"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 )
 
@@ -152,10 +153,23 @@ func (a *AuthController) Login(w http.ResponseWriter, r *http.Request, next http
 		return
 	}
 
+	network := models.Network{}
+	err = a.sql.GormDb.Where("user_refer = ?", user.ID).First(&network).Error
+	if err != nil && !gorm.IsRecordNotFoundError(err) {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	// TODO: fix this shit :D
 	user.Password = "invisible"
 	user.Token = tkn
-	json.NewEncoder(w).Encode(user)
+
+	mapUserNetwork := map[string]interface{}{
+		"user":    user,
+		"network": network,
+	}
+
+	json.NewEncoder(w).Encode(mapUserNetwork)
 }
 
 // Logout will clear the header of Authorization JWT token.
