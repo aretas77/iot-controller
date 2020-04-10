@@ -11,7 +11,7 @@ func CreateHermesMQConfiguration(options typesMQTT.Broker) (*hermesmq.ClientOpti
 	opts := hermesmq.NewClientOptions()
 	opts.SetProtocolVersion(options.ProtocolVer)
 	opts.SetClientID(options.ClientId)
-	opts.SetCleanSession(true)
+	opts.SetCleanSession(options.CleanSession)
 	opts.SetOrderMatters(true)
 	opts.SetAutoReconnect(true)
 	opts.SetUsername(options.Username)
