@@ -4,6 +4,7 @@
 go_lines=0
 vue_lines=0
 js_lines=0
+py_lines=0
 
 calculate_go() {
     echo "Go lines: "
@@ -28,7 +29,17 @@ calculate_vue() {
     js_lines=$(echo "$js_lines" | sed 's/[^0-9]*//g')
 }
 
+calculate_py() {
+	echo "Python lines: "
+    py_lines=$(find ../iot-hades/ -name '*.py' | xargs wc -l | tail -1)
+    echo "$py_lines"
+
+	# Parse numbers
+	py_lines=$(echo "$py_lines" | sed 's/[^0-9]*//g')
+}
+
 calculate_go
 calculate_vue
+calculate_py
 
-echo "Total lines: $((vue_lines + js_lines + go_lines))"
+echo "Total lines: $((vue_lines + js_lines + go_lines + py_lines))"
