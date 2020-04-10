@@ -53,9 +53,10 @@ func (n *NodeDevice) PublishSystemData() {
 	})
 
 	n.Send <- Message{
-		Mac:     n.System.Mac,
-		Topic:   fmt.Sprintf("node/%s/%s/system", n.System.Network, n.System.Mac),
-		QoS:     0,
+		Mac:   n.System.Mac,
+		Topic: fmt.Sprintf("node/%s/%s/system", n.System.Network, n.System.Mac),
+		// setting QoS to 2 to bypass Hermis.
+		QoS:     2,
 		Payload: payload,
 	}
 }
