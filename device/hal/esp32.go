@@ -19,7 +19,7 @@ const (
 	LightSleepMode = "lightSleep"
 	// DeepSleepMode ...
 	DeepSleepMode = "deepSleep"
-
+	// dataPath is used for storing sensor data.
 	dataPath = "./cmd/data/"
 )
 
@@ -34,6 +34,7 @@ type ESP32 struct {
 	Interface       string // Name of this struct
 	Power           *PowerConsumption
 	Mode            string
+	Protocol        string
 	TemperatureLine int
 
 	// Statistics simulation file related stuff.
@@ -66,6 +67,7 @@ func (e *ESP32) Initialize() error {
 	}
 	e.Mode = ActiveMode
 	e.Interface = "esp32"
+	e.Protocol = "n"
 
 	// Alright then, keep your file struct
 	e.StatisticsFileDesc = f
@@ -142,6 +144,9 @@ func (e *ESP32) GetPressureTemperature(sensor string) (float32, float32, float32
 	return consumed, float32(temp), float32(press)
 }
 
+// SetPowerMode will set the operating power mode of the device. The device
+// should use these modes to more accurately track of its power levels.
+// TODO: track used power levels by power mode.
 func (e *ESP32) SetPowerMode(mode string) error {
 	switch mode {
 	case ActiveMode:
@@ -161,6 +166,20 @@ func (e *ESP32) SetPowerMode(mode string) error {
 
 func (e *ESP32) GetPowerMode() string {
 	return e.Mode
+}
+
+// GetSendConsumed ...
+func (e *ESP32) GetSendConsumed() int {
+	switch e.Protocol {
+	case "n":
+		return e.Power.Tx80211n
+	case "g":
+		return e.Power.Tx80211g
+	case "b":
+		return e.Power.Tx80211b
+	default:
+		return 0
+	}
 }
 
 // PowerOff imitates device turn off - cleans data.

@@ -36,6 +36,10 @@ type HAL interface {
 	// @sensor - name of the sensor from which we will read.
 	GetPressureTemperature(sensor string) (float32, float32, float32)
 
+	// GetSendConsumed will return how much power was consumed by sending a
+	// packet. It is calculated by used protocol (as in `PowerConsumption`).
+	GetSendConsumed() int
+
 	// SetPowerMode will set the power mode of the simulation device which
 	// will adjust TX, RX and other peripheral power consumption.
 	//
