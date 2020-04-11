@@ -169,14 +169,14 @@ func (e *ESP32) GetPowerMode() string {
 }
 
 // GetSendConsumed ...
-func (e *ESP32) GetSendConsumed() int {
+func (e *ESP32) GetSendConsumed() float32 {
 	switch e.Protocol {
 	case "n":
-		return e.Power.Tx80211n
+		return float32(e.Power.Tx80211n)
 	case "g":
-		return e.Power.Tx80211g
+		return float32(e.Power.Tx80211g)
 	case "b":
-		return e.Power.Tx80211b
+		return float32(e.Power.Tx80211b)
 	default:
 		return 0
 	}

@@ -12,6 +12,9 @@ import (
 )
 
 const (
+	BatteryConsumedSend = "send"
+	BatteryConsumedRead = "read"
+
 	NodeDeviceAcknowledged = "acknowledged"
 	NodeDeviceRegistered   = "registered"
 	NodeDeviceNew          = "new"
@@ -53,15 +56,23 @@ type NodeDevice struct {
 	ReadInterval     time.Duration
 	SendInterval     time.Duration
 
-	Wg  *sync.WaitGroup
+	wg  *sync.WaitGroup
 	Hal hal.HAL // What Hardware Abstraction Layer is used
 
-	ReceivedAck chan struct{}
-	Unregister  chan struct{}
-	Stop        chan struct{}
+	BatteryControl chan BatteryChangeInfo
+	ReceivedAck    chan struct{}
+	Unregister     chan struct{}
+	Stop           chan struct{}
 
 	Send    chan Message
 	Receive chan Message
+
+	rwLock sync.RWMutex
+}
+
+type BatteryChangeInfo struct {
+	consumed     float32
+	consumedType string
 }
 
 func (n *NodeDevice) calculateBatteryPercentage() float32 {
@@ -77,6 +88,7 @@ func (n *NodeDevice) Initialize() error {
 
 	n.ReceivedAck = make(chan struct{})
 	n.Unregister = make(chan struct{})
+	n.BatteryControl = make(chan BatteryChangeInfo)
 	return nil
 }
 
@@ -95,6 +107,7 @@ func (n *NodeDevice) Start() {
 	defer n.Hal.PowerOff()
 
 	// will handle the broadcasted messages from main device controller
+	n.wg.Add(2)
 	go n.ReceiveLoop()
 	go n.MonitorDeviceLoop()
 
@@ -107,11 +120,10 @@ handshake:
 			break handshake
 		case <-ticker.C:
 			// publish a greeting
-			logrus.Debugf("sending a greeting %s", n.System.Mac)
 			n.PublishGreeting()
 		case <-n.Stop:
 			ticker.Stop()
-			n.Wg.Done()
+			n.wg.Done()
 			return
 		}
 	}
@@ -145,7 +157,7 @@ statistics:
 		case <-n.Unregister:
 			goto handshake
 		case <-n.Stop:
-			n.Wg.Done()
+			n.wg.Done()
 			break statistics
 		}
 	}
@@ -154,16 +166,13 @@ init:
 	for {
 		select {
 		case <-n.Stop:
-			n.Wg.Done()
+			n.wg.Done()
 			break init
 		}
 	}
 
 	logrus.Infof("Device stopped (%s)", n.System.Mac)
 	return
-}
-
-func (n *NodeDevice) RebootDevice() {
 }
 
 // ReceiveLoop is individual for each of the device and will handle messages
@@ -209,6 +218,12 @@ func (n *NodeDevice) ReceiveLoop() {
 				n.System.Location = ""
 
 				n.Unregister <- struct{}{}
+			} else if msg.Topic == "sent" {
+				// Notify Device monitor about a change.
+				n.BatteryControl <- BatteryChangeInfo{
+					consumed:     0,
+					consumedType: BatteryConsumedSend,
+				}
 			} else {
 				logrus.Infof("%s <- %s. Payload:\n%s", n.System.Mac,
 					msg.Topic, msg.Payload)
@@ -223,17 +238,33 @@ func (n *NodeDevice) ReceiveLoop() {
 // 1 or less mAh - the device is stopped.
 func (n *NodeDevice) MonitorDeviceLoop() {
 	logrus.Debugf("monitor loop running for %s", n.System.Mac)
-	ticker := time.NewTicker(time.Minute * 1)
 
 	for {
 		select {
-		case <-ticker.C:
+		case control := <-n.BatteryControl:
+			logrus.Infof("received battery change event - %s", control.consumedType)
+
+			// Action was made which was a success and so we can recalculate
+			// battery levels.
+			n.rwLock.Lock()
+
+			switch control.consumedType {
+			case BatteryConsumedRead:
+				n.System.CurrentBatteryMah -= control.consumed
+			case BatteryConsumedSend:
+				n.System.CurrentBatteryMah -= (control.consumed + n.Hal.GetSendConsumed())
+			}
+
+			n.System.BatteryPercentage = n.calculateBatteryPercentage()
+
 			if n.System.BatteryMah <= 1 {
 				logrus.Infof("device battery level low (%s) - stop", n.System.Mac)
 				n.Stop <- struct{}{}
 			}
+
+			n.rwLock.Unlock()
 		case <-n.Stop:
-			n.Wg.Done()
+			n.wg.Done()
 		}
 	}
 }

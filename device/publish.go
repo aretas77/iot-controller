@@ -64,13 +64,13 @@ func (n *NodeDevice) PublishSystemData() {
 // PublishSensorData prepares sensor data which will be sent for
 // Reinforcement Learning.
 func (n *NodeDevice) PublishSensorData() {
-	//consumed, temperature := n.Hal.GetTemperature("bmp180")
 	consumed, temperature, pressure := n.Hal.GetPressureTemperature("bmp180")
-	n.System.CurrentBatteryMah -= consumed
-	n.System.BatteryPercentage = n.calculateBatteryPercentage()
 
-	//n.ConsumedTimeFrame.ConsumedMah += consumed
-	//n.ConsumedTimeFrame.Duration = time.Since(n.Time)
+	// notify device Monitor of consumed battery.
+	n.BatteryControl <- BatteryChangeInfo{
+		consumed:     consumed,
+		consumedType: BatteryConsumedRead,
+	}
 
 	payload, _ := json.Marshal(&mqtt.MessageStats{
 		CPULoad:           rand.Intn(100),
@@ -79,7 +79,7 @@ func (n *NodeDevice) PublishSensorData() {
 		Temperature:       temperature,
 		Pressure:          pressure,
 		TempReadTime:      time.Now(),
-		Consumed:          n.ConsumedTimeFrame,
+		Consumed:          consumed,
 		StatisticsCount:   n.Hal.GetStatisticsCurrentLine(),
 	})
 

@@ -52,13 +52,20 @@ func (d *DeviceController) PublishLoop(stop chan bool) {
 			return
 		case packet := <-d.mqttQueue:
 			logrus.Infof("%s -> %s (len:%d)", packet.Mac, packet.Topic, len(packet.Payload))
-			d.PlainConnection.Publish(packet.Topic, packet.QoS, packet.Payload)
+			err := d.PlainConnection.Publish(packet.Topic, packet.QoS, packet.Payload)
+			if err == nil {
+				// Send was a success - notify the device about it.
+				d.broadcast[packet.Mac] <- Message{
+					Mac:   packet.Mac,
+					Topic: "sent",
+				}
+			}
 		}
 	}
 }
 
 func (d *DeviceController) Init(broker typesMQTT.Broker) error {
-	d.mqttQueue = make(chan Message, 10)
+	d.mqttQueue = make(chan Message, 20)
 	d.broadcast = make(map[string]chan Message)
 	d.wg = sync.WaitGroup{}
 
@@ -82,8 +89,7 @@ func (d *DeviceController) Start(stop chan bool, devs []DeviceInfo) error {
 	var statisticsBlockSize, statisticsFrom, statisticsTo int
 
 	logrus.Info("starting device simulation")
-	//statisticsBlockSize = dataLines / len(devs)
-	statisticsBlockSize = dataLines / 2
+	statisticsBlockSize = dataLines / len(devs)
 
 	// Channel for controlling when to stop the working nodes.
 	exit := make(chan struct{})
@@ -109,10 +115,10 @@ func (d *DeviceController) Start(stop chan bool, devs []DeviceInfo) error {
 
 			// Lets give each NodeDevice a reference to the main WorkGroup and
 			// an exit channel.
-			Wg:   &d.wg,
+			wg:   &d.wg,
 			Stop: exit,
 
-			// Values derived from the model and adjustable by S-MQTT.
+			// Values derived from the model and adjustable by HermesMQ.
 			// Should be parsed from the model.
 			ReadInterval: 0,
 			SendInterval: 0,

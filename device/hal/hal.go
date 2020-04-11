@@ -38,7 +38,7 @@ type HAL interface {
 
 	// GetSendConsumed will return how much power was consumed by sending a
 	// packet. It is calculated by used protocol (as in `PowerConsumption`).
-	GetSendConsumed() int
+	GetSendConsumed() float32
 
 	// SetPowerMode will set the power mode of the simulation device which
 	// will adjust TX, RX and other peripheral power consumption.
