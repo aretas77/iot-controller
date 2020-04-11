@@ -66,10 +66,12 @@ func (c *MQTTClient) Disconnect() error {
 // Publish ...
 func (c *MQTTClient) Publish(topic string, qos uint8, payload interface{}) error {
 	if !c.IsConnected() {
-		return nil
-		//return mqtt.ErrNotConnected
+		return mqtt.ErrNotConnected
 	}
-	c.client.Publish(topic, qos, false, payload)
+
+	if tkn := c.client.Publish(topic, qos, false, payload); tkn.Error() != nil {
+		return tkn.Error()
+	}
 	return nil
 }
 
