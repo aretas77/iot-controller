@@ -4,7 +4,6 @@ import (
 	"errors"
 	"time"
 
-	typesMQTT "github.com/aretas77/iot-controller/types/mqtt"
 	"github.com/jinzhu/gorm"
 )
 
@@ -64,15 +63,13 @@ type NodeStatisticsEntry struct {
 	Pressure          float32   `json:"pressure"`
 	Temperature       float32   `json:"temperature"`
 	TempReadTime      time.Time `json:"temp_read_time"`
+	Consumed          float32   `json:"consumed_battery,omitempty"`
 	BatteryMah        float32   `json:"battery_left_mah"`
 	BatteryPercentage float32   `json:"battery_left_per"`
 
 	// Which line from data file was sent last by the device. Used for stats
 	// comparison building.
 	DataStatsLine int `json"-"`
-
-	// Not used
-	Consumed *typesMQTT.ConsumedFrame `json:"consumed_battery,omitempty"`
 
 	// Refers to `Nodes` MAC address to whom it belongs to.
 	NodeRefer string `json:"node_refer"`

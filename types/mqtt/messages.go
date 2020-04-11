@@ -43,14 +43,14 @@ type MessageEventSent struct {
 
 // MessageStats is used for sending out various stats to the server.
 type MessageStats struct {
-	CPULoad           int           `json:"cpu_load"`
-	BatteryLeft       float32       `json:"battery_left_mah"`
-	BatteryPercentage float32       `json:"battery_left_per"`
-	Temperature       float32       `json:"temperature"`
-	Pressure          float32       `json:"pressure"`
-	TempReadTime      time.Time     `json:"temp_read_time"`
-	StatisticsCount   int           `json:"stats_line"`
-	Consumed          ConsumedFrame `json:"consumed_battery"`
+	CPULoad           int       `json:"cpu_load"`
+	BatteryLeft       float32   `json:"battery_left_mah"`
+	BatteryPercentage float32   `json:"battery_left_per"`
+	Temperature       float32   `json:"temperature"`
+	Pressure          float32   `json:"pressure"`
+	TempReadTime      time.Time `json:"temp_read_time"`
+	StatisticsCount   int       `json:"stats_line"`
+	Consumed          float32   `json:"consumed_battery"`
 }
 
 // ConsumedFrame is used to represent how much battery was consumed during
