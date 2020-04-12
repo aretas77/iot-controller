@@ -198,7 +198,6 @@ export default {
       return false
     },
     validLocation: function (location) {
-      console.log(location)
       if (location === undefined || location === '') {
         return false
       }

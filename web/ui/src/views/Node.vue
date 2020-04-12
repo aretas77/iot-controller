@@ -40,10 +40,18 @@
           </b-container>
         </b-tab>
 
-        <b-tab title="Information">
-          <div class='node-actions'>
-            <NodeMeta :node='node' :actions='true'></NodeMeta>
-          </div>
+        <b-tab title="Information" lazy>
+          <b-container fluid class="w-100 p-3">
+            <b-row align-h="between" class="m-4">
+              <b-col cols>
+                <BatteryLevelsChart
+                  :interval='60'
+                  :entries='parsedBatteryLevels'
+                >
+                </BatteryLevelsChart>
+              </b-col>
+            </b-row>
+          </b-container>
         </b-tab>
       </b-tabs>
     </div>
@@ -54,8 +62,8 @@
 import { mapGetters } from 'vuex'
 import store from '@/store'
 import marked from 'marked'
-import NodeMeta from '@/components/NodeMeta'
 import TemperatureChart from '@/components/TemperatureChart'
+import BatteryLevelsChart from '@/components/BatteryLevelsChart'
 import SensorReadingsFreq from '@/components/SensorReadingsFreq'
 import NodeEvents from '@/components/Events'
 import {
@@ -68,8 +76,8 @@ import {
 export default {
   name: 'iotctl-node',
   components: {
-    NodeMeta,
     TemperatureChart,
+    BatteryLevelsChart,
     SensorReadingsFreq,
     NodeEvents
   },
@@ -81,7 +89,8 @@ export default {
   },
   data () {
     return {
-      activeTab: 0
+      activeTab: 0,
+      parsedBatteryLevels: []
     }
   },
   // actions
@@ -106,6 +115,45 @@ export default {
     fetchNodeEvents () {
       this.$store.dispatch(FETCH_NODE_EVENTS, this.node.ID)
     },
+    parseBatteryLevels () {
+      var tempParsedBatteryLevels = this.statsEntries.map(entry => {
+        var beforeHours = this.$moment().subtract(12, 'h')
+        var afterHours = this.$moment().add(12, 'h')
+
+        // Check if current 24hrs
+        if (this.$moment(entry.temp_read_time).isBetween(beforeHours, afterHours)) {
+          return {
+            x: this.$moment(entry.temp_read_time, this.$moment.ISO_8601).format('hh:00 a'),
+            y: entry.battery_left_per + 10
+          }
+        }
+      })
+
+      tempParsedBatteryLevels = tempParsedBatteryLevels.filter(function (entry) {
+        return entry !== undefined
+      })
+
+      /* eslint-disable no-unused-vars */
+      const newLevels = tempParsedBatteryLevels.reduce(function (result, item) {
+        if (item.x in result) {
+          result[item.x].total += item.y
+          result[item.x].count++
+        } else {
+          result[item.x] = {
+            total: item.y,
+            count: 1
+          }
+        }
+        return result
+      }, {})
+
+      this.parsedBatteryLevels = []
+      for (const [key, value] of Object.entries(newLevels)) {
+        this.parsedBatteryLevels.push({ x: key, y: value.total / value.count })
+      }
+
+      /* eslint-enable no-unused-vars */
+    },
     onChangedTab (tabIndex) {
       this.$store.dispatch(CHECK_AUTH)
 
@@ -116,12 +164,16 @@ export default {
         this.fetchNodeStatistics()
       } else if (tabIndex === 1) {
         this.fetchNodeEvents()
+      } else if (tabIndex) {
+        this.fetchNodeStatistics()
+        this.parseBatteryLevels()
       }
     }
   },
   mounted () {
     this.fetchNodeStatistics()
     this.fetchNodeEvents()
+    this.parseBatteryLevels()
   }
 }
 </script>
