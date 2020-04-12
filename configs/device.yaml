@@ -1,10 +1,11 @@
-broker: 
+broker:
     type: "hermes"
     clientid: "device-simulator"
     server: "tcp://172.18.0.3:1883"
     username: "devices"
     password: "secretkey987"
     protocolver: 3
+    cleansession: true
 devices:
     device1:
         name: TempReader1
@@ -16,6 +17,7 @@ devices:
         battery: 2400.00
         statistics: "data.txt"
         ipaddress4: "172.16.0.5"
+        hermes: true
     device2:
         name: TempReader2
         mac: "AA:BB:CC:DD:EE:02"
@@ -26,3 +28,4 @@ devices:
         battery: 2400.00
         statistics: "data.txt"
         ipaddress4: "172.16.0.6"
+        hermes: true

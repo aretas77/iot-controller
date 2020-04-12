@@ -92,7 +92,6 @@ func start(c *cli.Context, filename string) error {
 	}
 
 	// TODO: validate config
-
 	client, err := types.NewMqttClient(config.Broker)
 	if err != nil {
 		return err

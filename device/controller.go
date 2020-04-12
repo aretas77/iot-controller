@@ -102,7 +102,7 @@ func (d *DeviceController) Start(stop chan bool, devs []DeviceInfo) error {
 				Name:              dev.Name,
 				Mac:               dev.MAC,
 				Network:           dev.Network,
-				Location:          "",
+				Location:          "default",
 				IpAddress4:        "192.168.1.1",
 				Status:            NodeDeviceNew,
 				BatteryMah:        dev.Battery,
@@ -117,11 +117,6 @@ func (d *DeviceController) Start(stop chan bool, devs []DeviceInfo) error {
 			// an exit channel.
 			wg:   &d.wg,
 			Stop: exit,
-
-			// Values derived from the model and adjustable by HermesMQ.
-			// Should be parsed from the model.
-			ReadInterval: 0,
-			SendInterval: 0,
 		}
 
 		if statisticsBlockSize == dataLines {

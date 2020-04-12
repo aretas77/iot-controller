@@ -13,6 +13,7 @@ type DeviceInfo struct {
 	Interface  string
 	Statistics string
 	Ipaddress4 string
+	Hermes     bool
 }
 
 type Config struct {

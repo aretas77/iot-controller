@@ -12,7 +12,11 @@ import (
 )
 
 const (
+	// BatteryConsumedSend indicates when a sensor was read + the values were
+	// sent.
 	BatteryConsumedSend = "send"
+	// BatteryConsumedRead indicates when a sensor was read but there was no
+	// send for the values.
 	BatteryConsumedRead = "read"
 
 	NodeDeviceAcknowledged = "acknowledged"
@@ -47,29 +51,28 @@ type NodeDevice struct {
 
 	// How much energy was consumed in the given time frame.
 	ConsumedTimeFrame mqtt.ConsumedFrame
+	LastSentGreeting  time.Time
 	Time              time.Time
 
 	// Statistics
 	StatisticsFile string
 
-	LastSentGreeting time.Time
-	ReadInterval     time.Duration
-	SendInterval     time.Duration
-
 	wg  *sync.WaitGroup
 	Hal hal.HAL // What Hardware Abstraction Layer is used
 
+	// Channels for various communications between components.
 	BatteryControl chan BatteryChangeInfo
 	ReceivedAck    chan struct{}
 	Unregister     chan struct{}
 	Stop           chan struct{}
-
-	Send    chan Message
-	Receive chan Message
+	Send           chan Message
+	Receive        chan Message
 
 	rwLock sync.RWMutex
 }
 
+// BatteryChangeInfo represents an event of how much battery was consumed
+// and what action has consumed this amount.
 type BatteryChangeInfo struct {
 	consumed     float32
 	consumedType string
@@ -177,6 +180,8 @@ init:
 
 // ReceiveLoop is individual for each of the device and will handle messages
 // received on various topics.
+//
+// In short - this is internal device handlers.
 func (n *NodeDevice) ReceiveLoop() {
 	logrus.Debugf("receive loop running for %s", n.System.Mac)
 	for {
@@ -184,6 +189,8 @@ func (n *NodeDevice) ReceiveLoop() {
 		case msg := <-n.Receive:
 
 			if msg.Topic == "ack" {
+				// server acknowledged the device
+
 				ack := mqtt.MessageAck{}
 				if err := json.Unmarshal(msg.Payload, &ack); err != nil {
 					logrus.WithError(err).WithFields(logrus.Fields{
@@ -202,6 +209,8 @@ func (n *NodeDevice) ReceiveLoop() {
 
 				n.ReceivedAck <- struct{}{}
 			} else if msg.Topic == "unregister" {
+				// server wants to unregister the device
+
 				unregister := mqtt.MessageUnregister{}
 				if err := json.Unmarshal(msg.Payload, &unregister); err != nil {
 					logrus.WithError(err).WithFields(logrus.Fields{
@@ -219,7 +228,8 @@ func (n *NodeDevice) ReceiveLoop() {
 
 				n.Unregister <- struct{}{}
 			} else if msg.Topic == "sent" {
-				// Notify Device monitor about a change.
+				// notify Device monitor about a change in battery levels.
+
 				n.BatteryControl <- BatteryChangeInfo{
 					consumed:     0,
 					consumedType: BatteryConsumedSend,
@@ -237,12 +247,13 @@ func (n *NodeDevice) ReceiveLoop() {
 // MonitorDeviceLoop will monitor the device battery levels and if it reaches
 // 1 or less mAh - the device is stopped.
 func (n *NodeDevice) MonitorDeviceLoop() {
-	logrus.Debugf("monitor loop running for %s", n.System.Mac)
+	logrus.Debugf("(%s) monitor loop running", n.System.Mac)
 
 	for {
 		select {
 		case control := <-n.BatteryControl:
-			logrus.Infof("received battery change event - %s", control.consumedType)
+			logrus.Debugf("(%s) received battery change event - %s",
+				n.System.Mac, control.consumedType)
 
 			// Action was made which was a success and so we can recalculate
 			// battery levels.
@@ -252,13 +263,14 @@ func (n *NodeDevice) MonitorDeviceLoop() {
 			case BatteryConsumedRead:
 				n.System.CurrentBatteryMah -= control.consumed
 			case BatteryConsumedSend:
-				n.System.CurrentBatteryMah -= (control.consumed + n.Hal.GetSendConsumed())
+				n.System.CurrentBatteryMah -= (control.consumed +
+					n.Hal.GetSendConsumed())
 			}
 
 			n.System.BatteryPercentage = n.calculateBatteryPercentage()
 
 			if n.System.BatteryMah <= 1 {
-				logrus.Infof("device battery level low (%s) - stop", n.System.Mac)
+				logrus.Infof("(%s) device battery level low - stop", n.System.Mac)
 				n.Stop <- struct{}{}
 			}
 
