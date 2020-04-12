@@ -126,12 +126,32 @@ func (a *AuthController) Login(w http.ResponseWriter, r *http.Request, next http
 		return
 	}
 
+	var errorsInfo struct {
+		errors []string
+	}
+
 	// Check if such user exists
 	user, err := a.sql.CheckUserExists(&creds)
 	if err != nil {
+		if err == models.ErrUserNotFound {
+			// It means that the username was invalid.
+			errorsInfo.errors = append(errorsInfo.errors,
+				"User doesn't exist.")
+		} else if err == models.ErrUserUnauthorized {
+			// It means that username is valid but password is not.
+			errorsInfo.errors = append(errorsInfo.errors,
+				"Invalid password!")
+		}
+
+		mapErrors := map[string]interface{}{
+			"errors": errorsInfo.errors,
+		}
+
 		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(mapErrors)
 		return
 	}
+
 	// Construct a Bearer token
 	token, response := a.loginBearer(user, &w)
 	w.WriteHeader(response)
