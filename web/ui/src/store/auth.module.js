@@ -21,6 +21,9 @@ const getters = {
   },
   isAuthenticated (state) {
     return state.isAuthenticated
+  },
+  authErrors (state) {
+    return state.errors
   }
 }
 
@@ -41,8 +44,8 @@ const actions = {
           context.commit(SET_AUTH, data)
           resolve(data)
         })
-        .catch(({ errors }) => {
-          context.commit(SET_ERROR, errors)
+        .catch(({ response }) => {
+          context.commit(SET_ERROR, response.data.errors)
         })
     })
   },

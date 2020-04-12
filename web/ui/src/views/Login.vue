@@ -1,12 +1,20 @@
 <template>
   <div class="auth-page">
-    <div class="container page">
-      <div class="row">
-        <div class="col-md-6 offset-md-3 col-xs-12">
+    <b-container>
+      <b-row>
+        <b-col class="col-md-6 offset-md-3 col-xs-12 mt-5">
           <h1 class="text-xs-center">Sign in</h1>
-          <ul v-if="errors" class="error-messages">
-            <li v-for="(v, k) in errors" :key="k">{{ k }} {{ v | error}}</li>
-          </ul>
+
+            <b-list-group v-if="authErrors" class="error-messages m-3">
+              <b-list-group-item
+                v-for="(v, k) in authErrors"
+                :key="k"
+                variant="danger"
+                >
+                {{ v }}
+              </b-list-group-item>
+            </b-list-group>
+
           <form @submit.prevent="onSubmit(email, password)">
             <fieldset class="form-group">
               <input
@@ -24,18 +32,19 @@
                 placeholder="Password"
               />
             </fieldset>
+
             <button class="btn btn-lg btn-primary pull-xs-right">
               Sign in
             </button>
           </form>
-        </div>
-      </div>
-    </div>
+        </b-col>
+      </b-row>
+    </b-container>
   </div>
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapGetters } from 'vuex'
 import { LOGIN } from '@/store/actions.type'
 
 export default {
@@ -54,9 +63,7 @@ export default {
     }
   },
   computed: {
-    ...mapState({
-      errors: state => state.errors
-    })
+    ...mapGetters(['authErrors'])
   }
 }
 </script>
