@@ -10,6 +10,7 @@ import (
 	"github.com/aretas77/iot-controller/device/hal"
 	"github.com/aretas77/iot-controller/types/devices"
 	typesMQTT "github.com/aretas77/iot-controller/types/mqtt"
+	"github.com/aretas77/iot-controller/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -54,10 +55,13 @@ func (d *DeviceController) PublishLoop(stop chan bool) {
 			logrus.Infof("%s -> %s (len:%d)", packet.Mac, packet.Topic, len(packet.Payload))
 			err := d.PlainConnection.Publish(packet.Topic, packet.QoS, packet.Payload)
 			if err == nil {
-				// Send was a success - notify the device about it.
-				d.broadcast[packet.Mac] <- Message{
-					Mac:   packet.Mac,
-					Topic: "sent",
+				_, _, _, details := utils.SplitTopic4(packet.Topic)
+				if details != "greeting" {
+					// Send was a success - notify the device about it.
+					d.broadcast[packet.Mac] <- Message{
+						Mac:   packet.Mac,
+						Topic: "sent",
+					}
 				}
 			}
 		}
