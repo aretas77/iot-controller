@@ -28,6 +28,8 @@
             </router-link>
           </b-nav-item>
 
+          <div class="splitter" />
+
           <!-- Links to the currently active user profile -->
 
           <!-- XXX: this could break if currentUser is null, but we assume
@@ -124,5 +126,8 @@ export default {
       color: #42b983;
     }
   }
+}
+.splitter {
+  border-left: 1px solid white;
 }
 </style>
