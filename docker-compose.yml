@@ -51,6 +51,19 @@ services:
         networks:
             default:
                 ipv4_address: 172.18.0.3
+
+    # Vue.js front-end
+    frontend:
+        build:
+            context: web/ui
+        ports:
+            - "8081:8080"
+        volumes:
+            - ./web/ui:/app
+        networks:
+            default:
+                ipv4_address: 172.18.0.5
+
 networks:
     default:
         ipam:
