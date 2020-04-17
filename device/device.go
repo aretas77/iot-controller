@@ -49,10 +49,9 @@ const (
 type NodeDevice struct {
 	devices.System
 
-	// How much energy was consumed in the given time frame.
-	ConsumedTimeFrame mqtt.ConsumedFrame
-	LastSentGreeting  time.Time
-	Time              time.Time
+	LastSentGreeting    time.Time
+	Time                time.Time
+	DefaultReadInterval time.Duration
 
 	// Statistics
 	StatisticsFile string
@@ -89,6 +88,7 @@ func (n *NodeDevice) Initialize() error {
 		return err
 	}
 
+	n.DefaultReadInterval = time.Duration(time.Second * 5)
 	n.ReceivedAck = make(chan struct{})
 	n.Unregister = make(chan struct{})
 	n.BatteryControl = make(chan BatteryChangeInfo)
@@ -100,7 +100,6 @@ func (n *NodeDevice) Initialize() error {
 // The NodeDevice will run as a goroutine which will have its own:
 //	- ReceiveLoop
 func (n *NodeDevice) Start() {
-	ticker := time.NewTicker(5 * time.Second)
 
 	// Initialize NodeDevice
 	if err := n.Initialize(); err != nil {
@@ -109,6 +108,7 @@ func (n *NodeDevice) Start() {
 	}
 	defer n.Hal.PowerOff()
 
+	ticker := time.NewTicker(n.DefaultReadInterval)
 	// will handle the broadcasted messages from main device controller
 	n.wg.Add(2)
 	go n.ReceiveLoop()
@@ -124,12 +124,15 @@ handshake:
 		case <-ticker.C:
 			// publish a greeting
 			n.PublishGreeting()
+			n.LastSentGreeting = time.Now()
 		case <-n.Stop:
 			ticker.Stop()
 			n.wg.Done()
 			return
 		}
 	}
+
+	ticker.Stop()
 
 	// Won't be receiving anything on this channel.
 	// close(n.ReceivedAck)
@@ -138,39 +141,28 @@ handshake:
 	// and how much energy was consumed during the given timeframe.
 	//
 	// NOTE: Each publish from this point should keep track of consumed
-	// battery and how much time elapsed between various publishe events.
+	// battery and how much time elapsed between various publish events.
 	n.Time = time.Now()
-	n.ConsumedTimeFrame.State = mqtt.ConsumedStateStatistics
 
 	// Publish initial system information to verify that its correct and
 	// don't wait for any response - continue to other state.
 	n.PublishSystemData()
 
-	statsTicker := time.NewTicker(20 * time.Second)
-
+	statsTicker := time.NewTicker(n.DefaultReadInterval)
 statistics:
 	for {
 		select {
 		case <-statsTicker.C:
-			// Extract statistic read interval from MQTT lib
 			logrus.Debugf("sending a statistic %s", n.System.Mac)
 			n.PublishSensorData()
 
+			// last sent
 			n.Time = time.Now()
 		case <-n.Unregister:
 			goto handshake
 		case <-n.Stop:
 			n.wg.Done()
 			break statistics
-		}
-	}
-
-init:
-	for {
-		select {
-		case <-n.Stop:
-			n.wg.Done()
-			break init
 		}
 	}
 
@@ -204,9 +196,11 @@ func (n *NodeDevice) ReceiveLoop() {
 				n.System.Status = NodeDeviceRegistered
 				n.System.Network = ack.Network
 				n.System.Location = ack.Location
+				n.DefaultReadInterval = time.Minute * time.Duration(ack.ReadInterval)
 				logrus.Infof("Device (%s) status (%s) -> (%s)", n.System.Mac,
 					NodeDeviceNew, n.System.Status)
 
+				// proceed to the next state
 				n.ReceivedAck <- struct{}{}
 			} else if msg.Topic == "unregister" {
 				// server wants to unregister the device
