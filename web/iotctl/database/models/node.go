@@ -42,12 +42,14 @@ type Node struct {
 
 	// a `Has One` relationship. Node 1 <-> 1 NodeSettings.
 	// Node `Has One` Settings.
-	SettingsID uint         `json:"-"`
+	SettingsID uint         `json:"-" gorm:"not null,foreignkey:NodeID"`
 	Settings   NodeSettings `json:"settings,omitempty"`
 
 	// Belongs to only one Network and its ID is kept in `NetworkRefer`.
 	NetworkRefer uint     `json:"-"`
 	Network      *Network `json:"network,omitempty"`
+
+	StatsEntries []NodeStatisticsEntry `json:"-" gorm:"foreignkey:NodeRefer"`
 }
 
 // NodeStatisticsEntry is used to track various statistics of `Node` devices
@@ -72,7 +74,7 @@ type NodeStatisticsEntry struct {
 	DataStatsLine int `json"-"`
 
 	// Refers to `Nodes` MAC address to whom it belongs to.
-	NodeRefer string `json:"node_refer"`
+	NodeRefer string `json:"node_refer" gorm:"not null"`
 	Node      *Node  `json:"node,omitempty"`
 }
 
@@ -86,9 +88,10 @@ type NodeStatisticsEntry struct {
 // Once a Node is registered - UnregisteredNode should be removed.
 type UnregisteredNode struct {
 	gorm.Model
-	Mac           string `json:"mac" gorm:"not null"`
-	AddedUsername string `json:"username" gorm:"not null"`
-	Location      string `json:"location"`
+	Mac                 string  `json:"mac" gorm:"not null"`
+	AddedUsername       string  `json:"username" gorm:"not null"`
+	Location            string  `json:"location"`
+	InitialReadInterval float32 `json:"read_interval"`
 
 	// a `Has One` relationship. UnregisteredNode 0..* <-> 1 Network.
 	// UnregisteredNode `Has One` Network.
@@ -101,11 +104,12 @@ type UnregisteredNode struct {
 
 // NodeSettings describes the settings that are used by the Node device.
 type NodeSettings struct {
-	ID           uint   `gorm:"primary_key"`
-	NodeID       uint   `json:"-"`
-	ReadInterval int    `json:"read_interval"`
-	SendInterval int    `json:"send_interval"`
-	DataFileName string `json:"-"`
-	DataLineFrom int    `json:"-"`
-	DataLineTo   int    `json:"-"`
+	ID            uint    `gorm:"primary_key"`
+	NodeID        uint    `json:"-" gorm:"not null"`
+	HermesEnabled bool    `json:"hermes"`
+	DataFileName  string  `json:"-"`
+	DataLineFrom  int     `json:"-"`
+	DataLineTo    int     `json:"-"`
+	Hermes        *Hermes `json:"hermes,omitempty"`
+	ReadInterval  float32 `json:"read_interval"`
 }

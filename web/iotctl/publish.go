@@ -11,12 +11,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (app *Iotctl) PublishAck(network string, mac string, location string) error {
-	payload := typesMQTT.MessageAck{}
-
-	payload.Network = network
-	payload.MAC = mac
-	payload.Location = location
+func (app *Iotctl) PublishAck(network string, mac string, location string,
+	readInterval float32) error {
+	payload := typesMQTT.MessageAck{
+		Network:      network,
+		MAC:          mac,
+		Location:     location,
+		ReadInterval: readInterval,
+	}
 
 	resp, err := json.Marshal(payload)
 	if err != nil {
