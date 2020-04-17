@@ -1,10 +1,12 @@
 package controllers
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"math/rand"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -17,6 +19,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	DataPath = "./cmd/data/"
+)
+
 type NodeController struct {
 	TableName string
 	Database  *db.Database
@@ -25,6 +31,18 @@ type NodeController struct {
 	// MySql struct for easier access.
 	sql   *mysql.MySql
 	plain *typesMQTT.MQTTConnection
+
+	// Statistics data.
+	// We will use this to compare received values from the device versus
+	// real values read from the file.
+	//
+	// How it works:
+	//	Both device-simulator and iotctl services will have the same data file
+	//	which will be sent to the iotctl service from device-simulator.
+	// Iotctl:
+	//	The device will supply its range values [from;to), and we will display
+	StatisticsFileDesc *os.File
+	// StatisticsScanner  *bufio.Scanner
 }
 
 func (n *NodeController) Init() (err error) {
@@ -36,7 +54,7 @@ func (n *NodeController) Init() (err error) {
 		logrus.Error("NodeController: failed to get MySQL instance")
 		return err
 	}
-
+	// Setup the data file
 	n.migrateNodeGorm()
 	logrus.Debug("Initialized NodeController")
 	return
@@ -47,15 +65,13 @@ func (n *NodeController) migrateNodeGorm() error {
 
 	// Create a Node with additional settings
 	settings := &models.NodeSettings{
-		ReadInterval: 10,
-		SendInterval: 10,
-		NodeID:       2,
+		NodeID:        2,
+		HermesEnabled: false,
 	}
 
 	settings2 := &models.NodeSettings{
-		ReadInterval: 10,
-		SendInterval: 20,
-		NodeID:       1,
+		NodeID:        1,
+		HermesEnabled: false,
 	}
 
 	if n.sql.GormDb.NewRecord(settings) {
@@ -104,11 +120,13 @@ func (n *NodeController) migrateNodeGorm() error {
 	entries := []models.NodeStatisticsEntry{}
 	for i := 0; i < entryCount; i++ {
 		entries = append(entries, models.NodeStatisticsEntry{
-			CPULoad:      rand.Intn(99) + 1,
-			Pressure:     float32(rand.Intn(1000)) + 99000,
-			Temperature:  float32(rand.Intn(6) + 20),
-			TempReadTime: time.Now().Add(time.Minute * time.Duration(i)),
-			NodeRefer:    node.Mac,
+			CPULoad:           rand.Intn(99) + 1,
+			Pressure:          float32(rand.Intn(1000)) + 99000,
+			Temperature:       float32(rand.Intn(6) + 20),
+			TempReadTime:      time.Now().Add(time.Minute * 10 * time.Duration(i)),
+			NodeRefer:         node.Mac,
+			BatteryMah:        node.BatteryMah - 20,
+			BatteryPercentage: node.BatteryPercentage - float32(i*4),
 		})
 	}
 
@@ -259,7 +277,10 @@ func (n *NodeController) RegisterNode(w http.ResponseWriter, r *http.Request,
 
 		// Node doesn't exist yet - add UnregisteredNode into a List for future
 		// requests.
-		err = n.sql.GormDb.Where(models.UnregisteredNode{Mac: tmpNode.Mac}).FirstOrCreate(&tmpNode).Error
+		err = n.sql.GormDb.Where(models.UnregisteredNode{
+			Mac:      tmpNode.Mac,
+			Location: tmpNode.Location,
+		}).FirstOrCreate(&tmpNode).Error
 		if err != nil {
 			logrus.Error(err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -289,7 +310,13 @@ func (n *NodeController) UnregisterNode(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	if err := n.sql.GormDb.Delete(&node).Error; err != nil {
+	err := n.sql.GormDb.Unscoped().Where("node_refer = ?", node.Mac).Delete(&models.NodeStatisticsEntry{}).Error
+	if err != nil && !gorm.IsRecordNotFoundError(err) {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	if err := n.sql.GormDb.Unscoped().Delete(&node).Error; err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -299,6 +326,7 @@ func (n *NodeController) UnregisterNode(w http.ResponseWriter, r *http.Request,
 
 // GetEntries should return all statistics entries related to the given ID which
 // is then mapped to the corresponding MAC of the `Node`.
+// NOTE: Taken time for 200 entries is 7ms.
 // Endpoint: GET /nodes/{id}/statistics
 func (n *NodeController) GetEntries(w http.ResponseWriter, r *http.Request,
 	next http.HandlerFunc) {
@@ -327,4 +355,40 @@ func (n *NodeController) GetEntries(w http.ResponseWriter, r *http.Request,
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(mapEntries)
+}
+
+// getRealStatistics should return the real statistics in the interval from the
+// statistics file.
+func (n *NodeController) getRealStatistics(lastEntry models.NodeStatisticsEntry,
+	nodeSettings models.NodeSettings) (error, []models.NodeStatisticsEntry) {
+
+	// If not yet opened - open a file and keep the file descriptor.
+	if n.StatisticsFileDesc == nil {
+		logrus.Infof("os.Open %s", DataPath+nodeSettings.DataFileName)
+		f, err := os.Open(DataPath + nodeSettings.DataFileName)
+		if err != nil {
+			panic(err)
+		}
+
+		n.StatisticsFileDesc = f
+	}
+
+	entries := []models.NodeStatisticsEntry{}
+	scanner := bufio.NewScanner(n.StatisticsFileDesc)
+
+	// Go to the location in the data file
+	if nodeSettings.DataLineFrom != 0 {
+		i := 0
+		for scanner.Scan() {
+			if i == lastEntry.DataStatsLine {
+				break
+			}
+			entries = append(entries, models.NodeStatisticsEntry{})
+		}
+		if err := scanner.Err(); err != nil {
+			logrus.Error(err)
+		}
+	}
+
+	return nil, entries
 }
