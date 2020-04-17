@@ -50,6 +50,25 @@
               </b-form-group>
 
               <b-form-group
+                label="Initial sensor Read interval"
+                label-for="node-read-interval"
+                >
+                <b-form-input
+                  id="node-read-interval"
+                  type="text"
+                  class="form-control form-control-lg"
+                  v-model="unregisteredNode.read_interval"
+                  :state="validateReadInterval"
+                  />
+                <b-form-invalid-feedback :state="validateReadInterval">
+                  Empty or not a number!
+                </b-form-invalid-feedback>
+                <b-form-valid-feedback :state="validateReadInterval">
+                  Looks good.
+                </b-form-valid-feedback>
+              </b-form-group>
+
+              <b-form-group
                 label="Network"
                 label-for="network-input"
                 >
@@ -157,6 +176,9 @@ export default {
     },
     validateLocation () {
       return this.validLocation(this.unregisteredNode.location)
+    },
+    validateReadInterval () {
+      return this.validReadInterval(this.unregisteredNode.read_interval)
     }
   },
   methods: {
@@ -168,7 +190,8 @@ export default {
         .dispatch(action, {
           mac: this.unregisteredNode.mac,
           network_refer: this.network.ID,
-          username: this.currentUser.username
+          username: this.currentUser.username,
+          read_interval: Number(this.unregisteredNode.read_interval)
         }).then(() => {
           this.inProgress = false
           this.$router.push({
@@ -199,6 +222,15 @@ export default {
     },
     validLocation: function (location) {
       if (location === undefined || location === '') {
+        return false
+      }
+      return true
+    },
+    validReadInterval: function (value) {
+      if (value === null || value === undefined || value === '') {
+        return false
+      }
+      if (!Number.isFinite(Number(value))) {
         return false
       }
       return true

@@ -40,8 +40,20 @@
           </b-container>
         </b-tab>
 
-        <b-tab title="Information" lazy>
+        <b-tab title="Battery status" lazy>
           <b-container fluid class="w-100 p-3">
+            <b-row>
+              <b-col cols="3" class="text-left">
+                <span>
+                  Battery: {{ node.battery_left_per | percentage }}%
+                </span>
+                <br />
+                <span>
+                  Battery (mAh): {{ node.battery_left_mah }} / {{ node.battery_total_mah}} mAh
+                </span>
+              </b-col>
+            </b-row>
+
             <b-row align-h="between" class="m-4">
               <b-col cols>
                 <BatteryLevelsChart
@@ -51,7 +63,7 @@
                 </BatteryLevelsChart>
               </b-col>
             </b-row>
-          </b-container>
+         </b-container>
         </b-tab>
       </b-tabs>
     </div>
@@ -124,7 +136,7 @@ export default {
         if (this.$moment(entry.temp_read_time).isBetween(beforeHours, afterHours)) {
           return {
             x: this.$moment(entry.temp_read_time, this.$moment.ISO_8601).format('hh:00 a'),
-            y: entry.battery_left_per + 10
+            y: entry.battery_left_per
           }
         }
       })
