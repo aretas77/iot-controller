@@ -22,7 +22,11 @@
                 <TemperatureChart :entries='statsEntries'></TemperatureChart>
               </b-col>
               <b-col cols="5">
-                <SensorReadingsFreq />
+                <SensorReadingsFreq
+                  :entries='parsedSendFrequency'
+                  :entriesFrames='parsedSendFrequencyFrames'
+                >
+                </SensorReadingsFreq>
               </b-col>
             </b-row>
           </b-container>
@@ -102,7 +106,9 @@ export default {
   data () {
     return {
       activeTab: 0,
-      parsedBatteryLevels: []
+      parsedBatteryLevels: [],
+      parsedSendFrequency: [],
+      parsedSendFrequencyFrames: []
     }
   },
   // actions
@@ -121,11 +127,72 @@ export default {
     parseMarkdown (content) {
       return marked(content)
     },
+    /**
+      *countValuesAtHour is used to calculate total values in a given hour.
+      * Given:
+      * 0: Object { x: "02:00 am", y: 13 }
+      * 1: Object { x: "02:00 am", y: 14 }
+      * 2: Object { x: "02:00 am", y: 15 }
+      * 3: Object { x: "02:00 am", y: 16 }
+      * 4: Object { x: "02:00 am", y: 17 }
+      * 5: Object { x: "02:00 am", y: 18 }
+      * 6: Object { x: "03:00 am", y: 19 }
+      * 7: Object { x: "03:00 am", y: 20 }
+      * Result:
+      * "02:00 am": Object { total: 93, count: 6 }
+      * "03:00 am": Object { total: 39, count: 2 }
+     */
+    countValuesAtHour (obj) {
+      const newLevels = obj.reduce(function (result, item) {
+        if (item.x in result) {
+          result[item.x].total += item.y
+          result[item.x].count++
+        } else {
+          result[item.x] = {
+            total: item.y,
+            count: 1
+          }
+        }
+        return result
+      }, {})
+      return newLevels
+    },
     fetchNodeStatistics () {
       this.$store.dispatch(FETCH_NODE_STATS, this.node.ID)
     },
     fetchNodeEvents () {
       this.$store.dispatch(FETCH_NODE_EVENTS, this.node.ID)
+    },
+    parseSendFrequency () {
+      var tmpParsedSendFrequency = this.statsEntries.map(entry => {
+        var beforeHours = this.$moment().subtract(12, 'h')
+        var afterHours = this.$moment().add(12, 'h')
+        var currentTime = this.$moment(entry.temp_read_time)
+
+        // Check if current 24hrs
+        if (currentTime.isBetween(beforeHours, afterHours)) {
+          return {
+            x: this.$moment(entry.temp_read_time, this.$moment.ISO_8601).format('hh:00 a'),
+            y: entry.send_times
+          }
+        }
+      })
+
+      tmpParsedSendFrequency = tmpParsedSendFrequency.filter(function (entry) {
+        return entry !== undefined
+      })
+
+      var newLevels = this.countValuesAtHour(tmpParsedSendFrequency)
+      var prevValue = 0
+
+      this.parsedSendFrequency = []
+      this.parsedSendFrequencyFrames = []
+      for (const [key, value] of Object.entries(newLevels)) {
+        // accumulate send counters
+        this.parsedSendFrequency.push({ x: key, y: value.total + prevValue })
+        this.parsedSendFrequencyFrames.push({ x: key, y: value.total })
+        prevValue += value.total
+      }
     },
     parseBatteryLevels () {
       var tempParsedBatteryLevels = this.statsEntries.map(entry => {
@@ -146,18 +213,7 @@ export default {
       })
 
       /* eslint-disable no-unused-vars */
-      const newLevels = tempParsedBatteryLevels.reduce(function (result, item) {
-        if (item.x in result) {
-          result[item.x].total += item.y
-          result[item.x].count++
-        } else {
-          result[item.x] = {
-            total: item.y,
-            count: 1
-          }
-        }
-        return result
-      }, {})
+      var newLevels = this.countValuesAtHour(tempParsedBatteryLevels)
 
       this.parsedBatteryLevels = []
       for (const [key, value] of Object.entries(newLevels)) {
@@ -174,6 +230,7 @@ export default {
         // TODO: could probably just check with the server if there are new
         // updates
         this.fetchNodeStatistics()
+        this.parseSendFrequency()
       } else if (tabIndex === 1) {
         this.fetchNodeEvents()
       } else if (tabIndex) {
@@ -185,7 +242,12 @@ export default {
   mounted () {
     this.fetchNodeStatistics()
     this.fetchNodeEvents()
-    this.parseBatteryLevels()
+  },
+  watch: {
+    statsEntries () {
+      console.log(this.ParsedSendFrequency)
+      this.parseSendFrequency()
+    }
   }
 }
 </script>

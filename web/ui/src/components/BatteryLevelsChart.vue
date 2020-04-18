@@ -102,8 +102,6 @@ export default {
   mounted () {
     this.generateLabels(this.interval)
     this.generateChart()
-
-    console.log(this.datacollection)
     this.renderChart(this.datacollection, this.options)
   }
 

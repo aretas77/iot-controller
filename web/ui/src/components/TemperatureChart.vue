@@ -19,7 +19,7 @@ export default {
     return {
       constructedData: [],
       maxTemp: 40,
-      minTemp: -20,
+      minTemp: -10,
       datacollection: {
         // Could be: 6hrs by hour, 1hr by 60min
         labels: [],
@@ -89,8 +89,12 @@ export default {
       // Construct scales
       this.options.scales.yAxes = [{
         ticks: {
+          stepSize: 5,
           min: this.minTemp,
-          max: this.maxTemp
+          max: this.maxTemp,
+          callback: function (value, index, values) {
+            return value + '\xB0C'
+          }
         },
         gridLines: {
           display: true
@@ -120,9 +124,6 @@ export default {
           }
         }
       }]
-    },
-    // should be called after data is generated
-    generateLabels24hr () {
     }
   },
 
