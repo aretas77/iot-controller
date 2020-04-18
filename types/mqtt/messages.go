@@ -52,6 +52,8 @@ type MessageStats struct {
 	TempReadTime      time.Time `json:"temp_read_time"`
 	StatisticsCount   int       `json:"stats_line"`
 	Consumed          float32   `json:"consumed_battery"`
+	SendTimes         int       `json:"send_times"`
+	SensorReadTimes   int       `json:"sensor_read_times"`
 }
 
 // ConsumedFrame is used to represent how much battery was consumed during

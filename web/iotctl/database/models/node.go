@@ -68,6 +68,8 @@ type NodeStatisticsEntry struct {
 	Consumed          float32   `json:"consumed_battery,omitempty"`
 	BatteryMah        float32   `json:"battery_left_mah"`
 	BatteryPercentage float32   `json:"battery_left_per"`
+	SendTimes         int       `json:"send_times"`
+	SensorReadTimes   int       `json:"sensor_read_times"`
 
 	// Which line from data file was sent last by the device. Used for stats
 	// comparison building.

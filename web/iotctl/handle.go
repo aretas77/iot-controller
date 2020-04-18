@@ -147,6 +147,8 @@ func (app *Iotctl) OnMessageStats(client MQTT.Client, msg MQTT.Message) {
 		BatteryMah:        payload.BatteryLeft,
 		BatteryPercentage: payload.BatteryPercentage,
 		DataStatsLine:     payload.StatisticsCount,
+		SendTimes:         payload.SendTimes,
+		SensorReadTimes:   payload.SensorReadTimes,
 	}
 
 	if err := app.sql.GormDb.Create(&entry).Error; err != nil {
