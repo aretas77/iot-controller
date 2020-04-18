@@ -56,6 +56,14 @@ export default {
           fill: true,
           type: 'bar',
           data: this.entries
+        },
+        {
+          label: 'Send events',
+          backgroundColor: 'red',
+          borderWidth: 2,
+          fill: true,
+          type: 'bar',
+          data: this.entriesFrames
         }
       ]
 
@@ -77,7 +85,8 @@ export default {
               unit: 'hour',
               displayFormats: {
                 hour: 'h A'
-              }
+              },
+              stacked: true
             },
             ticks: {
               source: 'labels',
@@ -103,7 +112,7 @@ export default {
     }
   },
   mounted () {
-    console.log(this.entries)
+    // console.log(this.entriesFrames)
     this.generateLabels(60)
     this.generateChart()
     this.renderChart(this.datacollection, this.options)

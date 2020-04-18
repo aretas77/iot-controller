@@ -245,7 +245,6 @@ export default {
   },
   watch: {
     statsEntries () {
-      console.log(this.ParsedSendFrequency)
       this.parseSendFrequency()
     }
   }
