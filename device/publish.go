@@ -65,6 +65,7 @@ func (n *NodeDevice) PublishSystemData() {
 // Reinforcement Learning.
 func (n *NodeDevice) PublishSensorData() {
 	consumed, temperature, pressure := n.Hal.GetPressureTemperature("bmp180")
+	n.SensorReadTimes++
 
 	// notify device Monitor of consumed battery.
 	n.BatteryControl <- BatteryChangeInfo{
@@ -81,6 +82,8 @@ func (n *NodeDevice) PublishSensorData() {
 		TempReadTime:      time.Now(),
 		Consumed:          consumed,
 		StatisticsCount:   n.Hal.GetStatisticsCurrentLine(),
+		SendTimes:         n.SendTimes,
+		SensorReadTimes:   n.SensorReadTimes,
 	})
 
 	// Send to the main MQTT send channel

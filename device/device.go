@@ -54,7 +54,9 @@ type NodeDevice struct {
 	DefaultReadInterval time.Duration
 
 	// Statistics
-	StatisticsFile string
+	StatisticsFile  string
+	SensorReadTimes int
+	SendTimes       int
 
 	wg  *sync.WaitGroup
 	Hal hal.HAL // What Hardware Abstraction Layer is used
@@ -223,7 +225,7 @@ func (n *NodeDevice) ReceiveLoop() {
 				n.Unregister <- struct{}{}
 			} else if msg.Topic == "sent" {
 				// notify Device monitor about a change in battery levels.
-
+				n.SendTimes++
 				n.BatteryControl <- BatteryChangeInfo{
 					consumed:     0,
 					consumedType: BatteryConsumedSend,

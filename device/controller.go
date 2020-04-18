@@ -113,9 +113,11 @@ func (d *DeviceController) Start(stop chan bool, devs []DeviceInfo) error {
 				CurrentBatteryMah: dev.Battery,
 				BatteryPercentage: 100,
 			},
-			Send:           d.mqttQueue,
-			Receive:        d.broadcast[dev.MAC],
-			StatisticsFile: dev.Statistics,
+			Send:            d.mqttQueue,
+			Receive:         d.broadcast[dev.MAC],
+			StatisticsFile:  dev.Statistics,
+			SensorReadTimes: 0,
+			SendTimes:       0,
 
 			// Lets give each NodeDevice a reference to the main WorkGroup and
 			// an exit channel.
