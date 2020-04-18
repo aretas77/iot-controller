@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/aretas77/iot-controller/utils"
 	db "github.com/aretas77/iot-controller/web/iotctl/database"
 	models "github.com/aretas77/iot-controller/web/iotctl/database/models"
 	mysql "github.com/aretas77/iot-controller/web/iotctl/database/mysql"
@@ -40,7 +41,7 @@ func (u *UserController) migrateUserGorm() error {
 	// Tables are created - create an admin.
 	user := models.User{
 		Username: "Superadmin",
-		Password: "test",
+		Password: utils.HashAndSalt("test"),
 		Email:    "superadmin@gmail.com",
 		Role:     "admin",
 	}

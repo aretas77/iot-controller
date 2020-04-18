@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"github.com/aretas77/iot-controller/utils"
 	models "github.com/aretas77/iot-controller/web/iotctl/database/models"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
@@ -66,12 +67,14 @@ func (m *MySql) CheckUserExists(creds *models.Credentials) (*models.User, error)
 
 	logrus.Debugf("Authenticating user (email = %s)", creds.Email)
 
-	query := "email = ? AND password = ?"
-	err := m.GormDb.Where(query, creds.Email, creds.Password).Find(&user).Error
+	//query := "email = ? AND password = ?"
+	query := "email = ?"
+	err := m.GormDb.Where(query, creds.Email).Find(&user).Error
 	if err != nil {
-		if gorm.IsRecordNotFoundError(err) {
-			return nil, models.ErrUserNotFound
-		}
+		return nil, models.ErrUserNotFound
+	}
+
+	if !utils.ComparePasswords(user.Password, creds.Password) {
 		return nil, models.ErrUserUnauthorized
 	}
 
@@ -91,4 +94,15 @@ func (m *MySql) CheckNodeExists(mac string) (*models.Node, error) {
 	}
 
 	return &node, nil
+}
+
+// ExportEntriesCSV ...
+func (m *MySql) ExportEntriesCSV(mac string) {
+	var entries []models.NodeStatisticsEntry
+
+	err := m.GormDb.Where("node_refer = ?", mac).Find(&entries).Error
+	if err != nil {
+		logrus.Error(err)
+	}
+
 }

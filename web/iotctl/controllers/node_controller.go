@@ -84,14 +84,14 @@ func (n *NodeController) migrateNodeGorm() error {
 
 	node := &models.Node{
 		Name:                "TestNode",
-		Mac:                 "AA:BB:CC:DD:EE",
+		Mac:                 "AA:BB:CC:DD:EE:FF",
 		Location:            "Kaunas",
 		IpAddress4:          "172.8.0.20",
 		LastSentAck:         time.Now(),
 		LastReceivedMessage: time.Now(),
 		Status:              "acknowledged",
 		SettingsID:          settings2.ID,
-		AddedUsername:       "admin",
+		AddedUsername:       "superadmin",
 		NetworkRefer:        1,
 		BatteryMah:          2500,
 		BatteryMahTotal:     2500,
@@ -100,13 +100,13 @@ func (n *NodeController) migrateNodeGorm() error {
 
 	node2 := &models.Node{
 		Name:              "TestNode2",
-		Mac:               "AA:BB:CC:DD:EF",
+		Mac:               "AA:BB:CC:DD:EE:EF",
 		Location:          "Kaunas",
 		IpAddress4:        "172.8.0.21",
 		LastSentAck:       time.Now(),
 		Status:            "acknowledged",
 		SettingsID:        settings.ID,
-		AddedUsername:     "admin",
+		AddedUsername:     "superadmin",
 		NetworkRefer:      1,
 		BatteryMah:        2400,
 		BatteryMahTotal:   2400,
@@ -127,6 +127,8 @@ func (n *NodeController) migrateNodeGorm() error {
 			NodeRefer:         node.Mac,
 			BatteryMah:        node.BatteryMah - 20,
 			BatteryPercentage: node.BatteryPercentage - float32(i*4),
+			SendTimes:         i + 1,
+			SensorReadTimes:   i + 1,
 		})
 	}
 
