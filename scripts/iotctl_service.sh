@@ -24,7 +24,7 @@ EOL
     mosquitto_pub -u mock -P test -h "$server" -p "$port" -t "$ackTopic" -f "$tmp"/ack.json
 }
 
-# send_stats is used to send some statistics for IoT Hades application.
+# send_stats is used to send some statistics for IoT Controller.
 # $1 - MAC
 send_stats() {
     mac=$1
@@ -37,10 +37,29 @@ send_stats() {
     statTopic="node/global/${mac}/hades/statistics"
 
 cat > ${tmp}/${statFile} << EOL
-{ "mac": "${mac}" }
+{ "mac": "${mac}", "temperature": "22" }
 EOL
 
     mosquitto_pub -u mock -P test -h "$server" -p "$port" -t "$statTopic" -f "$tmp"/"$statFile"
+}
+
+# send_stats_hades is used to send some statistics to IoT Hades server.
+# $1 - MAC
+send_stats_hades() {
+    mac=$1
+    statFile="stat_hades.json"
+
+    if [ -z "${mac}" ]; then
+        echo "empty mac" && exit 1
+    fi
+
+    statTopicHades="hades/global/${mac}/statistics"
+ 
+cat > "${tmp}/${statTopicHades}" << EOL
+{ "mac": "${mac}", "temperature": "22" }
+EOL
+
+    mosquitto_pub -u mock -P test -h "$server" -p "$port" -t "$statTopicHades" -f "$tmp"/"$statFile"
 }
 
 # send_model_request is used to send a request to the Hades service for a request
@@ -82,7 +101,7 @@ send_model_file() {
 
     sendTopic="hermes/node/global/${mac}/hades/model/receive"
 
-cat > ${tmp}/${file} << EOL
+cat > "${tmp}"/"${file}" << EOL
 { "mac": ${mac}" }
 EOL
 
@@ -91,14 +110,12 @@ EOL
 
 # print_usage will print some information on how to use this script.
 print_usage() {
-    cat <<EOF
-Usage: $0 [options]
-
-send_ack		| {MAC}				this will send ack to IoT Controller.
-send_stats		| {MAC}				this will send a mock statistic entry to IoT controller.
-send_model_request	| {MAC}				this will send a new request for model to the Hades.
-send_model_file		| {MAC} {FILE}			this will send a file as bytes to paho.mqtt library.
-EOF
+    echo "Usage: $0 [options]"
+    echo "send_ack          | {MAC}         this will send ack to IoT Controller."
+    echo "send_stats_hades  | {MAC}         this will send a mock statistic entry to IoT hades."
+    echo "send_stats        | {MAC}         this will send a mock statistic entry to IoT controller."
+    echo "send_model_request| {MAC}         this will send a new request for model to the Hades."
+    echo "send_model_file   | {MAC} {FILE}  this will send a file as bytes to paho.mqtt library."
 }
 
 case "$1" in
@@ -107,6 +124,9 @@ case "$1" in
         ;;
     send_stats)
         send_stats "$2"
+        ;;
+    send_stats_hades)
+        send_stats_hades "$2"
         ;;
     send_model_request)
         send_model_request "$2"
