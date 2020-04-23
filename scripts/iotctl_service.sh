@@ -55,7 +55,7 @@ send_stats_hades() {
 
     statTopicHades="hades/global/${mac}/statistics"
  
-cat > "${tmp}/${statTopicHades}" << EOL
+cat > "${tmp}"/"${statFile}" << EOL
 { "mac": "${mac}", "temperature": "22" }
 EOL
 
