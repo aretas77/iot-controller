@@ -18,7 +18,7 @@ send_ack() {
     ackTopic="control/global/${mac}/ack"
 
 cat > ${tmp}/${ackFile} << EOL
-{ "mac": "${mac}", "network": "global" }
+{ "mac": "${mac}", "network": "global", "send_interval": 1, "location": "Kaunas" }
 EOL
 
     mosquitto_pub -u mock -P test -h "$server" -p "$port" -t "$ackTopic" -f "$tmp"/ack.json
@@ -102,20 +102,45 @@ send_model_file() {
     sendTopic="hermes/node/global/${mac}/hades/model/receive"
 
 cat > "${tmp}"/"${file}" << EOL
-{ "mac": ${mac}" }
+{ "mac": "${mac}" }
 EOL
 
     mosquitto_pub -u mock -P test -h "$server" -p "$port" -t "$sendTopic" -f "$tmp"/"$file"
 }
 
+# send_new_interval is used to send a new interval to the Hermes library.
+# $1 - MAC
+# $2 - interval in minutes
+send_new_interval() {
+    mac=$1
+    interval=$2
+    requestFile="newInterval.json"
+
+    if [ -z "$mac" ] || [ -z "$interval" ]; then
+        printf "MAC or Interval is empty.\n"
+        printf "MAC \t= %s.\n" "$mac"
+        printf "Interval \t= %d.\n" "$interval"
+        exit 1
+    fi
+
+    sendTopic="hermes/node/global/${mac}/hades/interval/receive"
+
+cat > "${tmp}"/"${requestFile}" << EOL
+{ "mac": "${mac}", "send_interval": $((interval)) }
+EOL
+
+    mosquitto_pub -u mock -P test -h "$server" -p "$port" -t "$sendTopic" -f "$tmp"/"$requestFile"
+}
+
 # print_usage will print some information on how to use this script.
 print_usage() {
     echo "Usage: $0 [options]"
-    echo "send_ack          | {MAC}         this will send ack to IoT Controller."
-    echo "send_stats_hades  | {MAC}         this will send a mock statistic entry to IoT hades."
-    echo "send_stats        | {MAC}         this will send a mock statistic entry to IoT controller."
-    echo "send_model_request| {MAC}         this will send a new request for model to the Hades."
-    echo "send_model_file   | {MAC} {FILE}  this will send a file as bytes to paho.mqtt library."
+    echo "send_ack          | {MAC}             this will send ack to IoT Controller."
+    echo "send_stats_hades  | {MAC}             this will send a mock statistic entry to IoT Hades."
+    echo "send_stats        | {MAC}             this will send a mock statistic entry to IoT Controller."
+    echo "send_model_request| {MAC}             this will send a new request for model to the Hades."
+    echo "send_new_interval | {MAC} {MINUTES}   this will send a new send interval to paho.mqtt library."
+    echo "send_model_file   | {MAC} {FILE}      this will send a file as bytes to paho.mqtt library."
 }
 
 case "$1" in
@@ -130,6 +155,9 @@ case "$1" in
         ;;
     send_model_request)
         send_model_request "$2"
+        ;;
+    send_new_interval)
+        send_new_interval "$2" "$3"
         ;;
     send_model_file)
         send_model_file "$2" "$3"
