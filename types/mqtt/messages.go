@@ -22,10 +22,10 @@ type MessageGreeting struct {
 // MessageAck is sent by the server after receiving a `MessageGreeting` from
 // the device.
 type MessageAck struct {
-	MAC          string  `json:"mac"`
-	Network      string  `json:"network"`
-	Location     string  `json:"location"`
-	ReadInterval float32 `json:"read_interval"`
+	MAC          string `json:"mac"`
+	Network      string `json:"network"`
+	Location     string `json:"location"`
+	SendInterval int    `json:"send_interval"`
 }
 
 // MessageUnregister is sent by the server when a user wants to unregister the

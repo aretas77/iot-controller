@@ -198,9 +198,9 @@ func (n *NodeDevice) ReceiveLoop() {
 				n.System.Status = NodeDeviceRegistered
 				n.System.Network = ack.Network
 				n.System.Location = ack.Location
-				n.DefaultReadInterval = time.Minute * time.Duration(ack.ReadInterval)
-				logrus.Infof("Device (%s) status (%s) -> (%s)", n.System.Mac,
-					NodeDeviceNew, n.System.Status)
+				n.DefaultReadInterval = time.Minute * time.Duration(ack.SendInterval)
+				logrus.Infof("Device (%s) status (%s) -> (%s), send stats every %v",
+					n.System.Mac, NodeDeviceNew, n.System.Status, n.DefaultReadInterval)
 
 				// proceed to the next state
 				n.ReceivedAck <- struct{}{}
