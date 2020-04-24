@@ -76,7 +76,8 @@ export default {
   data () {
     return {
       value: 0,
-      currentPage: 1
+      currentPage: 1,
+      interval: null
     }
   },
   computed: {
@@ -110,6 +111,12 @@ export default {
     },
     ...mapGetters(['nodesCount', 'isLoading', 'nodes'])
   },
+  created () {
+    // this.pollNodeList()
+  },
+  beforeDestroy () {
+    clearInterval(this.interval)
+  },
   methods: {
     fetchNodes () {
       this.value = 50
@@ -117,6 +124,11 @@ export default {
     },
     resetPagination () {
       this.currentPage = 1
+    },
+    pollNodeList () {
+      this.interval = setInterval(() => {
+        this.fetchNodes()
+      }, 2000)
     }
   },
   watch: {

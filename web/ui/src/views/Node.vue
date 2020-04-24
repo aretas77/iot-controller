@@ -183,15 +183,16 @@ export default {
       })
 
       var newLevels = this.countValuesAtHour(tmpParsedSendFrequency)
+      console.log(newLevels)
       var prevValue = 0
 
       this.parsedSendFrequency = []
       this.parsedSendFrequencyFrames = []
       for (const [key, value] of Object.entries(newLevels)) {
         // accumulate send counters
-        this.parsedSendFrequency.push({ x: key, y: value.total + prevValue })
-        this.parsedSendFrequencyFrames.push({ x: key, y: value.total })
-        prevValue += value.total
+        this.parsedSendFrequency.push({ x: key, y: value.count + prevValue })
+        this.parsedSendFrequencyFrames.push({ x: key, y: value.count })
+        prevValue += value.count
       }
     },
     parseBatteryLevels () {
