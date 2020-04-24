@@ -17,7 +17,7 @@ func (app *Iotctl) PublishAck(network string, mac string, location string,
 		Network:      network,
 		MAC:          mac,
 		Location:     location,
-		ReadInterval: readInterval,
+		SendInterval: int(readInterval),
 	}
 
 	resp, err := json.Marshal(payload)
