@@ -265,7 +265,9 @@ func (n *NodeDevice) MonitorDeviceLoop() {
 
 			n.System.BatteryPercentage = n.calculateBatteryPercentage()
 
-			if n.System.BatteryMah <= 1 {
+			logrus.Infof("(%s) battery change to %f", n.System.Mac,
+				n.System.CurrentBatteryMah)
+			if n.System.CurrentBatteryMah <= 1 {
 				logrus.Infof("(%s) device battery level low - stop", n.System.Mac)
 				n.Stop <- struct{}{}
 			}
