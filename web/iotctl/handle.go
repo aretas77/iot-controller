@@ -128,7 +128,7 @@ func (app *Iotctl) OnMessageStats(client MQTT.Client, msg MQTT.Message) {
 	}
 
 	// parse MAC address from the topic
-	_, _, mac, _ := utils.SplitTopic4(msg.Topic())
+	_, net, mac, _ := utils.SplitTopic4(msg.Topic())
 
 	// Check if such Node exists, and if it exists - update the statistics.
 	node, err := app.sql.CheckNodeExists(mac)
@@ -164,6 +164,9 @@ func (app *Iotctl) OnMessageStats(client MQTT.Client, msg MQTT.Message) {
 		logrus.Error(err)
 		return
 	}
+
+	// act as a proxy between Device and Hades daemon for statistic exchange
+	app.PublishStatsHades(net, mac, payload)
 
 	return
 }
@@ -269,9 +272,10 @@ func (app *Iotctl) OnMessageEvent(client MQTT.Client, msg MQTT.Message) {
 	_, _, mac, _ := utils.SplitTopic4(msg.Topic())
 
 	event := models.Event{
-		Mac:      mac,
-		Model:    payload.Model,
-		TimeSent: payload.TimeSent,
+		Mac:          mac,
+		Model:        payload.Model,
+		TimeSent:     payload.TimeSent,
+		SendInterval: payload.SendInterval,
 	}
 
 	if err := app.sql.GormDb.Create(&event).Error; err != nil {
