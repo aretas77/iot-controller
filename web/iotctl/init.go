@@ -16,10 +16,6 @@ func (app *Iotctl) Init() error {
 		return err
 	}
 
-	if err := app.initQueues(); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -31,14 +27,6 @@ func (app *Iotctl) initLoggers() error {
 
 	// Add calling method as field.
 	logrus.SetReportCaller(app.Debug.ReportCaller)
-
-	return nil
-}
-
-func (app *Iotctl) initQueues() error {
-
-	// Initialize greeting queue with a given queue size.
-	app.GreetingQueueInit(100)
 
 	return nil
 }

@@ -35,11 +35,6 @@ type Iotctl struct {
 	// HTTP interface
 	httpServer *http.Server
 
-	// When a Node sends a greeting to our controller, we don't reply
-	// immediatly - we store it in a queue and send them with a delay.
-	greetingQueue    *greetingEngine
-	greetingQueueCap int
-
 	ListenAddress string
 	RoutePrefix   string
 
@@ -65,9 +60,6 @@ func (app *Iotctl) Start() error {
 		logrus.Fatal("Failed to initialize MQTT")
 		return err
 	}
-
-	// Start a goroutine for handling the Greetings sent from a device.
-	go app.greetingQueueLoop(app.die)
 
 	// TODO: Start a goroutine for monitoring Node's and UnregisteredNode's.
 
