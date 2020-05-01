@@ -93,7 +93,7 @@ type UnregisteredNode struct {
 	Mac                 string  `json:"mac" gorm:"not null"`
 	AddedUsername       string  `json:"username" gorm:"not null"`
 	Location            string  `json:"location"`
-	InitialReadInterval float32 `json:"read_interval"`
+	InitialSendInterval float32 `json:"send_interval"`
 
 	// a `Has One` relationship. UnregisteredNode 0..* <-> 1 Network.
 	// UnregisteredNode `Has One` Network.
@@ -113,5 +113,5 @@ type NodeSettings struct {
 	DataLineFrom  int     `json:"-"`
 	DataLineTo    int     `json:"-"`
 	Hermes        *Hermes `json:"hermes,omitempty"`
-	ReadInterval  float32 `json:"read_interval"`
+	SendInterval  float32 `json:"send_interval"`
 }

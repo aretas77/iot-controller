@@ -12,12 +12,12 @@ import (
 )
 
 func (app *Iotctl) PublishAck(network string, mac string, location string,
-	readInterval float32) error {
+	sendInterval float32) error {
 	payload := typesMQTT.MessageAck{
 		Network:      network,
 		MAC:          mac,
 		Location:     location,
-		SendInterval: int(readInterval),
+		SendInterval: int(sendInterval),
 	}
 
 	resp, err := json.Marshal(payload)

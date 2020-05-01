@@ -74,7 +74,7 @@ func (app *Iotctl) OnMessageGreeting(client MQTT.Client, msg MQTT.Message) {
 	// `Node` doesn't exist and `Network` exists, lets create a `Node` in
 	// a given `Network`.
 
-	settings := models.NodeSettings{ReadInterval: tmpNode.InitialReadInterval}
+	settings := models.NodeSettings{SendInterval: tmpNode.InitialSendInterval}
 	if err = app.sql.GormDb.Create(&settings).Error; err != nil {
 		panic(err)
 	}
@@ -105,7 +105,7 @@ func (app *Iotctl) OnMessageGreeting(client MQTT.Client, msg MQTT.Message) {
 	//	1. An `UnregisteredNode` existed for this particular device node.
 	//	2. We have created a new `Node` for this device with its status
 	//	   as 'Registered'.
-	app.PublishAck(network.Name, payload.MAC, node.Location, tmpNode.InitialReadInterval)
+	app.PublishAck(network.Name, payload.MAC, node.Location, tmpNode.InitialSendInterval)
 	return
 }
 
