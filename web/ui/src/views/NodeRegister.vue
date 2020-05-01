@@ -50,20 +50,20 @@
               </b-form-group>
 
               <b-form-group
-                label="Initial sensor Read interval"
-                label-for="node-read-interval"
+                label="Initial sensor Send interval"
+                label-for="node-send-interval"
                 >
                 <b-form-input
-                  id="node-read-interval"
+                  id="node-send-interval"
                   type="text"
                   class="form-control form-control-lg"
-                  v-model="unregisteredNode.read_interval"
-                  :state="validateReadInterval"
+                  v-model="unregisteredNode.send_interval"
+                  :state="validateSendInterval"
                   />
-                <b-form-invalid-feedback :state="validateReadInterval">
+                <b-form-invalid-feedback :state="validateSendInterval">
                   Empty or not a number!
                 </b-form-invalid-feedback>
-                <b-form-valid-feedback :state="validateReadInterval">
+                <b-form-valid-feedback :state="validateSendInterval">
                   Looks good.
                 </b-form-valid-feedback>
               </b-form-group>
@@ -177,8 +177,8 @@ export default {
     validateLocation () {
       return this.validLocation(this.unregisteredNode.location)
     },
-    validateReadInterval () {
-      return this.validReadInterval(this.unregisteredNode.read_interval)
+    validateSendInterval () {
+      return this.validSendInterval(this.unregisteredNode.send_interval)
     }
   },
   methods: {
@@ -191,7 +191,7 @@ export default {
           mac: this.unregisteredNode.mac,
           network_refer: this.network.ID,
           username: this.currentUser.username,
-          read_interval: Number(this.unregisteredNode.read_interval)
+          send_interval: Number(this.unregisteredNode.send_interval)
         }).then(() => {
           this.inProgress = false
           this.$router.push({
@@ -226,7 +226,7 @@ export default {
       }
       return true
     },
-    validReadInterval: function (value) {
+    validSendInterval: function (value) {
       if (value === null || value === undefined || value === '') {
         return false
       }
