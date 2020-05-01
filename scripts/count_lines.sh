@@ -1,8 +1,8 @@
 #!/bin/sh
 
 # This script will calculate total lines for Go and Vue files.
-paho_commits=10
-current_dir=`pwd`
+paho_commits=21
+current_dir=$(pwd)
 go_lines=0
 lines_paho=0
 vue_lines=0
