@@ -26,6 +26,11 @@ const routes = [
     ]
   },
   {
+    path: '/@:network',
+    name: 'network',
+    component: () => import('@/views/Network')
+  },
+  {
     path: '/nodes',
     name: 'home-nodes',
     component: () => import('@/views/HomeNodes')
