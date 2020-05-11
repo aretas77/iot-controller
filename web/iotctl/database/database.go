@@ -49,9 +49,9 @@ func (d *Database) Init() error {
 }
 
 // Close should close initialized databases.
-func (d *Database) Close(useGorm bool) {
-	logrus.Debugf("Closing Database connection. useGorm = %t", useGorm)
-	if useGorm {
+func (d *Database) Close() {
+	logrus.Debugf("Closing Database connection. useGorm = %t", d.UseGorm)
+	if d.UseGorm {
 		d.MySql.CloseGorm()
 	} else {
 		d.MySql.Close()

@@ -207,16 +207,17 @@ func (n *NodeController) GetNodes(w http.ResponseWriter, r *http.Request,
 	json.NewEncoder(w).Encode(mapNodes)
 }
 
-// RegisterNode will parse `UnregisteredNode` from the request and check it against
-// database to see if such a Node already exists and if it exists - it will
-// register the `Node` and won't create an entry for `UnregisteredNode`.
+// Pre 2020-03-12 update: RegisterNode will parse `UnregisteredNode` from the
+// request and check it against database to see if such a Node already exists
+// and if it exists - it will register the `Node` and won't create an entry for
+// `UnregisteredNode`.
 //
 // 2020-03-12 update: RegisterNode will create an `UnregisteredNode` entry
 // and wait for an incoming device Greeting. When the Greeting is received for
 // this entry, we remove the `UnregisteredNode` entry and add a new `Node`.
 //
-// Otherwise, the `UnregisteredNode` will be added to the database and will point
-// to the `Network` it was created and won't point to any of the `Node`s.
+// Otherwise, the `UnregisteredNode` will be added to the database and will
+// point to the `Network` it was created and won't point to any of the `Node`s.
 // Endpoint: POST /nodes
 func (n *NodeController) RegisterNode(w http.ResponseWriter, r *http.Request,
 	next http.HandlerFunc) {

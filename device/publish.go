@@ -24,7 +24,7 @@ func (n *NodeDevice) PublishGreeting() {
 	n.Send <- Message{
 		Mac:     n.System.Mac,
 		Topic:   fmt.Sprintf("control/%s/%s/greeting", n.System.Network, n.System.Mac),
-		QoS:     0,
+		QoS:     2,
 		Payload: payload,
 	}
 	return
