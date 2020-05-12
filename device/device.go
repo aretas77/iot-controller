@@ -22,6 +22,7 @@ const (
 	NodeDeviceAcknowledged = "acknowledged"
 	NodeDeviceRegistered   = "registered"
 	NodeDeviceNew          = "new"
+	NodeDeviceStatistics   = "statistics"
 )
 
 // Device states
@@ -260,7 +261,7 @@ func (n *NodeDevice) MonitorDeviceLoop() {
 				n.System.CurrentBatteryMah -= control.consumed
 			case BatteryConsumedSend:
 				n.System.CurrentBatteryMah -= (control.consumed +
-					n.Hal.GetSendConsumed())
+					n.Hal.GetSendConsumed()/1000)
 			}
 
 			n.System.BatteryPercentage = n.calculateBatteryPercentage()

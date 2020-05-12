@@ -128,8 +128,7 @@ func (e *ESP32) GetPressureTemperature(sensor string) (float32, float32, float32
 
 	switch sensor {
 	case "bmp180":
-		//consumed += 0.007 // 7 micro Amperes for one reading, high res mode
-		consumed += 1
+		consumed += 0.007 // 7 micro Amperes for one reading, high res mode
 	default:
 	}
 
