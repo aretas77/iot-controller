@@ -30,7 +30,15 @@ var (
 )
 
 func main() {
-	BaseURL = "localhost:8081"
+	port := os.Getenv("PORT")
+	BaseURL = ":"
+
+	//BaseURL = "localhost:8081"
+	if port != "" {
+		BaseURL = ":" + port
+	} else {
+		BaseURL = ":8081"
+	}
 	app := cli.NewApp()
 	app.Name = "iot-controller"
 	app.Version = fmt.Sprintf("build %s (%s) rev %s", Date, GitCommit, Host)
