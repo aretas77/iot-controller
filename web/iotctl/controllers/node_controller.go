@@ -166,7 +166,7 @@ func (n *NodeController) GetNode(w http.ResponseWriter, r *http.Request,
 	node := models.Node{}
 	err := n.sql.GormDb.First(&node, vars["id"]).Error
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -315,12 +315,12 @@ func (n *NodeController) UnregisterNode(w http.ResponseWriter, r *http.Request,
 
 	err := n.sql.GormDb.Unscoped().Where("node_refer = ?", node.Mac).Delete(&models.NodeStatisticsEntry{}).Error
 	if err != nil && !gorm.IsRecordNotFoundError(err) {
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	if err := n.sql.GormDb.Unscoped().Delete(&node).Error; err != nil {
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 

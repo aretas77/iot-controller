@@ -265,7 +265,7 @@ func (app *Iotctl) OnMessageEvent(client MQTT.Client, msg MQTT.Message) {
 		logrus.WithError(err).WithFields(logrus.Fields{
 			"topic": msg.Topic,
 			"msg":   msg.Payload,
-		}).Error("failed to unmarshal greeting message")
+		}).Error("failed to unmarshal event message")
 		return
 	}
 

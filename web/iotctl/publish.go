@@ -57,7 +57,7 @@ func (app *Iotctl) PublishStatsHades(network string, mac string, stats typesMQTT
 		return err
 	}
 
-	publishTopic := fmt.Sprintf("node/%s/%s/hades/statistics", network, mac)
+	publishTopic := fmt.Sprintf("hades/%s/%s/statistics", network, mac)
 	logrus.Infof("publish stats on %s", publishTopic)
 	logrus.Debugf("stats payload = %s", string(resp))
 	token := app.Plain.Client.Publish(publishTopic, 0, false, resp)
