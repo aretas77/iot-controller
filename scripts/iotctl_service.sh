@@ -126,7 +126,7 @@ send_new_interval() {
     sendTopic="hermes/node/global/${mac}/hades/interval/receive"
 
 cat > "${tmp}"/"${requestFile}" << EOL
-{ "mac": "${mac}", "send_interval": $((interval)) }
+{ "mac": "${mac}", "send_interval": $((interval)).0 }
 EOL
 
     mosquitto_pub -u mock -P test -h "$server" -p "$port" -t "$sendTopic" -f "$tmp"/"$requestFile"
