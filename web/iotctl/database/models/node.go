@@ -112,6 +112,5 @@ type NodeSettings struct {
 	DataFileName  string  `json:"-"`
 	DataLineFrom  int     `json:"-"`
 	DataLineTo    int     `json:"-"`
-	Hermes        *Hermes `json:"hermes,omitempty"`
 	SendInterval  float32 `json:"send_interval"`
 }

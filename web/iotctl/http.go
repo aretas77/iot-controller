@@ -23,6 +23,7 @@ func (app *Iotctl) httpSetup() error {
 
 	go func() {
 		app.wg.Add(1)
+		logrus.Infof("Server starting on: %s", app.ListenAddress)
 		if err := app.httpServer.ListenAndServe(); err != nil {
 			logrus.Fatal("Error while starting http server")
 		}
