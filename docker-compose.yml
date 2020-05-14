@@ -7,6 +7,8 @@ services:
         environment:
             - MYSQL_ROOT_PASSWORD=test
             - MYSQL_DATABASE=iotctl
+        expose:
+            - "3306"
         ports:
             - "3306:3306"
         volumes:
@@ -25,7 +27,7 @@ services:
             - PMA_HOST=DB
         restart: always
         ports:
-            - "8080:89"
+            - "89:89"
         volumes:
             - /sessions
         links:
@@ -52,14 +54,31 @@ services:
             default:
                 ipv4_address: 172.18.0.3
 
+    backend:
+        build:
+            context: .
+            dockerfile: cmd/web/Dockerfile
+        expose:
+            - "8081"
+        ports:
+            - "8081:8081"
+        depends_on:
+            - mqtt
+            - mariadb
+        command: ["./wait-for-it.sh", "172.18.0.2:3306", "--", "./web", "start"]
+        networks:
+            default:
+                ipv4_address: 172.18.0.6
+
     # Vue.js front-end
     frontend:
         build:
             context: web/ui
+        expose:
+            - "8080"
         ports:
-            - "8081:8080"
-        volumes:
-            - ./web/ui:/app
+            - "8080:8080"
+        command: ["http-server", "dist"]
         networks:
             default:
                 ipv4_address: 172.18.0.5
