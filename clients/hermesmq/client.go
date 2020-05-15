@@ -6,7 +6,6 @@ import (
 
 	typesMQTT "github.com/aretas77/iot-controller/types/mqtt"
 	hermesmq "github.com/aretas77/paho.mqtt.golang"
-	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/sirupsen/logrus"
 )
 
@@ -66,7 +65,7 @@ func (c *MQTTClient) Disconnect() error {
 // Publish ...
 func (c *MQTTClient) Publish(topic string, qos uint8, payload interface{}) error {
 	if !c.IsConnected() {
-		return mqtt.ErrNotConnected
+		return hermesmq.ErrNotConnected
 	}
 
 	if tkn := c.client.Publish(topic, qos, false, payload); tkn.Error() != nil {
@@ -102,7 +101,7 @@ func (c *MQTTClient) Subscribe(topic string, qos uint8, callback typesMQTT.Custo
 // Unsubscribe ...
 func (c *MQTTClient) Unsubscribe(topic string) error {
 	if !c.IsConnected() {
-		return mqtt.ErrNotConnected
+		return hermesmq.ErrNotConnected
 	}
 	c.client.Unsubscribe(topic)
 	return nil
