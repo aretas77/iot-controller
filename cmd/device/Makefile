@@ -1,5 +1,9 @@
 .PHONY: build clean
 
+ifeq ($(strip $(BUILD_DIR)),)
+BUID_DIR=../../build
+endif
+
 clean:
 	rm -f $(BUILD_DIR)/device
 
