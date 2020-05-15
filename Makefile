@@ -19,7 +19,7 @@ ifeq ($(strip $(CMD)),)
 CMD = start
 endif
 
-.PHONY: all clean purge build device docker
+.PHONY: all clean purge build device docker-run
 
 all: clean purge build
 
@@ -41,13 +41,23 @@ device:
 # Docker commands
 #
 
-docker:
+docker-run:
 	@docker-compose up --remove-orphans
 
 docker-web:
 	docker build \
 		--tag=web:latest \
 		-f cmd/web/Dockerfile .
+
+docker-device:
+	docker build \
+		--tag=device:latest \
+		-f cmd/device/Dockerfile .
+
+docker-hades:
+	docker build \
+		--tag=hades:latest \
+		-f iot-hades/Dockerfile .
 
 #
 # Not tested properly
