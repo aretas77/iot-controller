@@ -51,8 +51,9 @@ type NodeDevice struct {
 	devices.System
 
 	LastSentGreeting    time.Time
-	Time                time.Time
+	LastSentMessage     time.Time
 	DefaultReadInterval time.Duration
+	GreetingTimer       *time.Ticker
 
 	// Statistics
 	StatisticsFile  string
@@ -103,6 +104,7 @@ func (n *NodeDevice) Initialize() error {
 // The NodeDevice will run as a goroutine which will have its own:
 //	- ReceiveLoop
 func (n *NodeDevice) Start() {
+	n.System.Status = NodeDeviceNew
 
 	// Initialize NodeDevice
 	if err := n.Initialize(); err != nil {
@@ -111,7 +113,8 @@ func (n *NodeDevice) Start() {
 	}
 	defer n.Hal.PowerOff()
 
-	ticker := time.NewTicker(n.DefaultReadInterval)
+	n.GreetingTimer = time.NewTicker(n.DefaultReadInterval)
+
 	// will handle the broadcasted messages from main device controller
 	n.wg.Add(2)
 	go n.ReceiveLoop()
@@ -124,33 +127,37 @@ handshake:
 		case <-n.ReceivedAck:
 			logrus.Debugf("received ACK %s", n.System.Mac)
 			break handshake
-		case <-ticker.C:
+		case <-n.GreetingTimer.C:
 			// publish a greeting
 			n.PublishGreeting()
 			n.LastSentGreeting = time.Now()
 		case <-n.Stop:
-			ticker.Stop()
+			n.GreetingTimer.Stop()
 			n.wg.Done()
 			return
 		}
 	}
 
-	ticker.Stop()
+	n.System.Status = NodeDeviceAcknowledged
+	n.GreetingTimer.Stop()
 
-	// Won't be receiving anything on this channel.
+	// Won't be receiving anything on this channel IF not using unregister
+	// logic - otherwise keep it open.
 	// close(n.ReceivedAck)
 
+	// TODO: cleanup or implement mentioned logic.
 	// After a handshake is done, we can start tracking the time between sends
 	// and how much energy was consumed during the given timeframe.
 	//
 	// NOTE: Each publish from this point should keep track of consumed
 	// battery and how much time elapsed between various publish events.
-	n.Time = time.Now()
+	n.LastSentMessage = time.Now()
 
 	// Publish initial system information to verify that its correct and
 	// don't wait for any response - continue to other state.
 	n.PublishSystemData()
 
+	n.System.Status = NodeDeviceStatistics
 	statsTicker := time.NewTicker(n.DefaultReadInterval)
 statistics:
 	for {
@@ -160,8 +167,9 @@ statistics:
 			n.PublishSensorData()
 
 			// last sent
-			n.Time = time.Now()
+			n.LastSentMessage = time.Now()
 		case <-n.Unregister:
+			statsTicker.Stop()
 			goto handshake
 		case <-n.Stop:
 			n.wg.Done()
@@ -216,16 +224,23 @@ func (n *NodeDevice) ReceiveLoop() {
 					}).Error("failed to unmarshal unregister message")
 				}
 
+				logrus.Infof("Received Unregister for device (%s)", n.System.Mac)
+				if n.System.Status != NodeDeviceStatistics {
+					continue
+				}
+
 				logrus.Infof("Device (%s) status (%s) -> (%s)", n.System.Mac,
 					n.System.Status, NodeDeviceNew)
 
+				n.GreetingTimer = time.NewTicker(n.DefaultReadInterval)
 				n.System.Status = NodeDeviceNew
 				n.System.Network = "global"
 				n.System.Location = ""
 
 				n.Unregister <- struct{}{}
 			} else if msg.Topic == "sent" {
-				// notify Device monitor about a change in battery levels.
+				// Notify device monitor about a change in battery levels and
+				// increment the send counter
 				n.SendTimes++
 				n.BatteryControl <- BatteryChangeInfo{
 					consumed:     0,
@@ -268,6 +283,8 @@ func (n *NodeDevice) MonitorDeviceLoop() {
 
 			logrus.Infof("(%s) battery change to %f", n.System.Mac,
 				n.System.CurrentBatteryMah)
+
+			// if battery is too low - stop the device
 			if n.System.CurrentBatteryMah <= 1 {
 				logrus.Infof("(%s) device battery level low - stop", n.System.Mac)
 				n.Stop <- struct{}{}
