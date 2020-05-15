@@ -21,7 +21,25 @@ cat > ${tmp}/${ackFile} << EOL
 { "mac": "${mac}", "network": "global", "send_interval": 1, "location": "Kaunas" }
 EOL
 
-    mosquitto_pub -u mock -P test -h "$server" -p "$port" -t "$ackTopic" -f "$tmp"/ack.json
+    mosquitto_pub -u mock -P test -h "$server" -p "$port" -t "$ackTopic" -f "$tmp"/"$ackFile"
+}
+
+send_unregister() {
+    mac=$1
+    unregisterFile="unregister.json"
+
+    if [ -z "$mac" ]; then
+        printf "MAC is empty.\n"
+        exit 1
+    fi
+
+    unregTopic="control/global/${mac}/unregister"
+
+cat > ${tmp}/${unregisterFile} << EOL
+{ "mac": "${mac}", "network": "global" }
+EOL
+
+    mosquitto_pub -u mock -P test -h "$server" -p "$port" -t "$unregTopic" -f "$tmp"/"$unregisterFile"
 }
 
 # send_stats is used to send some statistics for IoT Controller.
@@ -132,10 +150,12 @@ EOL
     mosquitto_pub -u mock -P test -h "$server" -p "$port" -t "$sendTopic" -f "$tmp"/"$requestFile"
 }
 
+
 # print_usage will print some information on how to use this script.
 print_usage() {
     echo "Usage: $0 [options]"
     echo "send_ack          | {MAC}             this will send ack to IoT Controller."
+    echo "send_unregister   | {MAC}             this will send unregister to the Device Simulator."
     echo "send_stats_hades  | {MAC}             this will send a mock statistic entry to IoT Hades."
     echo "send_stats        | {MAC}             this will send a mock statistic entry to IoT Controller."
     echo "send_model_request| {MAC}             this will send a new request for model to the Hades."
@@ -146,6 +166,9 @@ print_usage() {
 case "$1" in
     send_ack)
         send_ack "$2"
+        ;;
+    send_unregister)
+        send_unregister "$2"
         ;;
     send_stats)
         send_stats "$2"
