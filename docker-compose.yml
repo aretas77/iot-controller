@@ -54,6 +54,7 @@ services:
             default:
                 ipv4_address: 172.18.0.3
 
+    # IoT Controller
     backend:
         build:
             context: .
@@ -82,6 +83,22 @@ services:
         networks:
             default:
                 ipv4_address: 172.18.0.5
+
+    # Hades API
+    hades:
+        build:
+            context: iot-hades/
+        command: ["/bin/bash", "./start.sh"]
+        volumes:
+            - ./iot-hades/checkpoints:/checkpoints
+            - ./iot-hades/policies:/policies
+            - ./iot-hades/models:/models
+            - ./iot-hades/states:/states
+        depends_on:
+            - mqtt
+        networks:
+            default:
+                ipv4_address: 172.18.0.7
 
 networks:
     default:
