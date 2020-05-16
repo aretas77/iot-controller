@@ -64,18 +64,20 @@ func (n *NodeController) migrateNodeGorm() error {
 	entryCount := 20
 
 	// Create a Node with additional settings
-	settings := &models.NodeSettings{
+	settings1 := &models.NodeSettings{
 		NodeID:        2,
 		HermesEnabled: false,
+		SendInterval:  1,
 	}
 
 	settings2 := &models.NodeSettings{
 		NodeID:        1,
 		HermesEnabled: false,
+		SendInterval:  1,
 	}
 
-	if n.sql.GormDb.NewRecord(settings) {
-		n.sql.GormDb.Create(&settings)
+	if n.sql.GormDb.NewRecord(settings1) {
+		n.sql.GormDb.Create(&settings1)
 	}
 
 	if n.sql.GormDb.NewRecord(settings2) {
@@ -93,24 +95,25 @@ func (n *NodeController) migrateNodeGorm() error {
 		SettingsID:          settings2.ID,
 		AddedUsername:       "superadmin",
 		NetworkRefer:        1,
-		BatteryMah:          2500,
+		BatteryMah:          1250,
 		BatteryMahTotal:     2500,
-		BatteryPercentage:   100,
+		BatteryPercentage:   50,
 	}
 
 	node2 := &models.Node{
-		Name:              "TestNode2",
-		Mac:               "AA:BB:CC:DD:EE:EF",
-		Location:          "Kaunas",
-		IpAddress4:        "172.8.0.21",
-		LastSentAck:       time.Now(),
-		Status:            "acknowledged",
-		SettingsID:        settings.ID,
-		AddedUsername:     "superadmin",
-		NetworkRefer:      1,
-		BatteryMah:        2400,
-		BatteryMahTotal:   2400,
-		BatteryPercentage: 100,
+		Name:                "TestNode2",
+		Mac:                 "AA:BB:CC:DD:EE:EF",
+		Location:            "Kaunas",
+		IpAddress4:          "172.8.0.21",
+		LastSentAck:         time.Now(),
+		LastReceivedMessage: time.Now(),
+		Status:              "acknowledged",
+		SettingsID:          settings1.ID,
+		AddedUsername:       "superadmin",
+		NetworkRefer:        1,
+		BatteryMah:          2400,
+		BatteryMahTotal:     2400,
+		BatteryPercentage:   100,
 	}
 
 	// Make the same output every run
