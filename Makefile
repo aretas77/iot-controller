@@ -19,7 +19,7 @@ ifeq ($(strip $(CMD)),)
 CMD = start
 endif
 
-.PHONY: all clean purge build device docker-run
+.PHONY: all clean purge build device docker-run docker
 
 all: clean purge build
 
@@ -40,6 +40,10 @@ device:
 #
 # Docker commands
 #
+
+docker:
+	@docker-compose build --parallel
+	@docker-compose up --remove-orphans
 
 docker-run:
 	@docker-compose up --remove-orphans
