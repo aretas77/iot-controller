@@ -154,7 +154,7 @@ EOL
 # print_usage will print some information on how to use this script.
 print_usage() {
     echo "Usage: $0 [options]"
-    echo "send_ack          | {MAC}             this will send ack to IoT Controller."
+    echo "send_ack          | {MAC}             this will send ack to Device Simulator."
     echo "send_unregister   | {MAC}             this will send unregister to the Device Simulator."
     echo "send_stats_hades  | {MAC}             this will send a mock statistic entry to IoT Hades."
     echo "send_stats        | {MAC}             this will send a mock statistic entry to IoT Controller."
