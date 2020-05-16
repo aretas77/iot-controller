@@ -3,7 +3,7 @@
     <b-navbar class="sticky-top fixed" toggleable="md" type="dark" variant="dark">
       <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
       <b-collapse is-nav id="nav_collapse">
-        <b-navbar-brand to="/">IoT Controller</b-navbar-brand>
+        <b-navbar-brand to="/">IoT Controller <sub>alpha</sub></b-navbar-brand>
 
         <b-navbar-nav>
           <b-nav-item to="/">Home</b-nav-item>
@@ -20,8 +20,10 @@
               class="nav-link"
               active-class="active"
               exact :to="{
-                name: 'Home',
-                params: { id: activeNetwork.id }
+                name: 'network',
+                params: {
+                  network: activeNetwork.name
+                }
               }"
               >
               {{ activeNetwork.name }}

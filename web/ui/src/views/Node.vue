@@ -19,7 +19,7 @@
           <b-container fluid class="w-100 p-3" v-else>
             <b-row align-h="between" class="m-4">
               <b-col cols="5">
-                <TemperatureChart :entries='statsEntries'></TemperatureChart>
+                <TemperatureChart :entries='parsedTemperature'></TemperatureChart>
               </b-col>
               <b-col cols="5">
                 <SensorReadingsFreq
@@ -106,6 +106,7 @@ export default {
   data () {
     return {
       activeTab: 0,
+      parsedTemperature: [],
       parsedBatteryLevels: [],
       parsedSendFrequency: [],
       parsedSendFrequencyFrames: []
@@ -223,6 +224,20 @@ export default {
 
       /* eslint-enable no-unused-vars */
     },
+    parseTemperature () {
+      var tmpParsedTemperature = this.statsEntries.map(entry => {
+        return {
+          x: this.$moment(entry.temp_read_time, this.$moment.ISO_8601).format('HH:mm'),
+          y: entry.temperature
+        }
+      })
+
+      tmpParsedTemperature = tmpParsedTemperature.filter(function (entry) {
+        return entry !== undefined
+      })
+
+      this.parsedTemperature = tmpParsedTemperature
+    },
     onChangedTab (tabIndex) {
       this.$store.dispatch(CHECK_AUTH)
 
@@ -231,6 +246,7 @@ export default {
         // TODO: could probably just check with the server if there are new
         // updates
         this.fetchNodeStatistics()
+        this.parseTemperature()
         this.parseSendFrequency()
       } else if (tabIndex === 1) {
         this.fetchNodeEvents()
@@ -247,6 +263,7 @@ export default {
   watch: {
     statsEntries () {
       this.parseSendFrequency()
+      this.parseTemperature()
     }
   }
 }
