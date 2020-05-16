@@ -71,6 +71,17 @@ services:
             default:
                 ipv4_address: 172.18.0.6
 
+    device:
+        build:
+            context: .
+            dockerfile: cmd/device/Dockerfile
+        depends_on:
+            - mqtt
+        command: ["./scripts/wait-for-it.sh", "172.18.0.2:3306", "--", "./build/device", "start"]
+        networks:
+            default:
+                ipv4_address: 172.18.0.10
+
     # Vue.js front-end
     frontend:
         build:
@@ -99,6 +110,7 @@ services:
         networks:
             default:
                 ipv4_address: 172.18.0.7
+
 
 networks:
     default:

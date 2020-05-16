@@ -13,7 +13,7 @@ RUN go mod tidy && go mod download
 
 # Create barebone directories and copy required files
 RUN mkdir -p ./device ./types ./utils ./build ./scripts ./clients ./cmd/device \
-    ./configs
+    ./configs ./cmd/data
 COPY ./device ./device/
 COPY ./configs/device.yaml ./configs/device.yaml
 COPY ./types ./types/
@@ -22,6 +22,7 @@ COPY ./scripts ./scripts/
 COPY ./clients ./clients/
 COPY ./Makefile ./Makefile
 COPY ./cmd/device ./cmd/device/
+COPY ./cmd/data ./cmd/data/
 
 ENV PYTHONPATH "/bin/python3"
 
