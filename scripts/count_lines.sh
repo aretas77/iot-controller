@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # This script will calculate total lines for Go and Vue files.
-paho_commits=23
+paho_commits=24
 current_dir=$(pwd)
 go_lines=0
 lines_paho=0
@@ -50,7 +50,7 @@ calculate_vue()
 
 calculate_py()
 {
-    py_files="../iot-hades/ ../paho.mqtt.golang/interpreter.py"
+    py_files="./iot-hades/ ../paho.mqtt.golang/interpreter.py"
 
     echo "Python lines: "
     py_lines=$(find $py_files -name '*.py' | xargs wc -l | tail -1)
